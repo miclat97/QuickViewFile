@@ -25,7 +25,7 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Header="Rozmiar (B)">
+                    <GridViewColumn Header="Rozmiar pliku">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Size}" HorizontalAlignment="Right"/>
