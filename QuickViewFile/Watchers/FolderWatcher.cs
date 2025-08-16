@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace QuickViewFile.Services
+namespace QuickViewFile.Watchers
 {
     public class FolderWatcher : IDisposable
     {

@@ -1,55 +1,63 @@
-﻿using QuickViewFile;
-using QuickViewFile.Models;
-using QuickViewFile.Services;
+﻿using QuickViewFile.Models;
+using QuickViewFile.Watchers;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
+using System.Threading.Tasks;
 
-public class FilesListViewModel
+namespace QuickViewFile.ViewModel
 {
-    public ObservableCollection<FileItem> Files { get; set; } = new();
-
-    private FileItem _selectedFile;
-    private readonly FolderWatcher _folderWatcher;
-    private string _folderPath = Directory.GetCurrentDirectory();
-
-    public FileItem SelectedFile
+    public class FilesListViewModel : INotifyPropertyChanged
     {
-        get => _selectedFile;
-        set
+        public ObservableCollection<FileItem> Files { get; set; } = new();
+
+        private FileItem? _selectedFile;
+        private readonly FolderWatcher _folderWatcher;
+        private string _folderPath = Directory.GetCurrentDirectory();
+
+        public FileItem? SelectedFile
         {
-            _selectedFile = value;
-        }
-    }
-
-    public FilesListViewModel()
-    {
-        var filesInCurrentDirectory = new DirectoryInfo(_folderPath).GetFiles();
-
-        RefreshFiles();
-
-        // Initialize the folder watcher
-        _folderWatcher = new FolderWatcher(_folderPath);
-
-        // Subscribe to folder changes
-        _folderWatcher.OnFolderChanged += RefreshFiles;
-    }
-
-    private async void RefreshFiles()
-    {
-        var filesInDirectory = await Task.Run(() => new DirectoryInfo(_folderPath).GetFiles());
-
-        App.Current.Dispatcher.Invoke(() =>
-        {
-            Files.Clear();
-            foreach (var file in filesInDirectory)
+            get => _selectedFile;
+            set
             {
-                Files.Add(new FileItem
+                if (_selectedFile != value)
                 {
-                    Name = file.Name,
-                    Size = file.Length,
-                    FullPath = file.FullName
-                });
+                    _selectedFile = value;
+                    OnPropertyChanged(nameof(SelectedFile));
+                    SelectedFileChanged?.Invoke(_selectedFile);
+                }
             }
-        });
+        }
+
+        public event System.Action<FileItem?>? SelectedFileChanged;
+
+        public FilesListViewModel()
+        {
+            RefreshFiles();
+            _folderWatcher = new FolderWatcher(_folderPath);
+            _folderWatcher.OnFolderChanged += RefreshFiles;
+        }
+
+        private async void RefreshFiles()
+        {
+            var filesInDirectory = await Task.Run(() => new DirectoryInfo(_folderPath).GetFiles());
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Files.Clear();
+                foreach (var file in filesInDirectory)
+                {
+                    Files.Add(new FileItem
+                    {
+                        Name = file.Name,
+                        Size = file.Length,
+                        FullPath = file.FullName
+                    });
+                }
+            });
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string propertyName) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

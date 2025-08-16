@@ -1,4 +1,5 @@
 ﻿using QuickViewFile.Models;
+using QuickViewFile.ViewModel;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
@@ -22,7 +23,7 @@ namespace QuickViewFile
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new FilesListViewModel();
+            DataContext = new MainWindowViewModel();
         }
     }
 }
