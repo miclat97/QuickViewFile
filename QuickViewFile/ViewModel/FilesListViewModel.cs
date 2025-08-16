@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 
-public class MainViewModel
+public class FilesListViewModel
 {
     public ObservableCollection<FileItem> Files { get; set; } = new();
 
@@ -17,7 +17,7 @@ public class MainViewModel
         }
     }
 
-    public MainViewModel()
+    public FilesListViewModel()
     {
         var currentDir = Directory.GetCurrentDirectory();
         var filesInCurrentDirectory = new DirectoryInfo(currentDir).GetFiles();

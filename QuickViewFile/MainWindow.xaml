@@ -20,7 +20,7 @@
                     <GridViewColumn Header="Nazwa pliku">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Filename}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -28,7 +28,7 @@
                     <GridViewColumn Header="Rozmiar (B)">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding FileSize}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding Size}" HorizontalAlignment="Right"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -37,10 +37,10 @@
         </ListView>
         <Border Grid.Column="1" Margin="10" BorderBrush="Gray" BorderThickness="1">
             <StackPanel Margin="10">
-                <TextBlock Text="{Binding SelectedFile.Filename}" FontWeight="Bold" FontSize="16"/>
-                <TextBlock Text="{Binding SelectedFile.FileSize}" FontSize="12"/>
+                <TextBlock Text="{Binding SelectedFile.Name}" FontWeight="Bold" FontSize="16"/>
+                <TextBlock Text="{Binding SelectedFile.Size}" FontSize="12"/>
                 <TextBlock Text="{Binding SelectedFile.FullPath}" FontSize="12" Foreground="Gray"/>
-                
+
             </StackPanel>
         </Border>
 
