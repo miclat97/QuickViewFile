@@ -6,12 +6,13 @@
         xmlns:local="clr-namespace:QuickViewFile"
         xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="600" Width="1000">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <Style TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
@@ -21,23 +22,27 @@
             <ColumnDefinition Width="3*" />
         </Grid.ColumnDefinitions>
         <ListView Grid.Column="0"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                   ItemsSource="{Binding FilesListVM.ActiveListItems}"
                   SelectedItem="{Binding FilesListVM.SelectedItem, Mode=TwoWay}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
-                  Margin="10">
+                  Margin="10"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Nazwa pliku">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Rozmiar pliku">
+                    <GridViewColumn Header="Rozmiar pliku" Width="Auto">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Size}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -45,20 +50,14 @@
             </ListView.View>
         </ListView>
         <Border Grid.Column="1" Margin="10" BorderBrush="Gray" BorderThickness="1">
-            <StackPanel Margin="10">
-                <TextBlock Text="{Binding FileContentVM.FileName}" FontWeight="Bold" FontSize="16" TextWrapping="Wrap"/>
-                <StackPanel>
-                    <Image Source="{Binding FileContentVM.ImageSource}"  
-                           
-                           Margin="0,10,0,10"
-                           />
+            <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="10">
+                    <TextBlock Text="{Binding FilesListVM.SelectedItem.FullPath}" FontWeight="Bold" FontSize="12" TextWrapping="Wrap"/>
+                        <Image Source="{Binding FileContentVM.ImageSource}"  
+                            Stretch="UniformToFill"/>
+                        <TextBox Text="{Binding FileContentVM.TextContent}" FontSize="11.5" IsReadOnly="True" TextWrapping="Wrap"/>
                 </StackPanel>
-                <StackPanel>
-                    <ScrollViewer>
-                        <TextBlock Text="{Binding FileContentVM.TextContent}" FontSize="12" TextWrapping="Wrap"/>
-                    </ScrollViewer>
-                </StackPanel>
-            </StackPanel>
+            </ScrollViewer>
         </Border>
     </Grid>
 </Window>
