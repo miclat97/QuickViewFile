@@ -12,7 +12,7 @@ namespace QuickViewFile.Watchers
         {
             _watcher = new FileSystemWatcher(folderPath)
             {
-                NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite,
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
                 EnableRaisingEvents = true
             };
 

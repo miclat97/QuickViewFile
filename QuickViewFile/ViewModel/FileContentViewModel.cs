@@ -1,7 +1,7 @@
-﻿using QuickViewFile.Models;
+﻿using QuickViewFile.Helpers;
+using QuickViewFile.Models;
 using System.ComponentModel;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace QuickViewFile.ViewModel
@@ -37,27 +37,26 @@ namespace QuickViewFile.ViewModel
             }
         }
 
-        public async Task LoadTextFileAsync(string? filePath, long fileSize)
+        public async Task LoadTextFileAsync(string? filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath) || fileSize > 50 * 1024) // 50 KB limit
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
             {
                 FileName = null;
                 TextContent = null;
                 return;
             }
-            else
+
+            var fileInfo = new FileInfo(filePath);
+            if (fileInfo.Length > 50 * 1024)
             {
-                try
-                {
-                    FileName = Path.GetFileName(filePath);
-                    var content = await File.ReadAllTextAsync(filePath);
-                    TextContent = content;
-                }
-                catch
-                {
-                    throw new IOException("Error reading the file.");
-                }
+                FileName = Path.GetFileName(filePath);
+                TextContent = "Plik jest zbyt duży do wyświetlenia.";
+                return;
             }
+
+            FileName = Path.GetFileName(filePath);
+            TextContent = await FileContentReader.ReadTextFileAsync(filePath)
+                ?? "Nie można odczytać pliku jako tekstowego.";
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

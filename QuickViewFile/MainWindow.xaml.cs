@@ -23,7 +23,18 @@ namespace QuickViewFile
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            DataContext = new MainWindowViewModel(Directory.GetCurrentDirectory());
+        }
+
+        private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (DataContext is MainWindowViewModel vm)
+            {
+                if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file && file.IsDirectory)
+                {
+                    vm.FilesListVM.OnFileDoubleClick(file);
+                }
+            }
         }
     }
 }
