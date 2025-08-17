@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:QuickViewFile"
         xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1000">
+        Title="QuickViewFile" Height="600" Width="1000">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
@@ -24,9 +24,11 @@
         <ListView Grid.Column="0"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  SelectionMode="Single"
                   ItemsSource="{Binding FilesListVM.ActiveListItems}"
                   SelectedItem="{Binding FilesListVM.SelectedItem, Mode=TwoWay}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
+                  KeyDown="FilesListView_KeyDown"
                   Margin="10"
                   VerticalAlignment="Stretch"
                   HorizontalAlignment="Stretch">
