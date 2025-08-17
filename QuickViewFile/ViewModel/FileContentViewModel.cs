@@ -63,7 +63,7 @@ namespace QuickViewFile.ViewModel
             FileName = Path.GetFileName(filePath);
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
-            if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif")
+            if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif")
             {
                 try
                 {
@@ -82,7 +82,7 @@ namespace QuickViewFile.ViewModel
             else
             {
                 var fileInfo = new FileInfo(filePath);
-                if (fileInfo.Length > 50 * 1024)
+                if (fileInfo.Length > 500 * 1024) // 500 KB
                 {
                     TextContent = "Plik jest zbyt duży do wyświetlenia";
                 }

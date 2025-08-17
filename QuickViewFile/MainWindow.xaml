@@ -19,7 +19,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="4*" />
         </Grid.ColumnDefinitions>
         <ListView Grid.Column="0"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -41,7 +41,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Rozmiar pliku" Width="Auto">
+                    <GridViewColumn Header="Rozmiar pliku (KB)" Width="Auto">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
@@ -57,7 +57,7 @@
                     <TextBlock Text="{Binding FilesListVM.SelectedItem.FullPath}" FontWeight="Bold" FontSize="12" TextWrapping="Wrap"/>
                         <Image Source="{Binding FileContentVM.ImageSource}"  
                             Stretch="UniformToFill"/>
-                        <TextBox Text="{Binding FileContentVM.TextContent}" FontSize="11.5" IsReadOnly="True" TextWrapping="Wrap"/>
+                        <TextBox Text="{Binding FileContentVM.TextContent}" FontSize="11.5" IsReadOnly="True" BorderThickness="0" TextWrapping="Wrap"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>
