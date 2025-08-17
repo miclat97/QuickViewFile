@@ -1,8 +1,8 @@
 ﻿using QuickViewFile.Helpers;
-using QuickViewFile.Models;
 using System.ComponentModel;
 using System.IO;
-using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace QuickViewFile.ViewModel
 {
@@ -10,6 +10,7 @@ namespace QuickViewFile.ViewModel
     {
         private string? _fileName;
         private string? _textContent;
+        private ImageSource? _imageSource;
 
         public string? FileName
         {
@@ -37,26 +38,60 @@ namespace QuickViewFile.ViewModel
             }
         }
 
-        public async Task LoadTextFileAsync(string? filePath)
+        public ImageSource? ImageSource
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            get => _imageSource;
+            set
             {
-                FileName = null;
-                TextContent = null;
-                return;
+                if (_imageSource != value)
+                {
+                    _imageSource = value;
+                    OnPropertyChanged(nameof(ImageSource));
+                }
             }
+        }
 
-            var fileInfo = new FileInfo(filePath);
-            if (fileInfo.Length > 50 * 1024)
-            {
-                FileName = Path.GetFileName(filePath);
-                TextContent = "Plik jest zbyt duży do wyświetlenia.";
+        public async Task LoadFileAsync(string? filePath)
+        {
+            FileName = null;
+            TextContent = null;
+            ImageSource = null;
+
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 return;
-            }
 
             FileName = Path.GetFileName(filePath);
-            TextContent = await FileContentReader.ReadTextFileAsync(filePath)
-                ?? "Nie można odczytać pliku jako tekstowego.";
+
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif")
+            {
+                try
+                {
+                    BitmapImage myBitmapImage = new BitmapImage();
+                    myBitmapImage.BeginInit();
+                    myBitmapImage.UriSource = new Uri(filePath);
+                    myBitmapImage.EndInit();
+                    myBitmapImage.Freeze();
+                    ImageSource = myBitmapImage;
+                }
+                catch (Exception ex)
+                {
+                    TextContent = ex.Message;
+                }
+            }
+            else
+            {
+                var fileInfo = new FileInfo(filePath);
+                if (fileInfo.Length > 50 * 1024)
+                {
+                    TextContent = "Plik jest zbyt duży do wyświetlenia";
+                }
+                else
+                {
+                    TextContent = await FileContentReader.ReadTextFileAsync(filePath)
+                        ?? "Nie można odczytać pliku jako tekstowego.";
+                }
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

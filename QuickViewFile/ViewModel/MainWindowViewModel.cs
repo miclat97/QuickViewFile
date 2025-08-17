@@ -15,34 +15,31 @@ namespace QuickViewFile.ViewModel
 
             FilesListVM.SelectedFileChanged += async file =>
             {
-                if (file is not null && file.IsDirectory)
-                {
-                    FileContentVM.FileName = file.FullPath;
-                    FileContentVM.TextContent = "";
-                    return;
-                }
-                else if (file is not null && !file.IsDirectory)
+                if (file is not null && !file.IsDirectory)
                 {
                     try
                     {
                         if (file?.FullPath != null)
-                            await FileContentVM.LoadTextFileAsync(file.FullPath);
+                            await FileContentVM.LoadFileAsync(file.FullPath);
                         else
                         {
                             FileContentVM.FileName = null;
                             FileContentVM.TextContent = null;
+                            FileContentVM.ImageSource = null;
                         }
                     }
                     catch (Exception ex)
                     {
                         FileContentVM.FileName = "B³¹d podczas otwierania pliku";
                         FileContentVM.TextContent = $"{ex.Message}";
+                        FileContentVM.ImageSource = null;
                     }
                 }
                 else
                 {
                     FileContentVM.FileName = null;
                     FileContentVM.TextContent = null;
+                    FileContentVM.ImageSource = null;
                 }
             };
         }

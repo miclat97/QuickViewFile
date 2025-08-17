@@ -1,5 +1,4 @@
 using System.IO;
-using System.Threading.Tasks;
 
 namespace QuickViewFile.Helpers
 {
@@ -23,6 +22,21 @@ namespace QuickViewFile.Helpers
             }
 
             return fileContent;
+        }
+
+        public static byte[]? ReadBytesFromFile(string? filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                return null;
+
+            try
+            {
+                return File.ReadAllBytes(filePath);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

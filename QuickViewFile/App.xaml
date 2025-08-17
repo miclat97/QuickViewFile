@@ -3,10 +3,4 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:QuickViewFile"
              StartupUri="MainWindow.xaml">
-    <Application.Resources>
-            <Style TargetType="ListViewItem">
-                <Setter Property="MinHeight" Value="40"/>
-                <Setter Property="VerticalContentAlignment" Value="Center"/>
-            </Style>
-    </Application.Resources>
 </Application>
