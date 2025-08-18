@@ -23,29 +23,37 @@ namespace QuickViewFile
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel(Directory.GetCurrentDirectory());
+            DataContext = new FilesListViewModel(Directory.GetCurrentDirectory());
         }
 
         private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory
         {
-            if (DataContext is MainWindowViewModel vm)
+            if (DataContext is FilesListViewModel vm)
             {
-                if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file && file.IsDirectory)
+                if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                 {
-                     vm.FilesListVM.OnFileDoubleClick(file).Wait();
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        vm.OnFileDoubleClick(file).Wait();
+                    });
                 }
             }
         }
 
         private void FilesListView_KeyDown(object sender, KeyEventArgs e)
         {
-            if (DataContext is MainWindowViewModel vm)
+            if (DataContext is FilesListViewModel vm)
             {
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                 {
                     if (e.Key == Key.Enter || e.Key == Key.Space)
                     {
-                        vm.FilesListVM.OnFileDoubleClick(file).Wait();
+                        Dispatcher.Invoke(() =>
+                        {
+                            // Call the method to handle double-click action
+                            vm.OnFileDoubleClick(file).Wait();
+                        });
                     }
                 }
             }

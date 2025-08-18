@@ -35,7 +35,20 @@ namespace QuickViewFile.ViewModel
                     _selectedItem = value;
                     OnPropertyChanged(nameof(SelectedItem));
                     SelectedFileChanged?.Invoke(_selectedItem);
-                    _ = LazyLoadFileAsync(false);
+                    //_ = LazyLoadFileAsync(false);
+
+                    if (SelectedItem?.FullPath is not null && !SelectedItem.IsDirectory)
+                    {
+                        try
+                        {
+                            LazyLoadFileAsync(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            SelectedItem.FileContentModel.TextContent = $"{ex.Message}";
+                            SelectedItem.FileContentModel.ImageSource = null;
+                        }
+                    }
                 }
             }
         }
@@ -120,7 +133,15 @@ namespace QuickViewFile.ViewModel
             else if (!file.IsDirectory && File.Exists(file.FullPath))
             {
                 SelectedItem = file;
-                await LazyLoadFileAsync(true);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    SelectedItem.FileContentModel = new FileContentModel
+                    {
+                        TextContent = "Ładowanie pliku...",
+                        ImageSource = null
+                    };
+                    this.LazyLoadFileAsync(true);
+                });
             }
             else
             {
@@ -163,7 +184,8 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < 50 * 1024 || forceLoad == true)
                 {
-                    SelectedItem.FileContentModel.TextContent = await FileContentReader.ReadTextFileAsync(filePath);
+                    var loadedFileText = await FileContentReader.ReadTextFileAsync(filePath);
+                    SelectedItem.FileContentModel.TextContent = loadedFileText;
                 }
                 else
                 {
