@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace QuickViewFile.Models
+﻿namespace QuickViewFile.Models
 {
     public class ItemList
     {
@@ -12,5 +6,6 @@ namespace QuickViewFile.Models
         public string? Size { get; set; } // File size in bytes
         public string? FullPath { get; set; } // Full path of the file to preview
         public bool IsDirectory { get; set; } // Indicates if the item is a directory
+        public FileContentModel FileContentModel { get; set; } = new FileContentModel(); // Lazy loaded file
     }
 }

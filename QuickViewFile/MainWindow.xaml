@@ -55,9 +55,9 @@
             <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="10">
                     <TextBlock Text="{Binding FilesListVM.SelectedItem.FullPath}" FontWeight="Bold" FontSize="12" TextWrapping="Wrap"/>
-                        <Image Source="{Binding FileContentVM.ImageSource}"  
-                            Stretch="UniformToFill"/>
-                        <TextBox Text="{Binding FileContentVM.TextContent}" FontSize="11.5" IsReadOnly="True" BorderThickness="0" TextWrapping="Wrap"/>
+                    <Image Source="{Binding FilesListVM.SelectedItem.FileContentModel.ImageSource}"  
+                           Stretch="UniformToFill"/>
+                    <TextBox Text="{Binding FilesListVM.SelectedItem.FileContentModel.TextContent}" FontSize="11.5" IsReadOnly="True" BorderThickness="0" TextWrapping="Wrap"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>

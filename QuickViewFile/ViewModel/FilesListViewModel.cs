@@ -1,10 +1,10 @@
-﻿using QuickViewFile.Models;
+﻿using QuickViewFile.Helpers;
+using QuickViewFile.Models;
 using QuickViewFile.Watchers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
+using System.Windows.Media.Imaging;
 
 namespace QuickViewFile.ViewModel
 {
@@ -34,6 +34,7 @@ namespace QuickViewFile.ViewModel
                     _selectedItem = value;
                     OnPropertyChanged(nameof(SelectedItem));
                     SelectedFileChanged?.Invoke(_selectedItem);
+                    _ = LazyLoadFileAsync(false);
                 }
             }
         }
@@ -49,7 +50,6 @@ namespace QuickViewFile.ViewModel
 
             try
             {
-                // Read directories and files synchronously
                 (foldersInDirectory, filesInDirectory) = await Task.Run(() =>
                 {
                     var folders = dirInfo.GetDirectories();
@@ -59,7 +59,6 @@ namespace QuickViewFile.ViewModel
             }
             catch
             {
-                // If unable to read the directory, clear the list and exit
                 App.Current.Dispatcher.Invoke(() => ActiveListItems.Clear());
                 return;
             }
@@ -75,7 +74,8 @@ namespace QuickViewFile.ViewModel
                         Name = "..",
                         Size = "",
                         FullPath = dirInfo.Parent.FullName,
-                        IsDirectory = true
+                        IsDirectory = true,
+                        FileContentModel = new FileContentModel()
                     });
                 }
 
@@ -86,7 +86,8 @@ namespace QuickViewFile.ViewModel
                         Name = folder.Name,
                         Size = "",
                         FullPath = folder.FullName,
-                        IsDirectory = true
+                        IsDirectory = true,
+                        FileContentModel = new FileContentModel()
                     });
                 }
 
@@ -97,13 +98,14 @@ namespace QuickViewFile.ViewModel
                         Name = file.Name,
                         Size = (file.Length / 1024).ToString(),
                         FullPath = file.FullName,
-                        IsDirectory = false
+                        IsDirectory = false,
+                        FileContentModel = new FileContentModel()
                     });
                 }
             });
         }
 
-        public void OnFileDoubleClick(ItemList? file)
+        public async Task OnFileDoubleClick(ItemList? file)
         {
             if (file == null)
                 return;
@@ -113,9 +115,57 @@ namespace QuickViewFile.ViewModel
                 _folderPath = file.FullPath!;
                 RefreshFiles();
                 SelectedItem = null;
-                _folderPath = file.FullPath!;
+            }
+            else if (!file.IsDirectory && File.Exists(file.FullPath))
+            {
+                SelectedItem = file;
+                await LazyLoadFileAsync(true);
+            }
+        }
+
+        public async Task LazyLoadFileAsync(bool? forceLoad = false)
+        {
+            if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.FullPath) || !File.Exists(SelectedItem.FullPath))
+                return;
+
+            var filePath = SelectedItem.FullPath;
+            SelectedItem.FileContentModel = new FileContentModel();
+
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
+            var fileInfo = new FileInfo(filePath);
+
+            if (isImage)
+            {
+                try
+                {
+                    BitmapImage myBitmapImage = new BitmapImage();
+                    myBitmapImage.BeginInit();
+                    myBitmapImage.UriSource = new Uri(filePath);
+                    myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    myBitmapImage.EndInit();
+                    myBitmapImage.Freeze();
+                    SelectedItem.FileContentModel.ImageSource = myBitmapImage;
+                }
+                catch (Exception ex)
+                {
+                    SelectedItem.FileContentModel.TextContent = ex.Message;
+                }
+            }
+            else
+            {
+                if (fileInfo.Length < 50 * 1024 || forceLoad == true)
+                {
+                    SelectedItem.FileContentModel.TextContent = await FileContentReader.ReadTextFileAsync(filePath);
+                }
+                else
+                {
+                    SelectedItem.FileContentModel.TextContent = "Plik jest zbyt duży aby automatycznie wyświetlić jego tekstowy podgląd. Możesz wymusić załadowanie jego zawartości przez dwukrotne kliknięcie na plik, bądź naciśnięcie ENTER na klawiaturze";
+                }
             }
 
+            // Notify UI about the change
+            OnPropertyChanged(nameof(SelectedItem));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

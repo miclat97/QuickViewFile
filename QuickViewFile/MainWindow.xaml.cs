@@ -32,7 +32,7 @@ namespace QuickViewFile
             {
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file && file.IsDirectory)
                 {
-                    vm.FilesListVM.OnFileDoubleClick(file);
+                     vm.FilesListVM.OnFileDoubleClick(file).Wait();
                 }
             }
         }
@@ -45,7 +45,7 @@ namespace QuickViewFile
                 {
                     if (e.Key == Key.Enter || e.Key == Key.Space)
                     {
-                        vm.FilesListVM.OnFileDoubleClick(file);
+                        vm.FilesListVM.OnFileDoubleClick(file).Wait();
                     }
                 }
             }
