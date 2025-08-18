@@ -34,7 +34,7 @@
                   HorizontalAlignment="Stretch">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Nazwa pliku">
+                    <GridViewColumn Header="Nazwa pliku" Width="200">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>

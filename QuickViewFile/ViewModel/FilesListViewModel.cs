@@ -4,6 +4,7 @@ using QuickViewFile.Watchers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 namespace QuickViewFile.ViewModel
@@ -120,6 +121,12 @@ namespace QuickViewFile.ViewModel
             {
                 SelectedItem = file;
                 await LazyLoadFileAsync(true);
+            }
+            else
+            {
+                _folderPath = Directory.GetCurrentDirectory();
+                MessageBox.Show("Wybrany plik lub folder nie istnieje bądź brak uprawnień do odczytu.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                SelectedItem = null;
             }
         }
 

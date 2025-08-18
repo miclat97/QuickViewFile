@@ -6,7 +6,6 @@ namespace QuickViewFile.ViewModel
     public class MainWindowViewModel
     {
         public FilesListViewModel FilesListVM { get; }
-        //public FileContentViewModel FileContentVM { get; }
 
         public MainWindowViewModel(string folderPath)
         {
