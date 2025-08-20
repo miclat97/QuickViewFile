@@ -6,15 +6,21 @@ using System.Windows.Input;
 
 namespace QuickViewFile
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new FilesListViewModel(Directory.GetCurrentDirectory());
+            var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
+            DataContext = vm;
+            this.SizeChanged += (s, e) =>
+            {
+                vm.WindowWidth = this.ActualWidth;
+                vm.WindowHeight = this.ActualHeight;
+            };
+            
+            vm.WindowWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
+            vm.WindowHeight = System.Windows.SystemParameters.PrimaryScreenHeight;
         }
 
         private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory
@@ -24,9 +30,9 @@ namespace QuickViewFile
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                 {
 
-                    Dispatcher.Invoke(() =>
+                    Dispatcher.BeginInvoke(() =>
                     {
-                        vm.OnFileDoubleClick(file).Wait();
+                        vm.OnFileDoubleClick(file);
                     });
                 }
             }
@@ -40,13 +46,18 @@ namespace QuickViewFile
                 {
                     if (e.Key == Key.Enter || e.Key == Key.Space)
                     {
-                        Dispatcher.Invoke(() =>
+                        Dispatcher.BeginInvoke(() =>
                         {
-                            vm.OnFileDoubleClick(file).Wait();
+                            vm.OnFileDoubleClick(file);
                         });
                     }
                 }
             }
+        }
+
+        private void Image_DpiChanged(object sender, DpiChangedEventArgs e)
+        {
+
         }
     }
 }

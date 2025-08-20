@@ -16,9 +16,38 @@ namespace QuickViewFile.ViewModel
         private ItemList? _selectedItem;
         private readonly FolderWatcher _folderWatcher;
         private string _folderPath = Directory.GetCurrentDirectory();
+        private double _windowWidth;
+        private double _windowHeight;
 
-        public double ScreenWidth { get; set; } = Application.Current.MainWindow?.Width ?? SystemParameters.VirtualScreenWidth;
-        public double ScreenHeight { get; set; } = SystemParameters.PrimaryScreenHeight;
+        public double WindowWidth
+        {
+            get => _windowWidth;
+            set
+            {
+                if (_windowWidth != value)
+                {
+                    _windowWidth = value;
+                    OnPropertyChanged(nameof(WindowWidth));
+                }
+            }
+        }
+
+        public double WindowHeight
+        {
+            get => _windowHeight;
+            set
+            {
+                if (_windowHeight != value)
+                {
+                    _windowHeight = value;
+                    OnPropertyChanged(nameof(WindowHeight));
+                }
+            }
+        }
+
+        public double PreviewWidth => WindowWidth * 0.55;
+        public double PreviewHeight => WindowHeight * 0.8;
+
 
         public FilesListViewModel(string folderPath)
         {
@@ -38,13 +67,12 @@ namespace QuickViewFile.ViewModel
                     _selectedItem = value;
                     OnPropertyChanged(nameof(SelectedItem));
                     SelectedFileChanged?.Invoke(_selectedItem);
-                    //_ = LazyLoadFileAsync(false);
 
                     if (SelectedItem?.FullPath is not null && !SelectedItem.IsDirectory)
                     {
                         try
                         {
-                            LazyLoadFileAsync(false);
+                            LazyLoadFile(false);
                         }
                         catch (Exception ex)
                         {
@@ -76,11 +104,11 @@ namespace QuickViewFile.ViewModel
             }
             catch
             {
-                App.Current.Dispatcher.Invoke(() => ActiveListItems.Clear());
+                App.Current.Dispatcher.BeginInvoke(() => ActiveListItems.Clear());
                 return;
             }
 
-            App.Current.Dispatcher.Invoke(() =>
+            App.Current.Dispatcher.BeginInvoke(() =>
             {
                 ActiveListItems.Clear();
 
@@ -122,7 +150,7 @@ namespace QuickViewFile.ViewModel
             });
         }
 
-        public async Task OnFileDoubleClick(ItemList? file)
+        public void OnFileDoubleClick(ItemList? file)
         {
             if (file == null)
                 return;
@@ -136,14 +164,14 @@ namespace QuickViewFile.ViewModel
             else if (!file.IsDirectory && File.Exists(file.FullPath))
             {
                 SelectedItem = file;
-                App.Current.Dispatcher.Invoke(() =>
+                App.Current.Dispatcher.BeginInvoke(() =>
                 {
                     SelectedItem.FileContentModel = new FileContentModel
                     {
                         TextContent = "Ładowanie pliku...",
                         ImageSource = null
                     };
-                    this.LazyLoadFileAsync(true);
+                    this.LazyLoadFile(true);
                 });
             }
             else
@@ -154,7 +182,7 @@ namespace QuickViewFile.ViewModel
             }
         }
 
-        public async Task LazyLoadFileAsync(bool? forceLoad = false)
+        public void LazyLoadFile(bool? forceLoad = false)
         {
             if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.FullPath) || !File.Exists(SelectedItem.FullPath))
                 return;
@@ -189,14 +217,14 @@ namespace QuickViewFile.ViewModel
                 {
                     var loadedFileText = FileContentReader.ReadTextFile(filePath);
                     SelectedItem.FileContentModel.TextContent = loadedFileText;
+                    SelectedItem.FileContentModel.ImageSource = null;
                 }
                 else
                 {
-                    SelectedItem.FileContentModel.TextContent = "Plik jest zbyt duży aby automatycznie wyświetlić jego tekstowy podgląd. Możesz wymusić załadowanie jego zawartości przez dwukrotne kliknięcie na plik, bądź naciśnięcie ENTER na klawiaturze";
+                    SelectedItem.FileContentModel.TextContent = "Plik jest duży, wciśnij ENTER aby załadować jego zawartość";
                 }
             }
 
-            // Notify UI about the change
             OnPropertyChanged(nameof(SelectedItem));
         }
 
