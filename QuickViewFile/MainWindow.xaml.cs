@@ -1,17 +1,8 @@
-﻿using QuickViewFile.Models;
-using QuickViewFile.ViewModel;
-using System.Collections.ObjectModel;
+﻿using QuickViewFile.ViewModel;
 using System.IO;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace QuickViewFile
 {
@@ -51,7 +42,6 @@ namespace QuickViewFile
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            // Call the method to handle double-click action
                             vm.OnFileDoubleClick(file).Wait();
                         });
                     }

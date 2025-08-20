@@ -4,7 +4,7 @@ namespace QuickViewFile.Helpers
 {
     public static class FileContentReader
     {
-        public static async Task<string?> ReadTextFileAsync(string? filePath)
+        public static string? ReadTextFile(string? filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 return null;

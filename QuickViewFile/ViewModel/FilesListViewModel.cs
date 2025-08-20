@@ -17,6 +17,9 @@ namespace QuickViewFile.ViewModel
         private readonly FolderWatcher _folderWatcher;
         private string _folderPath = Directory.GetCurrentDirectory();
 
+        public double ScreenWidth { get; set; } = Application.Current.MainWindow?.Width ?? SystemParameters.VirtualScreenWidth;
+        public double ScreenHeight { get; set; } = SystemParameters.PrimaryScreenHeight;
+
         public FilesListViewModel(string folderPath)
         {
             _folderPath = folderPath;
@@ -184,7 +187,7 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < 50 * 1024 || forceLoad == true)
                 {
-                    var loadedFileText = await FileContentReader.ReadTextFileAsync(filePath);
+                    var loadedFileText = FileContentReader.ReadTextFile(filePath);
                     SelectedItem.FileContentModel.TextContent = loadedFileText;
                 }
                 else

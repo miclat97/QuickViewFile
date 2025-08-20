@@ -6,10 +6,11 @@
         xmlns:local="clr-namespace:QuickViewFile"
         xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
         mc:Ignorable="d"
-        Title="QuickViewFile" Height="600" Width="1000">
+        Title="QuickViewFile" Height="600" Width="1000" WindowStartupLocation="CenterScreen" WindowState="Maximized">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <helpers:ShowHorizontalScrollBarConverter x:Key="ShowHorizontalScrollBarConverter"/>
         <Style TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="40"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -52,13 +53,14 @@
             </ListView.View>
         </ListView>
         <Border Grid.Column="1" Margin="10" BorderBrush="Gray" BorderThickness="1">
-            <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource ShowHorizontalScrollBarConverter}}">
                 <StackPanel Margin="10">
-                    <Image Visibility="{Binding SelectedItem.FileContentModel.IsLoading}" />
-                    <TextBlock Text="{Binding SelectedItem.FullPath}" FontWeight="Bold" FontSize="12" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding SelectedItem.FullPath}" FontWeight="Bold" FontSize="12" TextWrapping="NoWrap"/>
                     <Image Source="{Binding SelectedItem.FileContentModel.ImageSource}"  
-                           Stretch="UniformToFill"/>
-                    <TextBox Text="{Binding SelectedItem.FileContentModel.TextContent}" FontSize="11.5" IsReadOnly="True" BorderThickness="0" TextWrapping="Wrap"/>
+                           Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
+                           SnapsToDevicePixels="True" Stretch="UniformToFill"/>
+                    <TextBlock Text="{Binding SelectedItem.FileContentModel.TextContent}" FontSize="11.5" TextWrapping="NoWrap"
+                               Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>
