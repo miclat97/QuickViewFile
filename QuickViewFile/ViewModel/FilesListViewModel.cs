@@ -137,7 +137,7 @@ namespace QuickViewFile.ViewModel
                     ActiveListItems.Add(new ItemList
                     {
                         Name = file.Name,
-                        Size = (file.Length / 1024).ToString(),
+                        Size = Math.Round((file.Length / 1024.0), MidpointRounding.ToPositiveInfinity).ToString(),
                         FullPath = file.FullName,
                         IsDirectory = false,
                         FileContentModel = new FileContentModel()
