@@ -13,6 +13,14 @@ namespace QuickViewFile.ViewModel
     {
         public ObservableCollection<ItemList> ActiveListItems { get; set; } = new();
 
+        public FilesListViewModel(string folderPath)
+        {
+            _folderPath = folderPath;
+            RefreshFiles();
+            _folderWatcher = new FolderWatcher(_folderPath);
+            _folderWatcher.OnFolderChanged += RefreshFiles;
+        }
+
         private ItemList? _selectedItem;
         private readonly FolderWatcher _folderWatcher;
         private string _folderPath = Directory.GetCurrentDirectory();
@@ -49,14 +57,6 @@ namespace QuickViewFile.ViewModel
         public double PreviewHeight => WindowHeight * 0.8;
 
 
-        public FilesListViewModel(string folderPath)
-        {
-            _folderPath = folderPath;
-            RefreshFiles();
-            _folderWatcher = new FolderWatcher(_folderPath);
-            _folderWatcher.OnFolderChanged += RefreshFiles;
-        }
-
         public ItemList? SelectedItem
         {
             get => _selectedItem;
@@ -72,7 +72,7 @@ namespace QuickViewFile.ViewModel
                     {
                         try
                         {
-                            LazyLoadFile(false);
+                            this.LazyLoadFile(false);
                         }
                         catch (Exception ex)
                         {
@@ -86,7 +86,7 @@ namespace QuickViewFile.ViewModel
 
         public event System.Action<ItemList?>? SelectedFileChanged;
 
-        private async void RefreshFiles()
+        private void RefreshFiles()
         {
             DirectoryInfo dirInfo = new DirectoryInfo(_folderPath);
 
@@ -95,20 +95,16 @@ namespace QuickViewFile.ViewModel
 
             try
             {
-                (foldersInDirectory, filesInDirectory) = await Task.Run(() =>
-                {
-                    var folders = dirInfo.GetDirectories();
-                    var files = dirInfo.GetFiles();
-                    return (folders, files);
-                });
+                foldersInDirectory = dirInfo.GetDirectories();
+                filesInDirectory = dirInfo.GetFiles();
             }
             catch
             {
-                App.Current.Dispatcher.BeginInvoke(() => ActiveListItems.Clear());
+                Application.Current.Dispatcher.BeginInvoke(() => ActiveListItems.Clear());
                 return;
             }
 
-            App.Current.Dispatcher.BeginInvoke(() =>
+            Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 ActiveListItems.Clear();
 

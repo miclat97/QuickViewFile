@@ -23,14 +23,14 @@ namespace QuickViewFile
             vm.WindowHeight = System.Windows.SystemParameters.PrimaryScreenHeight;
         }
 
-        private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory
+        private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory or force load file (using double click)
         {
             if (DataContext is FilesListViewModel vm)
             {
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                 {
 
-                    Dispatcher.BeginInvoke(() =>
+                    Application.Current.Dispatcher.BeginInvoke(() =>
                     {
                         vm.OnFileDoubleClick(file);
                     });
@@ -38,7 +38,7 @@ namespace QuickViewFile
             }
         }
 
-        private void FilesListView_KeyDown(object sender, KeyEventArgs e)
+        private void FilesListView_KeyDown(object sender, KeyEventArgs e) //Change directory or force load file (using keyboard)
         {
             if (DataContext is FilesListViewModel vm)
             {
@@ -46,7 +46,7 @@ namespace QuickViewFile
                 {
                     if (e.Key == Key.Enter || e.Key == Key.Space)
                     {
-                        Dispatcher.BeginInvoke(() =>
+                        Application.Current.Dispatcher.BeginInvoke(() =>
                         {
                             vm.OnFileDoubleClick(file);
                         });
