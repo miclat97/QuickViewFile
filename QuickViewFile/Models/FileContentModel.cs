@@ -7,6 +7,6 @@ namespace QuickViewFile.Models
     {
         public string? TextContent { get; set; } = string.Empty;
         public ImageSource? ImageSource { get; set; } = null;
-        public Visibility IsLoading { get; set; } = Visibility.Hidden;
+        public bool IsLoaded { get; set; } = false;
     }
 }

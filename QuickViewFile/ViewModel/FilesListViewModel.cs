@@ -183,6 +183,9 @@ namespace QuickViewFile.ViewModel
             if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.FullPath) || !File.Exists(SelectedItem.FullPath))
                 return;
 
+            if (SelectedItem.FileContentModel.IsLoaded == true)
+                return;
+
             var filePath = SelectedItem.FullPath;
             SelectedItem.FileContentModel = new FileContentModel();
 
@@ -201,10 +204,14 @@ namespace QuickViewFile.ViewModel
                     myBitmapImage.EndInit();
                     myBitmapImage.Freeze();
                     SelectedItem.FileContentModel.ImageSource = myBitmapImage;
+                    SelectedItem.FileContentModel.TextContent = null;
+                    SelectedItem.FileContentModel.IsLoaded = true;
                 }
                 catch (Exception ex)
                 {
                     SelectedItem.FileContentModel.TextContent = ex.Message;
+                    SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
             else
@@ -214,10 +221,13 @@ namespace QuickViewFile.ViewModel
                     var loadedFileText = FileContentReader.ReadTextFile(filePath);
                     SelectedItem.FileContentModel.TextContent = loadedFileText;
                     SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.IsLoaded = true;
                 }
                 else
                 {
                     SelectedItem.FileContentModel.TextContent = "Plik jest duży, wciśnij ENTER aby załadować jego zawartość";
+                    SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
 
