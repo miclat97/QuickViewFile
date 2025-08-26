@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace QuickViewFile.ViewModel
@@ -27,8 +28,13 @@ namespace QuickViewFile.ViewModel
         private string _folderPath = Directory.GetCurrentDirectory();
         private double _windowWidth;
         private double _windowHeight;
+        public TextBox contentTextBox = new();
 
-
+        public TextBox ContentTextBox
+        {
+            get => contentTextBox;
+            set => contentTextBox = value;
+        }
         public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
         public double WindowWidth
@@ -76,7 +82,7 @@ namespace QuickViewFile.ViewModel
                     {
                         try
                         {
-                            this.LazyLoadFile(false);
+                            this.LazyLoadFile(contentTextBox, false);
                         }
                         catch (Exception ex)
                         {
@@ -171,7 +177,7 @@ namespace QuickViewFile.ViewModel
                         TextContent = "Ładowanie pliku...",
                         ImageSource = null
                     };
-                    this.LazyLoadFile(true);
+                    this.LazyLoadFile(contentTextBox, true);
                 });
             }
             else
@@ -182,7 +188,7 @@ namespace QuickViewFile.ViewModel
             }
         }
 
-        public void LazyLoadFile(bool? forceLoad = false)
+        public void LazyLoadFile(TextBox contentTextBox, bool? forceLoad = false)
         {
             if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.FullPath) || !File.Exists(SelectedItem.FullPath))
                 return;
@@ -193,47 +199,49 @@ namespace QuickViewFile.ViewModel
             var filePath = SelectedItem.FullPath;
             SelectedItem.FileContentModel = new FileContentModel();
 
+
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
-            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
+            //bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
             var fileInfo = new FileInfo(filePath);
 
-            if (isImage)
-            {
-                try
-                {
-                    BitmapImage myBitmapImage = new BitmapImage();
-                    myBitmapImage.BeginInit();
-                    myBitmapImage.UriSource = new Uri(filePath);
-                    myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    myBitmapImage.EndInit();
-                    myBitmapImage.Freeze();
-                    SelectedItem.FileContentModel.ImageSource = myBitmapImage;
-                    SelectedItem.FileContentModel.TextContent = null;
-                    SelectedItem.FileContentModel.IsLoaded = true;
-                }
-                catch (Exception ex)
-                {
-                    SelectedItem.FileContentModel.TextContent = ex.Message;
-                    SelectedItem.FileContentModel.ImageSource = null;
-                    SelectedItem.FileContentModel.IsLoaded = false;
-                }
-            }
-            else
-            {
-                if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
-                {
-                    var loadedFileText = FileContentReader.ReadTextFile(filePath);
-                    SelectedItem.FileContentModel.TextContent = loadedFileText;
-                    SelectedItem.FileContentModel.ImageSource = null;
-                    SelectedItem.FileContentModel.IsLoaded = true;
-                }
-                else
-                {
-                    SelectedItem.FileContentModel.TextContent = "Plik jest duży, wciśnij ENTER aby załadować jego zawartość";
-                    SelectedItem.FileContentModel.ImageSource = null;
-                    SelectedItem.FileContentModel.IsLoaded = false;
-                }
-            }
+            //if (isImage)
+            //{
+            //    try
+            //    {
+            //        BitmapImage myBitmapImage = new BitmapImage();
+            //        myBitmapImage.BeginInit();
+            //        myBitmapImage.UriSource = new Uri(filePath);
+            //        myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            //        myBitmapImage.EndInit();
+            //        myBitmapImage.Freeze();
+            //        SelectedItem.FileContentModel.ImageSource = myBitmapImage;
+            //        SelectedItem.FileContentModel.TextContent = null;
+            //        SelectedItem.FileContentModel.IsLoaded = true;
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        SelectedItem.FileContentModel.TextContent = ex.Message;
+            //        SelectedItem.FileContentModel.ImageSource = null;
+            //        SelectedItem.FileContentModel.IsLoaded = false;
+            //    }
+            //}
+            //else
+            //{
+            //    if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
+            //    {
+
+
+            FileContentReader.StartDynamicFileRead(contentTextBox, filePath);
+            SelectedItem.FileContentModel.ImageSource = null;
+            SelectedItem.FileContentModel.IsLoaded = true;
+            //    }
+            //    else
+            //    {
+            //        SelectedItem.FileContentModel.TextContent = "Plik jest duży, wciśnij ENTER aby załadować jego zawartość";
+            //        SelectedItem.FileContentModel.ImageSource = null;
+            //        SelectedItem.FileContentModel.IsLoaded = false;
+            //    }
+            //}
 
             OnPropertyChanged(nameof(SelectedItem));
         }

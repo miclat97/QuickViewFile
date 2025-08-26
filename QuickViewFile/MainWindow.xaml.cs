@@ -13,25 +13,29 @@ namespace QuickViewFile
         {
             InitializeComponent();
             var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
-
             DataContext = vm;
+
+            Loaded += (s, e) =>
+            {
+                vm.ContentTextBox = ContentTextBox;
+            };
+
             this.SizeChanged += (s, e) =>
             {
                 vm.WindowWidth = this.ActualWidth;
                 vm.WindowHeight = this.ActualHeight;
             };
-            
+
             vm.WindowWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
             vm.WindowHeight = System.Windows.SystemParameters.PrimaryScreenHeight;
         }
 
-        private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory or force load file (using double click)
+        private void FilesListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (DataContext is FilesListViewModel vm)
             {
-                if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
+                if (sender is ListView listView && listView.SelectedItem is ItemList file)
                 {
-
                     Application.Current.Dispatcher.BeginInvoke(() =>
                     {
                         vm.OnFileDoubleClick(file);
@@ -44,7 +48,7 @@ namespace QuickViewFile
         {
             if (DataContext is FilesListViewModel vm)
             {
-                if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
+                if (sender is ListView listView && listView.SelectedItem is ItemList file)
                 {
                     if (e.Key == Key.Enter || e.Key == Key.Space)
                     {
@@ -55,11 +59,6 @@ namespace QuickViewFile
                     }
                 }
             }
-        }
-
-        private void Image_DpiChanged(object sender, DpiChangedEventArgs e)
-        {
-
         }
     }
 }
