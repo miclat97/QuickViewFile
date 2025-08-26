@@ -1,4 +1,5 @@
-﻿using QuickViewFile.ViewModel;
+﻿using QuickViewFile.Models;
+using QuickViewFile.ViewModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +13,7 @@ namespace QuickViewFile
         {
             InitializeComponent();
             var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
+
             DataContext = vm;
             this.SizeChanged += (s, e) =>
             {
@@ -38,7 +40,7 @@ namespace QuickViewFile
             }
         }
 
-        private void FilesListView_KeyDown(object sender, KeyEventArgs e) //Change directory or force load file (using keyboard)
+        private void FilesListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataContext is FilesListViewModel vm)
             {

@@ -19,6 +19,7 @@ namespace QuickViewFile.ViewModel
             RefreshFiles();
             _folderWatcher = new FolderWatcher(_folderPath);
             _folderWatcher.OnFolderChanged += RefreshFiles;
+            Config = ConfigHelper.LoadConfig();
         }
 
         private ItemList? _selectedItem;
@@ -26,6 +27,9 @@ namespace QuickViewFile.ViewModel
         private string _folderPath = Directory.GetCurrentDirectory();
         private double _windowWidth;
         private double _windowHeight;
+
+
+        public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
         public double WindowWidth
         {
@@ -216,7 +220,7 @@ namespace QuickViewFile.ViewModel
             }
             else
             {
-                if (fileInfo.Length < 50 * 1024 || forceLoad == true)
+                if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                 {
                     var loadedFileText = FileContentReader.ReadTextFile(filePath);
                     SelectedItem.FileContentModel.TextContent = loadedFileText;
