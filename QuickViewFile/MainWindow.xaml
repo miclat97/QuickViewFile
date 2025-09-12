@@ -14,28 +14,24 @@
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <Style TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="40"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="Auto" MinWidth="200"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+
         <ListView Grid.Column="0"
                   x:Name="FilesListView"
-                  Focusable="True"
-                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                   SelectionMode="Single"
                   ItemsSource="{Binding ActiveListItems}"
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
                   KeyDown="FilesListView_KeyDown"
                   Margin="10"
-                  VerticalAlignment="Stretch"
-                  HorizontalAlignment="Stretch">
+                  MinWidth="200">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Nazwa pliku" Width="200">
@@ -55,19 +51,50 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="10" Focusable="False">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Focusable="False">
-                <StackPanel Margin="10">
-                    <TextBlock Text="{Binding SelectedItem.FullPath}" FontWeight="Bold" FontSize="12" Margin="0,0,0,20" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                    <Image Source="{Binding SelectedItem.FileContentModel.ImageSource}" 
-                           MaxHeight="{Binding Config.PreviewHeight}"
-                           MaxWidth="{Binding Config.PreviewWidth}"
-                           Stretch="{Binding Config.ImageStretch}"
-                           Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
-                    <TextBlock MaxWidth="{Binding Config.PreviewWidth}" Text="{Binding SelectedItem.FileContentModel.TextContent}" FontSize="11.5" TextWrapping="{Binding Config.TextPreviewWordWrap}"
-                               Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
-                </StackPanel>
-            </ScrollViewer>
+        <GridSplitter Grid.Column="1"
+                      Width="3"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Background="Gold"/>
+        <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Margin="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="{Binding SelectedItem.FullPath}"
+                           FontWeight="Bold"
+                           FontSize="12"
+                           Margin="10,10,10,0"/>
+
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Image Grid.Row="0"
+                               Source="{Binding SelectedItem.FileContentModel.ImageSource}"
+                               Stretch="{Binding Config.ImageStretch}" 
+                               MaxHeight="{Binding Config.PreviewHeight}" 
+                               MaxWidth="{Binding Config.PreviewWidth}" 
+                               Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
+
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding SelectedItem.FileContentModel.TextContent}"
+                                   FontSize="11.5"
+                                   MaxHeight="{Binding Config.PreviewHeight}"
+                                   MaxWidth="{Binding Config.PreviewWidth}"
+                                   TextWrapping="{Binding Config.TextPreviewWordWrap}"
+                                   Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </Window>
