@@ -20,7 +20,7 @@ namespace QuickViewFile
                 vm.WindowWidth = this.ActualWidth;
                 vm.WindowHeight = this.ActualHeight;
             };
-            
+
             vm.WindowWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
             vm.WindowHeight = System.Windows.SystemParameters.PrimaryScreenHeight;
         }
@@ -40,7 +40,7 @@ namespace QuickViewFile
             }
         }
 
-        private void FilesListView_KeyDown(object sender, KeyEventArgs e)
+        private void AppWindow_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataContext is FilesListViewModel vm)
             {
@@ -53,6 +53,19 @@ namespace QuickViewFile
                             vm.OnFileDoubleClick(file);
                         });
                     }
+                }
+
+                double step = (double)ConfigHelper.LoadConfig().ZoomStep;
+
+                if (e.Key == Key.Add || e.Key == Key.OemPlus)
+                {
+                    vm.PreviewHeight += step;
+                    vm.PreviewWidth += step;
+                }
+                else if (e.Key == Key.Subtract || e.Key == Key.OemMinus)
+                {
+                    vm.PreviewHeight = Math.Max(step, vm.PreviewHeight - step);
+                    vm.PreviewWidth = Math.Max(step, vm.PreviewWidth - step);
                 }
             }
         }
