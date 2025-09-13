@@ -8,6 +8,7 @@
         xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
         mc:Ignorable="d"
+        KeyDown="AppWindow_KeyDown"
         Title="QuickViewFile" MinHeight="600" MinWidth="1200">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -29,7 +30,6 @@
                   ItemsSource="{Binding ActiveListItems}"
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
-                  KeyDown="FilesListView_KeyDown"
                   Margin="10"
                   MinWidth="200">
             <ListView.View>

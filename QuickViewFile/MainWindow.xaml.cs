@@ -40,7 +40,7 @@ namespace QuickViewFile
             }
         }
 
-        private void FilesListView_KeyDown(object sender, KeyEventArgs e)
+        private void AppWindow_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataContext is FilesListViewModel vm)
             {
