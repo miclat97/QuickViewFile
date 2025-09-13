@@ -201,13 +201,9 @@ namespace QuickViewFile.ViewModel
             {
                 try
                 {
-                    BitmapImage myBitmapImage = new BitmapImage();
-                    myBitmapImage.BeginInit();
-                    myBitmapImage.UriSource = new Uri(filePath);
-                    myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    myBitmapImage.EndInit();
-                    myBitmapImage.Freeze();
-                    SelectedItem.FileContentModel.ImageSource = myBitmapImage;
+                    var rotatedImageBitmap = LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath);
+
+                    SelectedItem.FileContentModel.ImageSource = rotatedImageBitmap;
                     SelectedItem.FileContentModel.TextContent = null;
                     SelectedItem.FileContentModel.IsLoaded = true;
                 }
