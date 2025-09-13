@@ -20,6 +20,8 @@ namespace QuickViewFile.ViewModel
             _folderWatcher = new FolderWatcher(_folderPath);
             _folderWatcher.OnFolderChanged += RefreshFiles;
             Config = ConfigHelper.LoadConfig();
+            PreviewHeight = Config.PreviewHeight;
+            PreviewWidth = Config.PreviewWidth;
         }
 
         private ItemList? _selectedItem;
@@ -57,8 +59,20 @@ namespace QuickViewFile.ViewModel
             }
         }
 
-        public double PreviewWidth => WindowWidth * 0.55;
-        public double PreviewHeight => WindowHeight * 0.8;
+
+        private double _previewHeight;
+        public double PreviewHeight
+        {
+            get => _previewHeight;
+            set { _previewHeight = value; OnPropertyChanged(nameof(PreviewHeight)); }
+        }
+
+        private double _previewWidth;
+        public double PreviewWidth
+        {
+            get => _previewWidth;
+            set { _previewWidth = value; OnPropertyChanged(nameof(PreviewWidth)); }
+        }
 
 
         public ItemList? SelectedItem

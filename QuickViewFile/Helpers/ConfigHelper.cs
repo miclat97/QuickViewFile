@@ -6,7 +6,7 @@ namespace QuickViewFile
 {
     public static class ConfigHelper
     {
-        private const string ConfigFileName = "config.json";
+        private const string ConfigFileName = "QuickViewFileConfig.json";
 
         private static List<string> ImageStretchCorrectValues = new()
         {
