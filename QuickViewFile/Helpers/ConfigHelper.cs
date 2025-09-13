@@ -1,6 +1,6 @@
+using QuickViewFile.Models;
 using System.IO;
 using System.Text.Json;
-using QuickViewFile.Models;
 
 namespace QuickViewFile
 {

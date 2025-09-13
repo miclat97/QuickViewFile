@@ -1,5 +1,4 @@
-﻿using QuickViewFile.Models;
-using QuickViewFile.ViewModel;
+﻿using QuickViewFile.ViewModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
