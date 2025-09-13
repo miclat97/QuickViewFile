@@ -77,6 +77,7 @@
                 <ScrollViewer Grid.Row="1"
                               CanContentScroll="True"
                               Focusable="False"
+                              Margin="10"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
                     <Grid>
@@ -93,7 +94,6 @@
                                Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
 
                         <TextBlock Grid.Row="1"
-                                   Margin="10"
                                    Text="{Binding SelectedItem.FileContentModel.TextContent}"
                                    FontSize="11.5"
                                    TextWrapping="{Binding Config.TextPreviewWordWrap}"
