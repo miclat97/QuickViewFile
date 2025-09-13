@@ -9,7 +9,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
         mc:Ignorable="d"
         KeyDown="AppWindow_KeyDown"
-        Title="QuickViewFile" MinHeight="600" MinWidth="1200">
+        FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
+        Title="QuickViewFile" Height="600" Width="1200">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
@@ -19,7 +20,7 @@
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" MinWidth="200"/>
+            <ColumnDefinition Width="Auto" MinWidth="150"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -31,7 +32,10 @@
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
                   Margin="10"
-                  MinWidth="200">
+                  KeyDown="AppWindow_KeyDown"
+                  Focusable="True"
+                  TabIndex="1"
+                  MinWidth="150" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Nazwa pliku" Width="200">
@@ -55,7 +59,8 @@
                       Width="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Background="Gold"/>
+                      Background="Gold" 
+                      Focusable="False"/>
         <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Margin="10">
             <Grid>
                 <Grid.RowDefinitions>
@@ -70,6 +75,8 @@
                            Margin="10,10,10,0"/>
 
                 <ScrollViewer Grid.Row="1"
+                              CanContentScroll="True"
+                              Focusable="False"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
                     <Grid>
@@ -86,10 +93,9 @@
                                Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
 
                         <TextBlock Grid.Row="1"
+                                   Margin="10"
                                    Text="{Binding SelectedItem.FileContentModel.TextContent}"
                                    FontSize="11.5"
-                                   MaxHeight="{Binding PreviewHeight}"
-                                   MaxWidth="{Binding PreviewWidth}"
                                    TextWrapping="{Binding Config.TextPreviewWordWrap}"
                                    Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
                     </Grid>

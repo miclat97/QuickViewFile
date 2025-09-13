@@ -27,37 +27,10 @@ namespace QuickViewFile.ViewModel
         private ItemList? _selectedItem;
         private readonly FolderWatcher _folderWatcher;
         private string _folderPath = Directory.GetCurrentDirectory();
-        private double _windowWidth;
-        private double _windowHeight;
 
 
         public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
-        public double WindowWidth
-        {
-            get => _windowWidth;
-            set
-            {
-                if (_windowWidth != value)
-                {
-                    _windowWidth = value;
-                    OnPropertyChanged(nameof(WindowWidth));
-                }
-            }
-        }
-
-        public double WindowHeight
-        {
-            get => _windowHeight;
-            set
-            {
-                if (_windowHeight != value)
-                {
-                    _windowHeight = value;
-                    OnPropertyChanged(nameof(WindowHeight));
-                }
-            }
-        }
 
 
         private double _previewHeight;

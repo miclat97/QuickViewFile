@@ -15,14 +15,6 @@ namespace QuickViewFile
             var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
 
             DataContext = vm;
-            this.SizeChanged += (s, e) =>
-            {
-                vm.WindowWidth = this.ActualWidth;
-                vm.WindowHeight = this.ActualHeight;
-            };
-
-            vm.WindowWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
-            vm.WindowHeight = System.Windows.SystemParameters.PrimaryScreenHeight;
         }
 
         private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory or force load file (using double click)

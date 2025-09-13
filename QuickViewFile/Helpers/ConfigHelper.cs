@@ -8,7 +8,7 @@ namespace QuickViewFile
     {
         private const string ConfigFileName = "QuickViewFileConfig.json";
 
-        private static List<string> ImageStretchCorrectValues = new()
+        private static readonly List<string> ImageStretchCorrectValues = new()
         {
             "Uniform",
             "UniformToFill",
@@ -16,7 +16,7 @@ namespace QuickViewFile
             "None"
         };
 
-        private static List<string> WrapCorrectValues = new()
+        private static readonly List<string> WrapCorrectValues = new()
         {
             "NoWrap",
             "Wrap",
