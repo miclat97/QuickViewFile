@@ -6,7 +6,11 @@
         public string ImageStretch { get; set; } = "Uniform";
         public double PreviewHeight { get; set; } = 800;
         public double PreviewWidth { get; set; } = 1200;
-        public double ZoomStep { get; set; } = 50;
+        public double KeyboardZoomStep { get; set; } = 50;
         public string TextPreviewWordWrap { get; set; } = "NoWrap";
+        public double MaxScale { get; set; } = 10.0;
+        public double MinScale { get; set; } = 0.1;
+        public double MouseWheelZoomStepFactor { get; set; } = 1.1;
+        public string PreviewScrollBars { get; set; } = "Auto";
     }
 }

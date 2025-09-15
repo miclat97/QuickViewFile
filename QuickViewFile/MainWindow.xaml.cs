@@ -46,7 +46,7 @@ namespace QuickViewFile
                     }
                 }
 
-                double step = (double)ConfigHelper.LoadConfig().ZoomStep;
+                double step = (double)ConfigHelper.LoadConfig().KeyboardZoomStep;
 
                 if (e.Key == Key.Add || e.Key == Key.OemPlus)
                 {
