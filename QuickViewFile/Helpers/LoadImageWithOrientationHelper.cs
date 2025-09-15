@@ -27,7 +27,7 @@ namespace QuickViewFile.Helpers
 
                 BitmapSource source = frame;
 
-                // Obrót w zależności od EXIF Orientation
+                
                 switch (orientation)
                 {
                     case 3: // 180 degrees

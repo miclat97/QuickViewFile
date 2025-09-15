@@ -8,6 +8,8 @@ namespace QuickViewFile
     {
         private const string ConfigFileName = "QuickViewFileConfig.json";
 
+        private static ConfigModel configDefault = new ConfigModel();
+
         private static readonly List<string> ImageStretchCorrectValues = new()
         {
             "Uniform",
@@ -31,6 +33,16 @@ namespace QuickViewFile
             "Visible"
         };
 
+        private static readonly List<string> BitmapScalingMode = new List<string>
+        {
+            "Unspecified",
+            "LowQuality",
+            "HighQuality",
+            "Linear",
+            "Fant",
+            "NearestNeighbor"
+        };
+
         public static ConfigModel LoadConfig()
         {
             bool configIsValid = true;
@@ -44,13 +56,29 @@ namespace QuickViewFile
                     configModel = JsonSerializer.Deserialize<ConfigModel>(json);
 
                     if (!ImageStretchCorrectValues.Contains(configModel.ImageStretch))
+                    {
                         configIsValid = false;
+                        configModel.ImageStretch = configDefault.ImageStretch;
+                    }
+
 
                     if (!WrapCorrectValues.Contains(configModel.TextPreviewWordWrap))
+                    {
                         configIsValid = false;
+                        configModel.TextPreviewWordWrap = configDefault.TextPreviewWordWrap;
+                    }
 
                     if (!PreviewScrollBarsCorrectValues.Contains(configModel.PreviewScrollBars))
+                    {
                         configIsValid = false;
+                        configModel.PreviewScrollBars = configDefault.PreviewScrollBars;
+                    }
+
+                    if (!BitmapScalingMode.Contains(configModel.BitmapScalingMode))
+                    {
+                        configIsValid = false;
+                        configModel.BitmapScalingMode = configDefault.BitmapScalingMode;
+                    }
                 }
                 else
                 {

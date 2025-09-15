@@ -12,5 +12,6 @@
         public double MinScale { get; set; } = 0.1;
         public double MouseWheelZoomStepFactor { get; set; } = 1.1;
         public string PreviewScrollBars { get; set; } = "Auto";
+        public string BitmapScalingMode { get; set; } = "HighQuality";
     }
 }
