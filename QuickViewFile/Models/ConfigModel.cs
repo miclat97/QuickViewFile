@@ -9,7 +9,7 @@
         public double KeyboardZoomStep { get; set; } = 50;
         public string TextPreviewWordWrap { get; set; } = "NoWrap";
         public double MaxScale { get; set; } = 10.0;
-        public double MinScale { get; set; } = 0,5;
+        public double MinScale { get; set; } = 0.5;
         public double MouseWheelZoomStepFactor { get; set; } = 1.1;
         public string BitmapScalingMode { get; set; } = "HighQuality";
         public double FontSize { get; set; } = 12;
