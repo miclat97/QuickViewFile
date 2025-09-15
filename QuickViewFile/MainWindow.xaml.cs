@@ -45,19 +45,6 @@ namespace QuickViewFile
                         });
                     }
                 }
-
-                double step = (double)ConfigHelper.LoadConfig().KeyboardZoomStep;
-
-                if (e.Key == Key.Add || e.Key == Key.OemPlus)
-                {
-                    vm.PreviewHeight += step;
-                    vm.PreviewWidth += step;
-                }
-                else if (e.Key == Key.Subtract || e.Key == Key.OemMinus)
-                {
-                    vm.PreviewHeight = Math.Max(step, vm.PreviewHeight - step);
-                    vm.PreviewWidth = Math.Max(step, vm.PreviewWidth - step);
-                }
             }
         }
 
