@@ -25,14 +25,6 @@ namespace QuickViewFile
             "WrapWithOverflow"
         };
 
-        private static readonly List<string> PreviewScrollBarsCorrectValues = new()
-        {
-            "Disabled",
-            "Auto",
-            "Hidden",
-            "Visible"
-        };
-
         private static readonly List<string> BitmapScalingMode = new List<string>
         {
             "Unspecified",
@@ -68,11 +60,6 @@ namespace QuickViewFile
                         configModel.TextPreviewWordWrap = configDefault.TextPreviewWordWrap;
                     }
 
-                    if (!PreviewScrollBarsCorrectValues.Contains(configModel.PreviewScrollBars))
-                    {
-                        configIsValid = false;
-                        configModel.PreviewScrollBars = configDefault.PreviewScrollBars;
-                    }
 
                     if (!BitmapScalingMode.Contains(configModel.BitmapScalingMode))
                     {

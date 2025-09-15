@@ -14,6 +14,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <helpers:ScrollBarsVisibilityConverter x:Key="ScrollBarsVisibilityConverter"/>
         <Style TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="40"/>
         </Style>
@@ -78,8 +79,8 @@
                               CanContentScroll="True"
                               Focusable="False"
                               Margin="10"
-                              VerticalScrollBarVisibility="{Binding Config.PreviewScrollBars}"
-                              HorizontalScrollBarVisibility="{Binding Config.PreviewScrollBars}">
+                              VerticalScrollBarVisibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource ScrollBarsVisibilityConverter}}"
+                              HorizontalScrollBarVisibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource ScrollBarsVisibilityConverter}}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -99,7 +100,9 @@
 
                         <TextBlock Grid.Row="1"
                                    Text="{Binding SelectedItem.FileContentModel.TextContent}"
-                                   FontSize="11.5"
+                                   FontSize="{Binding Config.FontSize}"
+                                   Margin="10"
+                                   FontFamily="Consolas"
                                    TextWrapping="{Binding Config.TextPreviewWordWrap}"
                                    Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
                     </Grid>
