@@ -20,12 +20,13 @@ namespace QuickViewFile.Controls
             this.UseLayoutRounding = true;
             transformGroup.Children.Add(scaleTransform);
             transformGroup.Children.Add(translateTransform);
+            this.ClipToBounds = true;
 
             _config = ConfigHelper.LoadConfig();
 
             this.RenderTransform = transformGroup;
             this.RenderTransformOrigin = new Point(0, 0);
-            
+
             this.MouseLeftButtonDown += Image_MouseLeftButtonDown;
             this.MouseLeftButtonUp += Image_MouseLeftButtonUp;
             this.MouseMove += Image_MouseMove;
@@ -47,12 +48,12 @@ namespace QuickViewFile.Controls
             double viewportWidth = this.ActualWidth;
             double viewportHeight = this.ActualHeight;
 
-            double maxAllowedX = Math.Max((imageWidth - viewportWidth) / 2, 0);
-            double maxAllowedY = Math.Max((imageHeight - viewportHeight) / 2, 0);
+            double maxX = Math.Max((imageWidth - viewportWidth) / 2, 0);
+            double maxY = Math.Max((imageHeight - viewportHeight) / 2, 0);
 
-
-            translateTransform.X = Math.Max(Math.Min(translateTransform.X, maxAllowedX), -maxAllowedX);
-            translateTransform.Y = Math.Max(Math.Min(translateTransform.Y, maxAllowedY), -maxAllowedY);
+            // Clamp so the image cannot be dragged outside the visible area
+            translateTransform.X = Math.Min(Math.Max(translateTransform.X, -maxX), maxX);
+            translateTransform.Y = Math.Min(Math.Max(translateTransform.Y, -maxY), maxY);
         }
 
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

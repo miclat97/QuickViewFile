@@ -19,7 +19,7 @@
             <Setter Property="MinHeight" Value="40"/>
         </Style>
     </Window.Resources>
-    <Grid>
+    <Grid Grid.Row="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" MinWidth="150"/>
             <ColumnDefinition Width="Auto"/>
@@ -62,43 +62,56 @@
                       VerticalAlignment="Stretch"
                       Background="Gold" 
                       Focusable="False"/>
-        <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Margin="10">
+        <Border Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- Dodany TextBlock na nazwę pliku -->
                 <TextBlock Grid.Row="0"
-                           Text="{Binding SelectedItem.FullPath}"
-                           FontWeight="Bold"
-                           FontSize="12"
-                           Margin="10,10,10,0"/>
+                      Text="{Binding SelectedItem.FullPath}"
+                      FontWeight="Bold"
+                      FontSize="12"
+                      Padding="10,8,10,8"
+                      TextTrimming="CharacterEllipsis"
+                      TextWrapping="NoWrap"
+                      Foreground="Black"/>
 
-                <local:ZoomableImage Grid.Row="1"
-                   Source="{Binding SelectedItem.FileContentModel.ImageSource}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
-                   Stretch="{Binding Config.ImageStretch}" 
-                   MaxHeight="{Binding Config.PreviewHeight}" 
-                   MaxWidth="{Binding Config.PreviewWidth}" 
-                   Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
-
-                <ScrollViewer Grid.Row="1"
-                   CanContentScroll="True"
-                   Focusable="False"
-                   Margin="10"
-                   Background="WhiteSmoke"
-                   VerticalScrollBarVisibility="Visible"
-                   HorizontalScrollBarVisibility="Visible"
-                   Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}">
-                    <TextBlock Grid.Row="1"
-                       Text="{Binding SelectedItem.FileContentModel.TextContent}"
-                       FontSize="{Binding Config.FontSize}"
-                       FontFamily="Consolas"
-                       TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
-                </ScrollViewer>
+                <!-- Pozostała zawartość -->
+                <Grid Grid.Row="1">
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  Focusable="False"
+                                  Background="Transparent"
+                                  ClipToBounds="True">
+                        <local:ZoomableImage
+                            Source="{Binding SelectedItem.FileContentModel.ImageSource}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
+                            Stretch="{Binding Config.ImageStretch}" 
+                            MaxHeight="{Binding Config.PreviewHeight}" 
+                            MaxWidth="{Binding Config.PreviewWidth}" 
+                            Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
+                            ClipToBounds="True"/>
+                    </ScrollViewer>
+                    <ScrollViewer
+                        CanContentScroll="True"
+                        Focusable="False"
+                        Margin="10"
+                        Background="WhiteSmoke"
+                        VerticalScrollBarVisibility="Visible"
+                        HorizontalScrollBarVisibility="Visible"
+                        Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}">
+                        <TextBlock
+                            Text="{Binding SelectedItem.FileContentModel.TextContent}"
+                            FontSize="{Binding Config.FontSize}"
+                            FontFamily="Consolas"
+                            TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+                    </ScrollViewer>
+                </Grid>
             </Grid>
         </Border>
     </Grid>
