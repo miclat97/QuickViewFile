@@ -39,14 +39,14 @@
                   MinWidth="150" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Nazwa pliku" Width="200">
+                    <GridViewColumn Header="Name" Width="140">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Rozmiar pliku (KB)" Width="Auto">
+                    <GridViewColumn Header="Size (KB)" Width="Auto">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
@@ -79,8 +79,9 @@
                               CanContentScroll="True"
                               Focusable="False"
                               Margin="10"
-                              VerticalScrollBarVisibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource ScrollBarsVisibilityConverter}}"
-                              HorizontalScrollBarVisibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource ScrollBarsVisibilityConverter}}">
+                              Background="WhiteSmoke"
+                              VerticalScrollBarVisibility="Visible"
+                              HorizontalScrollBarVisibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -89,19 +90,17 @@
 
                         <local:ZoomableImage Grid.Row="0"
                                              Source="{Binding SelectedItem.FileContentModel.ImageSource}"
-                                             Margin="10"
                                              VerticalAlignment="Center"
                                              HorizontalAlignment="Center"
                                              RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
                                              Stretch="{Binding Config.ImageStretch}" 
-                                             MaxHeight="{Binding PreviewHeight}" 
-                                             MaxWidth="{Binding PreviewWidth}" 
+                                             MaxHeight="{Binding Config.PreviewHeight}" 
+                                             MaxWidth="{Binding Config.PreviewWidth}" 
                                              Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
 
                         <TextBlock Grid.Row="1"
                                    Text="{Binding SelectedItem.FileContentModel.TextContent}"
                                    FontSize="{Binding Config.FontSize}"
-                                   Margin="10"
                                    FontFamily="Consolas"
                                    TextWrapping="{Binding Config.TextPreviewWordWrap}"
                                    Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>

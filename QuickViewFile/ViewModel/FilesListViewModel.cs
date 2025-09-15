@@ -154,7 +154,7 @@ namespace QuickViewFile.ViewModel
                 {
                     SelectedItem.FileContentModel = new FileContentModel
                     {
-                        TextContent = "Ładowanie pliku...",
+                        TextContent = "Loading...",
                         ImageSource = null
                     };
                     this.LazyLoadFile(true);
@@ -163,7 +163,7 @@ namespace QuickViewFile.ViewModel
             else
             {
                 _folderPath = Directory.GetCurrentDirectory();
-                MessageBox.Show("Wybrany plik lub folder nie istnieje bądź brak uprawnień do odczytu.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Selected file doesn't exists", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 SelectedItem = null;
             }
         }
@@ -180,7 +180,7 @@ namespace QuickViewFile.ViewModel
             SelectedItem.FileContentModel = new FileContentModel();
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
-            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
+            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif" || ext == ".heic";
             var fileInfo = new FileInfo(filePath);
 
             if (isImage)
@@ -211,7 +211,7 @@ namespace QuickViewFile.ViewModel
                 }
                 else
                 {
-                    SelectedItem.FileContentModel.TextContent = "Plik jest duży, wciśnij ENTER aby załadować jego zawartość";
+                    SelectedItem.FileContentModel.TextContent = "File is large. Click enter to load it anyway";
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
