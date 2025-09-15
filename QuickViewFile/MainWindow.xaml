@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:QuickViewFile"
+        xmlns:local="clr-namespace:QuickViewFile.Controls"
         xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
         xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
@@ -78,20 +78,23 @@
                               CanContentScroll="True"
                               Focusable="False"
                               Margin="10"
-                              VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Auto">
+                              VerticalScrollBarVisibility="{Binding Config.PreviewScrollBars}"
+                              HorizontalScrollBarVisibility="{Binding Config.PreviewScrollBars}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <Image Grid.Row="0"
-                               Source="{Binding SelectedItem.FileContentModel.ImageSource}"
-                               Stretch="{Binding Config.ImageStretch}" 
-                               MaxHeight="{Binding PreviewHeight}" 
-                               MaxWidth="{Binding PreviewWidth}" 
-                               Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
+                        <local:ZoomableImage Grid.Row="0"
+                                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
+                                             Margin="10"
+                                             VerticalAlignment="Center"
+                                             HorizontalAlignment="Center"
+                                             Stretch="{Binding Config.ImageStretch}" 
+                                             MaxHeight="{Binding PreviewHeight}" 
+                                             MaxWidth="{Binding PreviewWidth}" 
+                                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
 
                         <TextBlock Grid.Row="1"
                                    Text="{Binding SelectedItem.FileContentModel.TextContent}"
