@@ -2,10 +2,19 @@
 
 namespace QuickViewFile.Models
 {
-    public class FileContentModel
+    public class FileContentModel : IDisposable
     {
         public string? TextContent { get; set; } = string.Empty;
         public ImageSource? ImageSource { get; set; } = null;
         public bool IsLoaded { get; set; } = false;
+
+        public void Dispose()
+        {
+            this.TextContent = null;
+            this.ImageSource = null;
+            this.IsLoaded = false;
+            GC.Collect();
+            //GC.WaitForPendingFinalizers();
+        }
     }
 }

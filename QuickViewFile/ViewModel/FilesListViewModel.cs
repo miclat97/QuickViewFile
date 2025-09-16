@@ -54,6 +54,7 @@ namespace QuickViewFile.ViewModel
             {
                 if (_selectedItem != value)
                 {
+                    _selectedItem?.FileContentModel.Dispose();
                     _selectedItem = value;
                     OnPropertyChanged(nameof(SelectedItem));
                     SelectedFileChanged?.Invoke(_selectedItem);

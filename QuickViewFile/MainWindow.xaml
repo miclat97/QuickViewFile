@@ -84,7 +84,6 @@
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Disabled"
                                   Focusable="False"
-                                  Background="Transparent"
                                   ClipToBounds="True">
                         <local:ZoomableImage
                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
@@ -101,14 +100,11 @@
                         CanContentScroll="True"
                         Focusable="False"
                         Margin="10"
-                        Background="WhiteSmoke"
                         VerticalScrollBarVisibility="Visible"
                         HorizontalScrollBarVisibility="Visible"
                         Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}">
                         <TextBlock
                             Text="{Binding SelectedItem.FileContentModel.TextContent}"
-                            FontSize="{Binding Config.FontSize}"
-                            FontFamily="Consolas"
                             TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
                     </ScrollViewer>
                 </Grid>

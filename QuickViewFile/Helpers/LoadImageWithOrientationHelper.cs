@@ -27,7 +27,7 @@ namespace QuickViewFile.Helpers
 
                 BitmapSource source = frame;
 
-                
+
                 switch (orientation)
                 {
                     case 3: // 180 degrees
