@@ -210,7 +210,7 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                 {
-                    // Wczytuj tekst asynchronicznie i z limitem
+                    // async load
                     var loadedFileText = await Task.Run(() => FileContentReader.ReadTextFileAsync(filePath, Config.MaxPreviewChars));
                     Application.Current.Dispatcher.Invoke(() =>
                     {
