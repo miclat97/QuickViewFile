@@ -221,7 +221,7 @@ namespace QuickViewFile.ViewModel
                 }
                 else
                 {
-                    SelectedItem.FileContentModel.TextContent = "Plik jest duży, wciśnij ENTER aby załadować jego zawartość";
+                    SelectedItem.FileContentModel.TextContent = $"File size has more than {Config.MaxSizePreviewKB} KiB, press ENTER to force load it";
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }

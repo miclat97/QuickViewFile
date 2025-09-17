@@ -48,8 +48,8 @@ namespace QuickViewFile.Controls
             double viewportWidth = this.ActualWidth;
             double viewportHeight = this.ActualHeight;
 
-            double maxX = Math.Max((imageWidth - viewportWidth) / 2, 0);
-            double maxY = Math.Max((imageHeight - viewportHeight) / 2, 0);
+            double maxX = Math.Max((imageWidth - viewportWidth), 0);
+            double maxY = Math.Max((imageHeight - viewportHeight), 0);
 
             // Clamp so the image cannot be dragged outside the visible area
             translateTransform.X = Math.Min(Math.Max(translateTransform.X, -maxX), maxX);
