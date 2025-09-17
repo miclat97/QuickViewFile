@@ -13,5 +13,6 @@
         public double MouseWheelZoomStepFactor { get; set; } = 1.1;
         public string BitmapScalingMode { get; set; } = "NearestNeighbor";
         public double FontSize { get; set; } = 12;
+        public int MaxPreviewChars { get; set; } = 1_000_000; // Domyślnie 1M znaków
     }
 }

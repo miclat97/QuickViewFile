@@ -96,16 +96,21 @@
                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
                             ClipToBounds="True"/>
                     </ScrollViewer>
-                    <ScrollViewer
-                        CanContentScroll="True"
-                        Focusable="False"
-                        Margin="10"
-                        VerticalScrollBarVisibility="Visible"
-                        HorizontalScrollBarVisibility="Visible"
-                        Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBox
-                            Text="{Binding SelectedItem.FileContentModel.TextContent}"
-                            TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+                    <ScrollViewer Grid.Row="1"
+                          CanContentScroll="True"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling"
+                          Focusable="False"
+                          Margin="10"
+                          VerticalScrollBarVisibility="Visible"
+                          HorizontalScrollBarVisibility="Visible"
+                          Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBox FontFamily="Consolas"
+                         SpellCheck.IsEnabled="False"
+                         IsReadOnly="True"
+                         FontSize="{Binding Config.FontSize}"
+                         Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
+                         TextWrapping="NoWrap"/>
                     </ScrollViewer>
                 </Grid>
             </Grid>

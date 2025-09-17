@@ -169,7 +169,7 @@ namespace QuickViewFile.ViewModel
             }
         }
 
-        public void LazyLoadFile(bool? forceLoad = false)
+        public async Task LazyLoadFile(bool? forceLoad = false)
         {
             if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.FullPath) || !File.Exists(SelectedItem.FullPath))
                 return;
@@ -181,18 +181,23 @@ namespace QuickViewFile.ViewModel
             SelectedItem.FileContentModel = new FileContentModel();
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
-            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif" || ext == ".heic";
+            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
             var fileInfo = new FileInfo(filePath);
 
             if (isImage)
             {
                 try
                 {
-                    var rotatedImageBitmap = LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath);
-
-                    SelectedItem.FileContentModel.ImageSource = rotatedImageBitmap;
-                    SelectedItem.FileContentModel.TextContent = null;
-                    SelectedItem.FileContentModel.IsLoaded = true;
+                    await Task.Run(() =>
+                    {
+                        var rotatedImageBitmap = LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            SelectedItem.FileContentModel.ImageSource = rotatedImageBitmap;
+                            SelectedItem.FileContentModel.TextContent = null;
+                            SelectedItem.FileContentModel.IsLoaded = true;
+                        });
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -205,14 +210,18 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                 {
-                    var loadedFileText = FileContentReader.ReadTextFile(filePath);
-                    SelectedItem.FileContentModel.TextContent = loadedFileText;
-                    SelectedItem.FileContentModel.ImageSource = null;
-                    SelectedItem.FileContentModel.IsLoaded = true;
+                    // Wczytuj tekst asynchronicznie i z limitem
+                    var loadedFileText = await Task.Run(() => FileContentReader.ReadTextFileAsync(filePath, Config.MaxPreviewChars));
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        SelectedItem.FileContentModel.TextContent = loadedFileText;
+                        SelectedItem.FileContentModel.ImageSource = null;
+                        SelectedItem.FileContentModel.IsLoaded = true;
+                    });
                 }
                 else
                 {
-                    SelectedItem.FileContentModel.TextContent = "File is large. Click enter to load it anyway";
+                    SelectedItem.FileContentModel.TextContent = "Plik jest duży, wciśnij ENTER aby załadować jego zawartość";
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
