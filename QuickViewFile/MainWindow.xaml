@@ -103,7 +103,7 @@
                         VerticalScrollBarVisibility="Visible"
                         HorizontalScrollBarVisibility="Visible"
                         Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBlock
+                        <TextBox
                             Text="{Binding SelectedItem.FileContentModel.TextContent}"
                             TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
                     </ScrollViewer>
