@@ -4,38 +4,27 @@ namespace QuickViewFile.Helpers
 {
     public static class FileContentReader
     {
-        public static string? ReadTextFile(string? filePath)
+        public static async Task<string> ReadTextFileAsync(string? filePath, int maxChars = 1_000_000)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                return null;
-
-            var fileInfo = new FileInfo(filePath);
-            string fileContent;
+                return string.Empty;
 
             try
             {
-                fileContent = File.ReadAllText(filePath);
+                using var reader = new StreamReader(filePath);
+                var buffer = new char[maxChars];
+                var read = await reader.ReadBlockAsync(buffer, 0, maxChars);
+
+                if (read == maxChars)
+                {
+                    return new string(buffer, 0, read) + "\n\n[File truncated - too large to display completely]";
+                }
+
+                return new string(buffer, 0, read);
             }
             catch (Exception ex)
             {
                 return ex.Message;
-            }
-
-            return fileContent;
-        }
-
-        public static byte[]? ReadBytesFromFile(string? filePath)
-        {
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                return null;
-
-            try
-            {
-                return File.ReadAllBytes(filePath);
-            }
-            catch
-            {
-                return null;
             }
         }
     }
