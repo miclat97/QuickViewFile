@@ -37,34 +37,48 @@ namespace QuickViewFile
 
         public static ConfigModel LoadConfig()
         {
+            ConfigModel configDefault = new();
+            ConfigModel configModel = new();
             bool configIsValid = true;
-            ConfigModel configModel = new ConfigModel();
 
             try
             {
                 if (File.Exists(ConfigFileName))
                 {
                     string json = File.ReadAllText(ConfigFileName);
-                    configModel = JsonSerializer.Deserialize<ConfigModel>(json);
+                    configModel = JsonSerializer.Deserialize<ConfigModel>(json) ?? new ConfigModel();
 
-                    if (!ImageStretchCorrectValues.Contains(configModel.ImageStretch))
+                    // Uzupe³nianie braków
+                    foreach (var prop in typeof(ConfigModel).GetProperties())
                     {
-                        configIsValid = false;
-                        configModel.ImageStretch = configDefault.ImageStretch;
+                        var currentValue = prop.GetValue(configModel);
+                        var defaultValue = prop.GetValue(configDefault);
+
+                        // Jeœli wartoœæ jest null lub równa domyœlnej wartoœci typu (np. 0 dla int)
+                        if (currentValue == null || currentValue.Equals(GetDefault(prop.PropertyType)))
+                        {
+                            prop.SetValue(configModel, defaultValue);
+                            configIsValid = false;
+                        }
                     }
 
+                    // Walidacja pól z listami dozwolonych wartoœci
+                    if (!ImageStretchCorrectValues.Contains(configModel.ImageStretch))
+                    {
+                        configModel.ImageStretch = configDefault.ImageStretch;
+                        configIsValid = false;
+                    }
 
                     if (!WrapCorrectValues.Contains(configModel.TextPreviewWordWrap))
                     {
-                        configIsValid = false;
                         configModel.TextPreviewWordWrap = configDefault.TextPreviewWordWrap;
+                        configIsValid = false;
                     }
-
 
                     if (!BitmapScalingMode.Contains(configModel.BitmapScalingMode))
                     {
-                        configIsValid = false;
                         configModel.BitmapScalingMode = configDefault.BitmapScalingMode;
+                        configIsValid = false;
                     }
                 }
                 else
@@ -82,19 +96,26 @@ namespace QuickViewFile
             {
                 if (!configIsValid)
                 {
-                    try
-                    {
-                        string json = JsonSerializer.Serialize(configModel, new JsonSerializerOptions { WriteIndented = true });
-                        File.WriteAllText(ConfigFileName, json);
-                    }
-                    catch
-                    {
-                        // If writing the config file fails, We just doesn't save it and method will return ConfigModel with default values
-                        configModel = new ConfigModel(); // but make sure to reset loaded every possibly wrong config field
-                    }
+                    configModel = new ConfigModel();
+                }
+
+                try
+                {
+                    string json = JsonSerializer.Serialize(configModel, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(ConfigFileName, json);
+                }
+                catch
+                {
+                    configModel = new ConfigModel();
                 }
             }
+
             return configModel;
         }
+
+
+        private static object? GetDefault(Type type) =>
+            type.IsValueType ? Activator.CreateInstance(type) : null;
+
     }
 }
