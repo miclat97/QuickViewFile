@@ -36,6 +36,25 @@ namespace QuickViewFile.Controls
             timer.Start();
         }
 
+        public VideoPlayerControl(string filePath)
+        {
+            InitializeComponent();
+
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += timer_Tick;
+            timer.Start();
+
+            StartPlaying(filePath);
+        }
+
+        public void StartPlaying(string filePath)
+        {
+            videoPlayer.Source = new Uri(filePath);
+            videoPlayer.Play();
+            mediaPlayerIsPlaying = true;
+        }
+
         private void timer_Tick(object sender, EventArgs e)
         {
             if ((videoPlayer.Source != null) && (videoPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
@@ -46,14 +65,16 @@ namespace QuickViewFile.Controls
             }
         }
 
-        private void Open_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = true;
-        }
-
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = (videoPlayer != null) && (videoPlayer.Source != null);
+            if (videoPlayer.Source is not null)
+            {
+                e.CanExecute = true;
+            }
+            else
+            {
+                e.CanExecute = false;
+            }
         }
 
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -64,17 +85,25 @@ namespace QuickViewFile.Controls
 
         private void Pause_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = mediaPlayerIsPlaying;
+            if (mediaPlayerIsPlaying)
+            {
+                e.CanExecute = true;
+            }
+            else
+            {
+                e.CanExecute = false;
+            }
         }
 
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             videoPlayer.Pause();
+            mediaPlayerIsPlaying = false;
         }
 
         private void Stop_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = mediaPlayerIsPlaying;
+            e.CanExecute = true;
         }
 
         private void Stop_Executed(object sender, ExecutedRoutedEventArgs e)

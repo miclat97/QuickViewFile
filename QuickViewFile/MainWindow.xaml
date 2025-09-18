@@ -83,16 +83,10 @@
 
                 <!-- File content: Image, Video or Text-->
                 <Grid Grid.Row="1">
-                    <uc:VideoPlayerControl x:Name="videoPlayer"/>
-                    <MediaElement
+                    <local:VideoPlayerControl
                         x:Name="VideoMedia"
-                        Height="Auto"
-                        Width="Auto"
-                        Stretch="Uniform"
-                        LoadedBehavior="Play"
-                        StretchDirection="Both"
-                        Source="{Binding SelectedItem.FileContentModel.VideoMediaUri}"
-                        Visibility="{Binding SelectedItem.FileContentModel.VideoMediaUri, Converter={StaticResource NullToVisibilityConverter}}"
+                        Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
+                        Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"
                     />
 
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
