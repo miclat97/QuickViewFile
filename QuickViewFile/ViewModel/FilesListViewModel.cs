@@ -1,4 +1,5 @@
-﻿using QuickViewFile.Helpers;
+﻿using QuickViewFile.Controls;
+using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using QuickViewFile.Watchers;
 using System.Collections.ObjectModel;
@@ -13,6 +14,7 @@ namespace QuickViewFile.ViewModel
     public class FilesListViewModel : INotifyPropertyChanged
     {
         public ObservableCollection<ItemList> ActiveListItems { get; set; } = new();
+        public VideoPlayerWithSimpleControl VideoPlayer { get; set; } = new VideoPlayerWithSimpleControl();
 
         public FilesListViewModel(string folderPath)
         {
@@ -184,7 +186,7 @@ namespace QuickViewFile.ViewModel
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
-            bool isVideo = ext == ".mpg" || ext == ".wmv";
+            bool isVideo = ext == ".mpg" || ext == ".wmv" || ext == ".mp4";
             var fileInfo = new FileInfo(filePath);
 
             if (isImage)
@@ -215,7 +217,7 @@ namespace QuickViewFile.ViewModel
             {
                 try
                 {
-                    SelectedItem.FileContentModel.VideoMediaUri = new Uri(filePath);
+                    VideoPlayer.StartPlaying(filePath);
                     SelectedItem.FileContentModel.TextContent = null;
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.IsLoaded = true;
