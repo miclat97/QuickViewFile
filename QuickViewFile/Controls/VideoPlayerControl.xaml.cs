@@ -79,6 +79,10 @@ namespace QuickViewFile.Controls
 
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            if (mediaPlayerIsPlaying)
+            {
+                videoPlayer.Stop();
+            }
             videoPlayer.Play();
             mediaPlayerIsPlaying = true;
         }
