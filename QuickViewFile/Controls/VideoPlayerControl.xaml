@@ -6,15 +6,19 @@
              xmlns:local="clr-namespace:QuickViewFile.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.CommandBindings>
+        <CommandBinding Command="MediaCommands.Play" CanExecute="Play_CanExecute" Executed="Play_Executed" />
+        <CommandBinding Command="MediaCommands.Pause" CanExecute="Pause_CanExecute" Executed="Pause_Executed" />
+    </UserControl.CommandBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <MediaElement Name="mePlayer" Grid.Row="0" LoadedBehavior="Manual" Stretch="None" />
-        <StatusBar Grid.Row="2">
+        <MediaElement Name="mePlayer" LoadedBehavior="Play" Stretch="None" />
+
+        <StatusBar Grid.Row="1">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>
