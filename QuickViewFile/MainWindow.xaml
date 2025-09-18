@@ -7,6 +7,7 @@
         xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
         xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
+        xmlns:uc="clr-namespace:QuickViewFile.Controls"
         mc:Ignorable="d"
         KeyDown="AppWindow_KeyDown"
         WindowState="Maximized"
@@ -82,15 +83,10 @@
 
                 <!-- File content: Image, Video or Text-->
                 <Grid Grid.Row="1">
-                    <MediaElement
+                    <local:VideoPlayerControl
                         x:Name="VideoMedia"
-                        Height="Auto"
-                        Width="Auto"
-                        Stretch="Uniform"
-                        LoadedBehavior="Play"
-                        StretchDirection="Both"
-                        Source="{Binding SelectedItem.FileContentModel.VideoMediaUri}"
-                        Visibility="{Binding SelectedItem.FileContentModel.VideoMediaUri, Converter={StaticResource NullToVisibilityConverter}}"
+                        Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
+                        Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"
                     />
 
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
