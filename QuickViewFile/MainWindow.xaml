@@ -70,7 +70,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Dodany TextBlock na nazwę pliku -->
+                <!-- FileName TextBox -->
                 <TextBlock Grid.Row="0"
                       Text="{Binding SelectedItem.FullPath}"
                       FontWeight="Bold"
@@ -80,11 +80,20 @@
                       TextWrapping="NoWrap"
                       Foreground="Black"/>
 
-                <!-- Pozostała zawartość -->
+                <!-- File content: Image, Video or Text-->
                 <Grid Grid.Row="1">
+                    <MediaElement
+                        x:Name="VideoMedia"
+                        Width="{Binding Config.PreviewWidth}"
+                        Height="{Binding Config.PreviewHeight}"
+                        Source="{Binding SelectedItem.FileContentModel.VideoMediaUri}"
+                        Visibility="{Binding SelectedItem.FileContentModel.VideoMediaUri, Converter={StaticResource NullToVisibilityConverter}}"
+                    />
+
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Disabled"
                                   Focusable="False"
+                                  Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
                                   ClipToBounds="True">
                         <local:ZoomableImage
                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
@@ -97,6 +106,7 @@
                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
                             ClipToBounds="True"/>
                     </ScrollViewer>
+
                     <ScrollViewer Grid.Row="1"
                           CanContentScroll="True"
                           VirtualizingStackPanel.IsVirtualizing="True"

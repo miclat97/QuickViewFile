@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace QuickViewFile.ViewModel
 {
@@ -182,6 +184,7 @@ namespace QuickViewFile.ViewModel
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
+            bool isVideo = ext == ".mpg" || ext == ".wmv";
             var fileInfo = new FileInfo(filePath);
 
             if (isImage)
@@ -195,6 +198,7 @@ namespace QuickViewFile.ViewModel
                         {
                             SelectedItem.FileContentModel.ImageSource = rotatedImageBitmap;
                             SelectedItem.FileContentModel.TextContent = null;
+                            SelectedItem.FileContentModel.VideoMediaUri = null;
                             SelectedItem.FileContentModel.IsLoaded = true;
                         });
                     });
@@ -203,6 +207,24 @@ namespace QuickViewFile.ViewModel
                 {
                     SelectedItem.FileContentModel.TextContent = ex.Message;
                     SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.VideoMediaUri = null;
+                    SelectedItem.FileContentModel.IsLoaded = false;
+                }
+            }
+            else if (isVideo)
+            {
+                try
+                {
+                    SelectedItem.FileContentModel.VideoMediaUri = new Uri(filePath);
+                    SelectedItem.FileContentModel.TextContent = null;
+                    SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.IsLoaded = true;
+                }
+                catch (Exception ex)
+                {
+                    SelectedItem.FileContentModel.TextContent = ex.Message;
+                    SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.VideoMediaUri = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
@@ -216,6 +238,7 @@ namespace QuickViewFile.ViewModel
                     {
                         SelectedItem.FileContentModel.TextContent = loadedFileText;
                         SelectedItem.FileContentModel.ImageSource = null;
+                        SelectedItem.FileContentModel.VideoMediaUri = null;
                         SelectedItem.FileContentModel.IsLoaded = true;
                     });
                 }
@@ -223,6 +246,7 @@ namespace QuickViewFile.ViewModel
                 {
                     SelectedItem.FileContentModel.TextContent = $"File size has more than {Config.MaxSizePreviewKB} KiB, press ENTER to force load it";
                     SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.VideoMediaUri = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
