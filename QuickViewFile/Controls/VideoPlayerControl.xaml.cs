@@ -38,11 +38,11 @@ namespace QuickViewFile.Controls
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            if ((mePlayer.Source != null) && (mePlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
+            if ((videoPlayer.Source != null) && (videoPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
             {
                 sliProgress.Minimum = 0;
-                sliProgress.Maximum = mePlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                sliProgress.Value = mePlayer.Position.TotalSeconds;
+                sliProgress.Maximum = videoPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                sliProgress.Value = videoPlayer.Position.TotalSeconds;
             }
         }
 
@@ -53,12 +53,12 @@ namespace QuickViewFile.Controls
 
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = (mePlayer != null) && (mePlayer.Source != null);
+            e.CanExecute = (videoPlayer != null) && (videoPlayer.Source != null);
         }
 
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            mePlayer.Play();
+            videoPlayer.Play();
             mediaPlayerIsPlaying = true;
         }
 
@@ -69,7 +69,7 @@ namespace QuickViewFile.Controls
 
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            mePlayer.Pause();
+            videoPlayer.Pause();
         }
 
         private void Stop_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -79,7 +79,7 @@ namespace QuickViewFile.Controls
 
         private void Stop_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            mePlayer.Stop();
+            videoPlayer.Stop();
             mediaPlayerIsPlaying = false;
         }
 
@@ -91,7 +91,7 @@ namespace QuickViewFile.Controls
         private void sliProgress_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             userIsDraggingSlider = false;
-            mePlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
+            videoPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
         }
 
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -101,7 +101,7 @@ namespace QuickViewFile.Controls
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            mePlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
+            videoPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
         }
     }
 }
