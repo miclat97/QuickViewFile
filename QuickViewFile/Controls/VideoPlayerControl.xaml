@@ -34,12 +34,12 @@
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="0">
                 <Button Command="MediaCommands.Play">
-                    <Image Source="/Resources/play.png"/>
+                    <Image Source="/Controls/Resources/play.png"/>
                 </Button>
             </StatusBarItem>
             <StatusBarItem Grid.Column="1">
                 <Button Command="MediaCommands.Pause">
-                    <Image Source="/Resources/pause.png"/>
+                    <Image Source="/Controls/Resources/pause.png"/>
                 </Button>
             </StatusBarItem>
             <StatusBarItem Grid.Column="2">

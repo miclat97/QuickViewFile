@@ -17,4 +17,30 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Controls\Resources\next.png" />
+    <None Remove="Controls\Resources\pause.png" />
+    <None Remove="Controls\Resources\play.png" />
+    <None Remove="Controls\Resources\previous.png" />
+    <None Remove="Controls\Resources\stop.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Controls\Resources\next.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Controls\Resources\pause.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Controls\Resources\play.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Controls\Resources\previous.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <EmbeddedResource Include="Controls\Resources\stop.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
