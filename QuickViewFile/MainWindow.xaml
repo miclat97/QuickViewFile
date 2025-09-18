@@ -84,8 +84,11 @@
                 <Grid Grid.Row="1">
                     <MediaElement
                         x:Name="VideoMedia"
-                        Width="{Binding Config.PreviewWidth}"
-                        Height="{Binding Config.PreviewHeight}"
+                        Height="Auto"
+                        Width="Auto"
+                        Stretch="Uniform"
+                        LoadedBehavior="Play"
+                        StretchDirection="Both"
                         Source="{Binding SelectedItem.FileContentModel.VideoMediaUri}"
                         Visibility="{Binding SelectedItem.FileContentModel.VideoMediaUri, Converter={StaticResource NullToVisibilityConverter}}"
                     />

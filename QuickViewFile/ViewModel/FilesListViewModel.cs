@@ -29,7 +29,6 @@ namespace QuickViewFile.ViewModel
         private readonly FolderWatcher _folderWatcher;
         private string _folderPath = Directory.GetCurrentDirectory();
 
-
         public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
 
@@ -184,7 +183,7 @@ namespace QuickViewFile.ViewModel
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
-            bool isVideo = ext == ".mpg" || ext == ".wmv";
+            bool isVideo = ext == ".mpg" || ext == ".wmv" || ext == ".mp4";
             var fileInfo = new FileInfo(filePath);
 
             if (isImage)
