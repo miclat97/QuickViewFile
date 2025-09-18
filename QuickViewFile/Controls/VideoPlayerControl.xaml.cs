@@ -25,25 +25,16 @@ namespace QuickViewFile.Controls
     {
         private bool mediaPlayerIsPlaying = false;
         private bool userIsDraggingSlider = false;
+        private DispatcherTimer timer = new DispatcherTimer();
 
         public VideoPlayerControl()
         {
             InitializeComponent();
-
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += timer_Tick;
-            timer.Start();
         }
 
         public VideoPlayerControl(string filePath)
         {
             InitializeComponent();
-
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += timer_Tick;
-            timer.Start();
 
             StartPlaying(filePath);
         }
@@ -51,13 +42,19 @@ namespace QuickViewFile.Controls
         public void StartPlaying(string filePath)
         {
             videoPlayer.Source = new Uri(filePath);
+
             videoPlayer.Play();
+
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += timer_Tick;
+            timer.Start();
+
             mediaPlayerIsPlaying = true;
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            if ((videoPlayer.Source != null) && (videoPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
+            if ((videoPlayer.Source is not null) && (videoPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
             {
                 sliProgress.Minimum = 0;
                 sliProgress.Maximum = videoPlayer.NaturalDuration.TimeSpan.TotalSeconds;
@@ -70,10 +67,12 @@ namespace QuickViewFile.Controls
             if (videoPlayer.Source is not null)
             {
                 e.CanExecute = true;
+                PlayButton.Opacity = 1;
             }
             else
             {
                 e.CanExecute = false;
+                PlayButton.Opacity = 0.2;
             }
         }
 
@@ -92,10 +91,12 @@ namespace QuickViewFile.Controls
             if (mediaPlayerIsPlaying)
             {
                 e.CanExecute = true;
+                PauseButton.Opacity = 1;
             }
             else
             {
                 e.CanExecute = false;
+                PauseButton.Opacity = 0.2;
             }
         }
 
@@ -107,7 +108,17 @@ namespace QuickViewFile.Controls
 
         private void Stop_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = true;
+            if (videoPlayer.Source is not null)
+            {
+                e.CanExecute = true;
+                StopButton.Opacity = 1;
+            }
+            else
+            {
+                e.CanExecute = false;
+                StopButton.Opacity = 0.2;
+            }
+
         }
 
         private void Stop_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -130,6 +141,7 @@ namespace QuickViewFile.Controls
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss");
+            lblFullTime.Text = TimeSpan.FromSeconds(sliProgress.Maximum).ToString(@"hh\:mm\:ss");
         }
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)

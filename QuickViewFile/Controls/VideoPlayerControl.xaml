@@ -22,8 +22,9 @@
         <StatusBar Grid.Row="1">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Grid>
+                    <Grid Height="25">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -35,27 +36,30 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="0">
-                <Button Command="MediaCommands.Play">
-                    <Image Source="/Controls/Resources/play.png" Height="28" Stretch="Uniform"/>
+                <Button Name="PlayButton" Command="MediaCommands.Play">
+                    <Image Source="/Controls/Resources/play.png" Stretch="Uniform"/>
                 </Button>
             </StatusBarItem>
-            <StatusBarItem Grid.Column="1">
+            <StatusBarItem Name="PauseButton" Grid.Column="1">
                 <Button Command="MediaCommands.Pause">
-                    <Image Source="/Controls/Resources/pause.png" Height="28" Stretch="Uniform"/>
+                    <Image Source="/Controls/Resources/pause.png" Stretch="Uniform"/>
                 </Button>
             </StatusBarItem>
             <StatusBarItem Grid.Column="2">
-                <Button Command="MediaCommands.Stop">
-                    <Image Source="/Controls/Resources/stop.png" Height="28" Stretch="Uniform"/>
+                <Button Name="StopButton" Command="MediaCommands.Stop">
+                    <Image Source="/Controls/Resources/stop.png" Stretch="Uniform"/>
                 </Button>
             </StatusBarItem>
             <StatusBarItem Grid.Column="3">
                 <TextBlock Name="lblProgressStatus">00:00:00</TextBlock>
             </StatusBarItem>
-            <StatusBarItem Grid.Column="4" HorizontalContentAlignment="Stretch">
+            <StatusBarItem Grid.Column="4">
+                <TextBlock Name="lblFullTime">00:00:00</TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="5" HorizontalContentAlignment="Stretch">
                 <Slider Name="sliProgress" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" />
             </StatusBarItem>
-            <StatusBarItem Grid.Column="5">
+            <StatusBarItem Grid.Column="6">
                 <ProgressBar Name="pbVolume" Width="50" Height="12" Maximum="1" Value="{Binding ElementName=videoPlayer, Path=Volume}" />
             </StatusBarItem>
         </StatusBar>
