@@ -182,8 +182,8 @@ namespace QuickViewFile.ViewModel
             SelectedItem.FileContentModel = new FileContentModel();
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
-            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif";
-            bool isVideo = ext == ".mpg" || ext == ".wmv" || ext == ".mp4";
+            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif" || ext == ".heic";
+            bool isVideo = ext == ".mpg" || ext == ".wmv" || ext == ".mp4" || ext == ".mkv" || ext == ".webm";
             var fileInfo = new FileInfo(filePath);
 
             if (isImage)
