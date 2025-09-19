@@ -80,6 +80,15 @@ namespace QuickViewFile.ViewModel
 
         private void RefreshFiles()
         {
+            try
+            {
+                var check = new DirectoryInfo(_folderPath);
+            }
+            catch
+            {
+                return;
+            }
+
             DirectoryInfo dirInfo = new DirectoryInfo(_folderPath);
 
             DirectoryInfo[] foldersInDirectory;
@@ -90,9 +99,9 @@ namespace QuickViewFile.ViewModel
                 foldersInDirectory = dirInfo.GetDirectories();
                 filesInDirectory = dirInfo.GetFiles();
             }
-            catch
+            catch (Exception ex)
             {
-                Application.Current.Dispatcher.BeginInvoke(() => ActiveListItems.Clear());
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -143,8 +152,17 @@ namespace QuickViewFile.ViewModel
             if (file == null)
                 return;
 
-            if (file.IsDirectory && Directory.Exists(file.FullPath))
+            if (file.IsDirectory)
             {
+                try
+                {
+                    var check = new DirectoryInfo(file.FullPath);
+                }
+                catch
+                {
+                    return;
+                }
+
                 _folderPath = file.FullPath!;
                 RefreshFiles();
                 SelectedItem = null;
