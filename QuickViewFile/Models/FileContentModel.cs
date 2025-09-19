@@ -17,10 +17,10 @@ namespace QuickViewFile.Models
             this.TextContent = null;
             this.ImageSource = null;
             this.VideoMediaUri = null;
-            this.VideoMedia = null;
+            this.VideoMedia?.Dispose();
             this.IsLoaded = false;
             GC.Collect();
-            //GC.WaitForPendingFinalizers();
+            GC.SuppressFinalize(this);
         }
     }
 }
