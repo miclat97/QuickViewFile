@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using QuickViewFile.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -181,6 +182,16 @@ namespace QuickViewFile.Controls
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void Window_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            string source = videoPlayer.Source.AbsoluteUri;
+            videoPlayer.Stop();
+            videoPlayer.Close();
+            Uri newUriSource = new Uri(source);
+            Window mediaPlayerVideoFullScreenWindow = new VideoMediaWindow(newUriSource);
+            mediaPlayerVideoFullScreenWindow.Show();
         }
     }
 }

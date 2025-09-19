@@ -10,8 +10,8 @@
         xmlns:uc="clr-namespace:QuickViewFile.Controls"
         mc:Ignorable="d"
         KeyDown="AppWindow_KeyDown"
-        WindowStyle="ThreeDBorderWindow"
-        
+        WindowStyle="None"
+        AllowsTransparency="True"
         Background="Transparent"
         WindowState="Maximized"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
@@ -96,7 +96,7 @@
                                   VerticalScrollBarVisibility="Disabled"
                                   Focusable="False"
                                   Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
-                                  ClipToBounds="True">
+                                  >
                         <local:ZoomableImage
                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
                             VerticalAlignment="Center"
@@ -106,7 +106,7 @@
                             MaxHeight="{Binding Config.PreviewHeight}" 
                             MaxWidth="{Binding Config.PreviewWidth}" 
                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
-                            ClipToBounds="True"/>
+                          />
                     </ScrollViewer>
 
                     <ScrollViewer Grid.Row="1"

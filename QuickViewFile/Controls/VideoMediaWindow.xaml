@@ -1,0 +1,17 @@
+﻿<Window x:Class="QuickViewFile.Controls.VideoMediaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuickViewFile.Controls"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowState="Maximized"
+        MouseRightButtonDown="Window_MouseRightButtonDown"
+        Title="VideoMediaWindow" Height="1080" Width="1920">
+    <Grid>
+        <MediaElement x:Name="VideoMediaWindow_MediaElement" LoadedBehavior="Play"/>
+    </Grid>
+</Window>

@@ -1,4 +1,5 @@
-﻿using QuickViewFile.ViewModel;
+﻿using QuickViewFile.Controls;
+using QuickViewFile.ViewModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -45,6 +46,11 @@ namespace QuickViewFile
                         });
                     }
                 }
+            }
+            if (e.Key == Key.Escape)
+            {
+
+                Application.Current.Shutdown();
             }
         }
 
