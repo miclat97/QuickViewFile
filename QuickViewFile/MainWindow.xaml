@@ -123,7 +123,7 @@
                              Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"
                              FontSize="{Binding Config.FontSize}"
                              Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
-                             TextWrapping="NoWrap"/>
+                             TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
                     </ScrollViewer>
                 </Grid>
             </Grid>

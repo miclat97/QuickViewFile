@@ -25,6 +25,7 @@ namespace QuickViewFile.Controls
     {
         private bool mediaPlayerIsPlaying = false;
         private bool userIsDraggingSlider = false;
+        private bool isVideoPaused = false;
         private bool disposedValue;
 
         public VideoPlayerControl()
@@ -53,6 +54,7 @@ namespace QuickViewFile.Controls
         {
             videoPlayer.Source = new Uri(filePath);
             videoPlayer.Play();
+            isVideoPaused = false;
             mediaPlayerIsPlaying = true;
         }
 
@@ -68,13 +70,15 @@ namespace QuickViewFile.Controls
 
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (videoPlayer.Source is not null)
+            if (videoPlayer.Source is not null && isVideoPaused)
             {
                 e.CanExecute = true;
+                PlayButton.Opacity = 1;
             }
             else
             {
                 e.CanExecute = false;
+                PlayButton.Opacity = 0.1;
             }
         }
 
@@ -85,35 +89,41 @@ namespace QuickViewFile.Controls
                 videoPlayer.Stop();
             }
             videoPlayer.Play();
+            isVideoPaused = false;
             mediaPlayerIsPlaying = true;
         }
 
         private void Pause_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (mediaPlayerIsPlaying)
+            if (mediaPlayerIsPlaying && !isVideoPaused)
             {
                 e.CanExecute = true;
+                PauseButton.Opacity = 1;
             }
             else
             {
                 e.CanExecute = false;
+                PauseButton.Opacity = 0.1;
             }
         }
 
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             videoPlayer.Pause();
+            isVideoPaused = true;
             mediaPlayerIsPlaying = false;
         }
 
         private void Stop_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
+            StopButton.Opacity = 1;
         }
 
         private void Stop_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             videoPlayer.Stop();
+            isVideoPaused = true;
             mediaPlayerIsPlaying = false;
         }
 
@@ -130,6 +140,7 @@ namespace QuickViewFile.Controls
 
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            videoPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
             lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss");
             fullTime.Text = TimeSpan.FromSeconds(sliProgress.Maximum).ToString(@"hh\:mm\:ss");
         }
