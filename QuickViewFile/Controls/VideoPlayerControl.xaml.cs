@@ -130,6 +130,7 @@ namespace QuickViewFile.Controls
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss");
+            fullTime.Text = TimeSpan.FromSeconds(sliProgress.Maximum).ToString(@"hh\:mm\:ss");
         }
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
