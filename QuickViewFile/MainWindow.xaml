@@ -10,6 +10,9 @@
         xmlns:uc="clr-namespace:QuickViewFile.Controls"
         mc:Ignorable="d"
         KeyDown="AppWindow_KeyDown"
+        WindowStyle="ThreeDBorderWindow"
+        
+        Background="Transparent"
         WindowState="Maximized"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
         Title="QuickViewFile" Height="600" Width="1200">
@@ -21,7 +24,7 @@
             <Setter Property="MinHeight" Value="40"/>
         </Style>
     </Window.Resources>
-    <Grid Grid.Row="0">
+    <Grid Background="White" Grid.Row="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" MinWidth="150"/>
             <ColumnDefinition Width="Auto"/>

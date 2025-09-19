@@ -33,7 +33,8 @@ namespace QuickViewFile.Controls
             InitializeComponent();
 
             DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Interval = TimeSpan.FromMilliseconds(10);
+            timer.IsEnabled = true;
             timer.Tick += timer_Tick;
             timer.Start();
         }
@@ -43,7 +44,8 @@ namespace QuickViewFile.Controls
             InitializeComponent();
 
             DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Interval = TimeSpan.FromMilliseconds(10);
+            timer.IsEnabled = true;
             timer.Tick += timer_Tick;
             timer.Start();
 
@@ -70,7 +72,7 @@ namespace QuickViewFile.Controls
 
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (videoPlayer.Source is not null && isVideoPaused)
+            if (videoPlayer.Source is not null)
             {
                 e.CanExecute = true;
                 PlayButton.Opacity = 1;
