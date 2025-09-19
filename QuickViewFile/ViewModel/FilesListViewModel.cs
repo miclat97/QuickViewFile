@@ -201,7 +201,9 @@ namespace QuickViewFile.ViewModel
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif" || ext == ".heic";
-            bool isVideo = ext == ".mpg" || ext == ".wmv" || ext == ".mp4" || ext == ".mkv" || ext == ".webm";
+            bool isVideo = ext == ".mpg" || ext == ".mp4" || ext == ".mkv" || ext == ".webm";
+            bool isAudio = ext == ".mp3" || ext == ".wav" || ext == ".aac";
+
             var fileInfo = new FileInfo(filePath);
 
             if (isImage)
@@ -228,7 +230,7 @@ namespace QuickViewFile.ViewModel
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
-            else if (isVideo)
+            else if (isVideo || isAudio)
             {
                 try
                 {
