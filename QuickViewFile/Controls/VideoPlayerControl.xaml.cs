@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using QuickViewFile.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,7 @@ namespace QuickViewFile.Controls
             videoPlayer.Play();
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
+            videoPlayer.Volume = 1;
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -70,16 +72,8 @@ namespace QuickViewFile.Controls
 
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (videoPlayer.Source is not null && isVideoPaused)
-            {
-                e.CanExecute = true;
-                PlayButton.Opacity = 1;
-            }
-            else
-            {
-                e.CanExecute = false;
-                PlayButton.Opacity = 0.1;
-            }
+            e.CanExecute = true;
+            PlayButton.Opacity = 1;
         }
 
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -148,6 +142,48 @@ namespace QuickViewFile.Controls
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             videoPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
+        }
+
+        private void PlayOrPauseMedia()
+        {
+            if (!isVideoPaused)
+            {
+                videoPlayer.Pause();
+                isVideoPaused = true;
+                mediaPlayerIsPlaying = false;
+            }
+            else
+            {
+                videoPlayer.Play();
+                isVideoPaused = false;
+                mediaPlayerIsPlaying = true;
+            }
+        }
+
+        private void videoPlayer_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+            {
+                PlayOrPauseMedia();
+            }
+            else if (e.Key == Key.NumPad3)
+            {
+                videoPlayer.Volume += 0.1;
+            }
+            else if (e.Key == Key.NumPad1)
+            {
+                videoPlayer.Volume -= 0.1;
+            }
+            else if (e.Key == Key.NumPad4)
+            {
+                var newTime = sliProgress.Value - 5;
+                videoPlayer.Position = TimeSpan.FromSeconds(newTime);
+            }
+            else if (e.Key == Key.NumPad6)
+            {
+                var newTime = sliProgress.Value + 5;
+                videoPlayer.Position = TimeSpan.FromSeconds(newTime);
+            }
         }
 
         protected virtual void Dispose(bool disposing)

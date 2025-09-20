@@ -37,7 +37,7 @@ namespace QuickViewFile
             {
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                 {
-                    if (e.Key == Key.Enter || e.Key == Key.Space)
+                    if (e.Key == Key.Enter)
                     {
                         Application.Current.Dispatcher.BeginInvoke(() =>
                         {
