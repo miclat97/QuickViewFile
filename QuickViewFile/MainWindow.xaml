@@ -89,11 +89,9 @@
                         Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"
                     />
 
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                  VerticalScrollBarVisibility="Disabled"
-                                  Focusable="False"
-                                  Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
-                                  ClipToBounds="True">
+                    <Grid Focusable="False"
+                         Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
+                         ClipToBounds="True">
                         <local:ZoomableImage
                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
                             VerticalAlignment="Center"
@@ -104,9 +102,9 @@
                             MaxWidth="{Binding Config.PreviewWidth}" 
                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
                             ClipToBounds="True"/>
-                    </ScrollViewer>
+                    </Grid>
 
-                    <ScrollViewer Grid.Row="1"
+                    <ScrollViewer
                           CanContentScroll="True"
                           VirtualizingStackPanel.IsVirtualizing="True"
                           VirtualizingStackPanel.VirtualizationMode="Recycling"

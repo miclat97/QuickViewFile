@@ -25,7 +25,7 @@ namespace QuickViewFile.Controls
             _config = ConfigHelper.LoadConfig();
 
             this.RenderTransform = transformGroup;
-            this.RenderTransformOrigin = new Point(0, 0);
+            this.RenderTransformOrigin = new Point((this.ActualHeight / 2), (this.ActualWidth / 2)); //by default picture is centered in control
 
             this.MouseLeftButtonDown += Image_MouseLeftButtonDown;
             this.MouseLeftButtonUp += Image_MouseLeftButtonUp;
