@@ -9,21 +9,21 @@
         AllowsTransparency="True"
         WindowState="Maximized"
         KeyDown="Window_KeyDown"
-        Title="VideoPlayerFullScreen" Height="450" Width="800">
+        Title="VideoPlayerFullScreen" Height="1080" Width="1920">
     <Window.CommandBindings>
         <CommandBinding Command="MediaCommands.Play" CanExecute="Play_CanExecute" Executed="Play_Executed" />
         <CommandBinding Command="MediaCommands.Pause" CanExecute="Pause_CanExecute" Executed="Pause_Executed" />
         <CommandBinding Command="MediaCommands.Stop" CanExecute="Stop_CanExecute" Executed="Stop_Executed" />
     </Window.CommandBindings>
-    <Grid MouseWheel="Grid_MouseWheel" KeyDown="videoPlayer_KeyDown">
+    <Grid KeyDown="videoPlayer_KeyDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <MediaElement Name="videoPlayer" LoadedBehavior="Manual" />
+        <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" LoadedBehavior="Manual" Stretch="None" Height="1080"/>
 
-        <StatusBar Grid.Row="1" Height="22">
+        <StatusBar Grid.Row="1" Height="25">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>
@@ -64,7 +64,7 @@
                 <Slider Name="sliProgress" Focusable="False" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" />
             </StatusBarItem>
             <StatusBarItem Grid.Column="6">
-                <ProgressBar Name="pbVolume" Width="50" Height="12" Maximum="1" Value="{Binding ElementName=videoPlayer, Path=Volume}" />
+                <ProgressBar Name="pbVolume" Width="50" Height="12" Maximum="1" Value="{Binding ElementName=videoFullScreenPlayer, Path=Volume}" />
             </StatusBarItem>
         </StatusBar>
     </Grid>
