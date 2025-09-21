@@ -18,7 +18,7 @@ namespace QuickViewFile.Helpers
                 {
                     char[] charsBuffer = new char[8192];
 
-                    while (reader.Read(charsBuffer, 0, 8192) != 0)
+                    while (await reader.ReadAsync(charsBuffer, 0, 8192) != 0)
                     {
                         resultString.Append(ReplaceAllNonASCIICharacters(new string(charsBuffer)));
                     }
