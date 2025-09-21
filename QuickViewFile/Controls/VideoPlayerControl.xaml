@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <MediaElement Name="videoPlayer" LoadedBehavior="Manual" Stretch="Uniform" StretchDirection="Both" />
+        <MediaElement Name="videoPlayer" LoadedBehavior="Manual" />
 
         <StatusBar Grid.Row="1" Height="30">
             <StatusBar.ItemsPanel>
@@ -57,7 +57,7 @@
                 <TextBlock Name="fullTime">00:00:00</TextBlock>
             </StatusBarItem>
             <StatusBarItem Grid.Column="5" HorizontalContentAlignment="Stretch" Height="30" Background="#FFF6D70F">
-                <Slider Name="sliProgress" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" />
+                <Slider Name="sliProgress" Focusable="False" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" />
             </StatusBarItem>
             <StatusBarItem Grid.Column="6">
                 <ProgressBar Name="pbVolume" Width="50" Height="12" Maximum="1" Value="{Binding ElementName=videoPlayer, Path=Volume}" />

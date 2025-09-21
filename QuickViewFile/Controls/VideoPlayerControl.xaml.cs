@@ -149,7 +149,7 @@ namespace QuickViewFile.Controls
 
         private void videoPlayer_KeyDown(object sender, KeyEventArgs e)
         {
-            HandleKey(e.Key);
+            //HandleKey(e.Key);
         }
 
         public override void OnApplyTemplate()

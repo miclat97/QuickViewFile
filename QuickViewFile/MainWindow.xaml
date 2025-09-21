@@ -116,7 +116,7 @@
                              Name="TextBoxTextContent"
                              HorizontalScrollBarVisibility="Auto"
                              VerticalScrollBarVisibility="Visible"
-                             Focusable="True"
+                             Focusable="False"
                              Margin="10"
                              ClipToBounds="True"
                              Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"
