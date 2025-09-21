@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using QuickViewFile.Models;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -16,10 +17,13 @@ namespace QuickViewFile.Controls
         private bool isVideoPaused = false;
         private bool disposedValue;
 
+        //private readonly ConfigModel _config;
+
         public VideoPlayerControl()
         {
             InitializeComponent();
 
+            //_config = ConfigHelper.LoadConfig();
             DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += timer_Tick;
@@ -30,6 +34,7 @@ namespace QuickViewFile.Controls
         {
             InitializeComponent();
 
+            //_config = ConfigHelper.LoadConfig();
             DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += timer_Tick;
@@ -45,6 +50,8 @@ namespace QuickViewFile.Controls
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
             videoPlayer.Volume = 1;
+            //videoPlayer.Height = _config.VideoHeigth;
+            //videoPlayer.RenderSize = new Size(_config.VideoWidth, _config.VideoHeigth);
         }
 
         private void timer_Tick(object sender, EventArgs e)

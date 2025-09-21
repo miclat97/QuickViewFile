@@ -23,7 +23,7 @@
     </Window.Resources>
     <Grid Grid.Row="0">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" MinWidth="150"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -38,7 +38,7 @@
                   KeyDown="AppWindow_KeyDown"
                   Focusable="True"
                   TabIndex="1"
-                  MinWidth="140" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
+                  ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Name" Width="120">
@@ -60,12 +60,17 @@
         </ListView>
         <GridSplitter Grid.Column="1"
                       Width="3"
+                      Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       Background="Gold" 
                       Focusable="False"/>
         <Border Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
-            <Grid KeyDown="AppWindow_KeyDown">
+            <Grid KeyDown="AppWindow_KeyDown"
+                  MouseRightButtonDown="Grid_MouseRightButtonDown"
+                  Height="Auto"
+                  Width="Auto"
+                  UseLayoutRounding="True">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -75,6 +80,7 @@
                 <TextBlock Grid.Row="0"
                       Text="{Binding SelectedItem.FullPath}"
                       FontWeight="Bold"
+                      Name="FileFullPathTextBlock"
                       FontSize="12"
                       Padding="10,5,10,5"
                       TextTrimming="CharacterEllipsis"

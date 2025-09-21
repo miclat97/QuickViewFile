@@ -6,6 +6,8 @@
         public string ImageStretch { get; set; } = "Uniform";
         public double PreviewHeight { get; set; } = 800;
         public double PreviewWidth { get; set; } = 1200;
+        public double VideoHeigth { get; set; } = 1080;
+        public double VideoWidth { get; set; } = 1920;
         public double KeyboardZoomStep { get; set; } = 50;
         public string TextPreviewWordWrap { get; set; } = "Wrap";
         public double MaxScale { get; set; } = 100.0;

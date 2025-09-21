@@ -8,6 +8,7 @@ namespace QuickViewFile
 {
     public partial class MainWindow : Window
     {
+        private bool _filesListViewVisible = true;
         public MainWindow()
         {
             InitializeComponent();
@@ -56,6 +57,24 @@ namespace QuickViewFile
                         TextBoxTextContent.FontSize -= 0.5;
                     }
                 }
+            }
+        }
+
+        private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_filesListViewVisible)
+            {
+                FilesListView.Visibility = Visibility.Collapsed;
+                MainWindowGridSplitter.Visibility = Visibility.Collapsed;
+                FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+                _filesListViewVisible = false;
+            }
+            else
+            {
+                FilesListView.Visibility = Visibility.Visible;
+                MainWindowGridSplitter.Visibility = Visibility.Visible;
+                FileFullPathTextBlock.Visibility = Visibility.Visible;
+                _filesListViewVisible = true;
             }
         }
     }
