@@ -9,8 +9,9 @@
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
         xmlns:uc="clr-namespace:QuickViewFile.Controls"
         mc:Ignorable="d"
-        KeyDown="AppWindow_KeyDown"
         WindowState="Maximized"
+        KeyDown="AppWindow_KeyDown"
+        WindowStartupLocation="CenterOwner"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
         Title="QuickViewFile" Height="600" Width="1200">
     <Window.Resources>
