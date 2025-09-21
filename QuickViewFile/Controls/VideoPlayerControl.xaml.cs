@@ -149,24 +149,44 @@ namespace QuickViewFile.Controls
 
         private void videoPlayer_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Space)
+            HandleKey(e.Key);
+        }
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+            Window parentWindow = Window.GetWindow(this);
+            if (parentWindow != null)
+            {
+                parentWindow.PreviewKeyDown += ParentWindow_PreviewKeyDown;
+            }
+        }
+
+        private void ParentWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            HandleKey(e.Key);
+        }
+
+        public void HandleKey(Key key)
+        {
+            if (key == Key.Space)
             {
                 PlayOrPauseMedia();
             }
-            else if (e.Key == Key.NumPad3)
+            else if (key == Key.NumPad3)
             {
                 videoPlayer.Volume += 0.1;
             }
-            else if (e.Key == Key.NumPad1)
+            else if (key == Key.NumPad1)
             {
                 videoPlayer.Volume -= 0.1;
             }
-            else if (e.Key == Key.NumPad4)
+            else if (key == Key.NumPad4)
             {
                 var newTime = sliProgress.Value - 5;
                 videoPlayer.Position = TimeSpan.FromSeconds(newTime);
             }
-            else if (e.Key == Key.NumPad6)
+            else if (key == Key.NumPad6)
             {
                 var newTime = sliProgress.Value + 5;
                 videoPlayer.Position = TimeSpan.FromSeconds(newTime);

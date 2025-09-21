@@ -65,7 +65,7 @@
                       Background="Gold" 
                       Focusable="False"/>
         <Border Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
-            <Grid>
+            <Grid KeyDown="AppWindow_KeyDown">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -85,7 +85,8 @@
                 <Grid Grid.Row="1" Width="Auto">
 
                     <local:VideoPlayerControl
-                        Focusable="True"
+                        KeyDown="AppWindow_KeyDown"
+                        Focusable="False"
                         x:Name="VideoMedia"
                         Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                         Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"

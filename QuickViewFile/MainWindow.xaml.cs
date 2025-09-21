@@ -47,10 +47,5 @@ namespace QuickViewFile
                 }
             }
         }
-
-        private void Image_DpiChanged(object sender, DpiChangedEventArgs e)
-        {
-
-        }
     }
 }
