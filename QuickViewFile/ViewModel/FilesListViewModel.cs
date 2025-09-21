@@ -251,11 +251,10 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                 {
-                    // async load
-                    var loadedFileText = await Task.Run(() => FileContentReader.ReadTextFileAsync(filePath, Config.MaxPreviewChars));
+                    string asciiCharsToView = await Task.Run(() => FileContentReader.ReadTextFileAsync(filePath));
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        SelectedItem.FileContentModel.TextContent = loadedFileText;
+                        SelectedItem.FileContentModel.TextContent = asciiCharsToView;
                         SelectedItem.FileContentModel.ImageSource = null;
                         SelectedItem.FileContentModel.VideoMedia = null;
                         SelectedItem.FileContentModel.IsLoaded = true;
