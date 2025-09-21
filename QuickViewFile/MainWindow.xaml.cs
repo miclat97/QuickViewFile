@@ -45,6 +45,17 @@ namespace QuickViewFile
                         });
                     }
                 }
+                if (TextBoxTextContent.Text is not null)
+                {
+                    if (e.Key == Key.Add)
+                    {
+                        TextBoxTextContent.FontSize += 0.5;
+                    }
+                    else if (e.Key == Key.Subtract)
+                    {
+                        TextBoxTextContent.FontSize -= 0.5;
+                    }
+                }
             }
         }
     }

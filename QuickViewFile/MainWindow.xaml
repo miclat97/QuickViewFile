@@ -112,6 +112,8 @@
                     <TextBox FontFamily="Consolas"
                              SpellCheck.IsEnabled="False"
                              IsReadOnly="True"
+                             KeyDown="AppWindow_KeyDown"
+                             Name="TextBoxTextContent"
                              HorizontalScrollBarVisibility="Auto"
                              VerticalScrollBarVisibility="Visible"
                              Focusable="True"
