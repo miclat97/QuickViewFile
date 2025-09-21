@@ -7,12 +7,11 @@
         public double PreviewHeight { get; set; } = 800;
         public double PreviewWidth { get; set; } = 1200;
         public double KeyboardZoomStep { get; set; } = 50;
-        public string TextPreviewWordWrap { get; set; } = "NoWrap";
+        public string TextPreviewWordWrap { get; set; } = "Wrap";
         public double MaxScale { get; set; } = 100.0;
         public double MinScale { get; set; } = 1;
         public double MouseWheelZoomStepFactor { get; set; } = 1.1;
         public string BitmapScalingMode { get; set; } = "Fant";
         public double FontSize { get; set; } = 12;
-        public int MaxPreviewChars { get; set; } = 1000000;
     }
 }

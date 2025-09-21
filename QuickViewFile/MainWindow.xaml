@@ -38,10 +38,10 @@
                   KeyDown="AppWindow_KeyDown"
                   Focusable="True"
                   TabIndex="1"
-                  MinWidth="150" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
+                  MinWidth="140" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Name" Width="140">
+                    <GridViewColumn Header="Name" Width="120">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
@@ -76,14 +76,16 @@
                       Text="{Binding SelectedItem.FullPath}"
                       FontWeight="Bold"
                       FontSize="12"
-                      Padding="10,8,10,8"
+                      Padding="10,5,10,5"
                       TextTrimming="CharacterEllipsis"
                       TextWrapping="NoWrap"
                       Foreground="Black"/>
 
                 <!-- File content: Image, Video or Text-->
-                <Grid Grid.Row="1">
+                <Grid Grid.Row="1" Width="Auto">
+
                     <local:VideoPlayerControl
+                        Focusable="True"
                         x:Name="VideoMedia"
                         Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                         Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"
@@ -104,27 +106,21 @@
                             ClipToBounds="True"/>
                     </Grid>
 
-                    <ScrollViewer
-                          CanContentScroll="True"
-                          VirtualizingStackPanel.IsVirtualizing="True"
-                          VirtualizingStackPanel.VirtualizationMode="Recycling"
-                          Focusable="True"
-                          Margin="10"
-                          VerticalScrollBarVisibility="Visible"
-                          HorizontalScrollBarVisibility="Visible"
-                          ClipToBounds="True"
-                          Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBox FontFamily="Consolas"
+                    <Grid ClipToBounds="True"
+                          Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
+                    <TextBox FontFamily="Consolas"
                              SpellCheck.IsEnabled="False"
-                             IsReadOnly="False"
-                             ScrollViewer.CanContentScroll="True"
+                             IsReadOnly="True"
+                             HorizontalScrollBarVisibility="Auto"
+                             VerticalScrollBarVisibility="Visible"
                              Focusable="True"
+                             Margin="10"
                              ClipToBounds="True"
                              Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"
                              FontSize="{Binding Config.FontSize}"
                              Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
                              TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
-                    </ScrollViewer>
+
                 </Grid>
             </Grid>
         </Border>
