@@ -173,23 +173,25 @@ namespace QuickViewFile.Controls
             {
                 PlayOrPauseMedia();
             }
-            else if (key == Key.NumPad3)
+            else if (key == Key.Add)
             {
                 videoPlayer.Volume += 0.1;
             }
-            else if (key == Key.NumPad1)
+            else if (key == Key.Subtract)
             {
                 videoPlayer.Volume -= 0.1;
             }
-            else if (key == Key.NumPad4)
+            else if (key == Key.Left)
             {
-                var newTime = sliProgress.Value - 5;
-                videoPlayer.Position = TimeSpan.FromSeconds(newTime);
+                TimeSpan actualTime = videoPlayer.Position;
+                TimeSpan newTime = actualTime.Subtract(TimeSpan.FromSeconds(10));
+                videoPlayer.Position = newTime;
             }
-            else if (key == Key.NumPad6)
+            else if (key == Key.Right)
             {
-                var newTime = sliProgress.Value + 5;
-                videoPlayer.Position = TimeSpan.FromSeconds(newTime);
+                TimeSpan actualTime = videoPlayer.Position;
+                TimeSpan newTime = actualTime.Add(TimeSpan.FromSeconds(10));
+                videoPlayer.Position = newTime;
             }
         }
 
