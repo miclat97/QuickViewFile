@@ -1,8 +1,10 @@
-﻿using QuickViewFile.ViewModel;
+﻿using QuickViewFile.Controls;
+using QuickViewFile.ViewModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Navigation;
 
 namespace QuickViewFile
 {
@@ -62,19 +64,38 @@ namespace QuickViewFile
 
         private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_filesListViewVisible)
+            try
             {
-                FilesListView.Visibility = Visibility.Collapsed;
-                MainWindowGridSplitter.Visibility = Visibility.Collapsed;
-                FileFullPathTextBlock.Visibility = Visibility.Collapsed;
-                _filesListViewVisible = false;
+                if (DataContext is FilesListViewModel vm)
+                {
+                    if (vm.SelectedItem?.FileContentModel.VideoMedia is not null)
+                    {
+                        VideoPlayerFullScreen fullScreenVideo = new VideoPlayerFullScreen(vm.SelectedItem.FullPath);
+                        vm.SelectedItem = null;
+                        fullScreenVideo.Show();
+                    }
+                    else
+                    {
+                        if (_filesListViewVisible)
+                        {
+                            FilesListView.Visibility = Visibility.Collapsed;
+                            MainWindowGridSplitter.Visibility = Visibility.Collapsed;
+                            FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+                            _filesListViewVisible = false;
+                        }
+                        else
+                        {
+                            FilesListView.Visibility = Visibility.Visible;
+                            MainWindowGridSplitter.Visibility = Visibility.Visible;
+                            FileFullPathTextBlock.Visibility = Visibility.Visible;
+                            _filesListViewVisible = true;
+                        }
+                    }
+                }
             }
-            else
+            catch
             {
-                FilesListView.Visibility = Visibility.Visible;
-                MainWindowGridSplitter.Visibility = Visibility.Visible;
-                FileFullPathTextBlock.Visibility = Visibility.Visible;
-                _filesListViewVisible = true;
+
             }
         }
     }
