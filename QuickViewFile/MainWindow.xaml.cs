@@ -26,9 +26,9 @@ namespace QuickViewFile
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                 {
 
-                    Application.Current.Dispatcher.BeginInvoke(() =>
+                    Application.Current.Dispatcher.BeginInvoke(async () =>
                     {
-                        vm.OnFileDoubleClick(file);
+                        await vm.OnFileDoubleClick(file);
                     });
                 }
             }
@@ -42,12 +42,49 @@ namespace QuickViewFile
                 {
                     if (e.Key == Key.Enter)
                     {
-                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        if (file.IsDirectory)
                         {
-                            vm.OnFileDoubleClick(file);
-                        });
+                            Application.Current.Dispatcher.BeginInvoke(async () =>
+                            {
+                                await vm.OnFileDoubleClick(file);
+                            });
+                        }
+                        else if (file.IsDirectory == false && file.FileContentModel.IsLoaded == false)
+                        {
+                            Application.Current.Dispatcher.BeginInvoke(async () =>
+                            {
+                                await vm.LazyLoadFile(true);
+                            });
+                        }
                     }
                 }
+
+                if (!_filesListViewVisible) // When UI is hidden and user click anything on keyboard it have to be different implementation due to "standard/Windows"
+                                            // handling keyboard - like arrow up or arrow down, when focused on list will change element to previous/net
+                {
+                    if (vm.SelectedItem?.FileContentModel?.VideoMedia is null) // when video is playing - arrows are handled to change video time position
+                    {
+                        int nextFileIndex = FilesListView.SelectedIndex + 1;
+                        int previousFileIndex = FilesListView.SelectedIndex - 1;
+
+                        if (e.Key == Key.Right && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false)
+                        {
+                            FilesListView.SelectedIndex++;
+                        }
+                        else if (e.Key == Key.Left && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false)
+                        {
+                            FilesListView.SelectedIndex--;
+                        }
+                        else if (e.Key == Key.Enter)
+                        {
+                            Application.Current.Dispatcher.BeginInvoke(async () =>
+                            {
+                                await vm.LazyLoadFile(true);
+                            });
+                        }
+                    }
+                }
+
                 if (TextBoxTextContent.Text is not null)
                 {
                     if (e.Key == Key.Add)
@@ -92,6 +129,7 @@ namespace QuickViewFile
                             MainWindowGridSplitter.Visibility = Visibility.Visible;
                             FileFullPathTextBlock.Visibility = Visibility.Visible;
                             _filesListViewVisible = true;
+                            FilesListView.Focus();
                         }
                     }
                 }

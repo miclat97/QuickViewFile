@@ -145,7 +145,7 @@ namespace QuickViewFile.ViewModel
             });
         }
 
-        public void OnFileDoubleClick(ItemList? file)
+        public async Task OnFileDoubleClick(ItemList? file)
         {
             if (file == null)
                 return;
@@ -168,14 +168,14 @@ namespace QuickViewFile.ViewModel
             else if (!file.IsDirectory && File.Exists(file.FullPath))
             {
                 SelectedItem = file;
-                App.Current.Dispatcher.BeginInvoke(() =>
+                await Application.Current.Dispatcher.BeginInvoke(async () =>
                 {
                     SelectedItem.FileContentModel = new FileContentModel
                     {
                         TextContent = "Loading...",
                         ImageSource = null
                     };
-                    this.LazyLoadFile(true);
+                    await this.LazyLoadFile(true);
                 });
             }
             else
