@@ -190,19 +190,19 @@ namespace QuickViewFile
                 {
                     Point mousePosition = e.GetPosition(ContentGrid);
 
-                    double previousPhoto = ContentGrid.ActualWidth * 0.008;
+                    double previousPhoto = ContentGrid.ActualWidth * 0.08;
                     double nextPhoto = ContentGrid.ActualWidth * 0.92;
 
                     int nextFileIndex = FilesListView.SelectedIndex + 1;
                     int previousFileIndex = FilesListView.SelectedIndex - 1;
 
-                    if ((mousePosition.X < previousPhoto) && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false)
-                    {
-                        FilesListView.SelectedIndex++;
-                    }
-                    else if ((mousePosition.X > nextPhoto) && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false)
+                    if ((mousePosition.X < previousPhoto) && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false)
                     {
                         FilesListView.SelectedIndex--;
+                    }
+                    else if ((mousePosition.X > nextPhoto) && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false)
+                    {
+                        FilesListView.SelectedIndex++;
                     }
                 }
             }

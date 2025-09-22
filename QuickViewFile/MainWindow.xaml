@@ -11,6 +11,7 @@
         mc:Ignorable="d"
         WindowState="Maximized"
         KeyDown="AppWindow_KeyDown"
+        WindowStyle="ThreeDBorderWindow"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         WindowStartupLocation="CenterOwner"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
@@ -18,6 +19,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <helpers:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
         <helpers:ScrollBarsVisibilityConverter x:Key="ScrollBarsVisibilityConverter"/>
         <Style TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="40"/>
@@ -98,12 +100,12 @@
                         Focusable="False"
                         x:Name="VideoMedia"
                         Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
-                        Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"
+                        Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}"
                     />
 
 
                     <Grid Focusable="False"
-                         Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
+                         Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
                          ClipToBounds="True">
                         <local:ZoomableImage
                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
@@ -114,23 +116,23 @@
                             Width="Auto"
                             HorizontalAlignment="Center"
                             RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
-                            Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
+                            Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
                             ClipToBounds="True"/>
                     </Grid>
 
                     <Grid ClipToBounds="True"
-                          Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
+                          Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToCollapsedConverter}}"/>
                     <TextBox FontFamily="Consolas"
                              SpellCheck.IsEnabled="False"
                              IsReadOnly="False"
                              KeyDown="AppWindow_KeyDown"
                              Name="TextBoxTextContent"
                              HorizontalScrollBarVisibility="Auto"
-                             VerticalScrollBarVisibility="Visible"
-                             Focusable="False"
+                             VerticalScrollBarVisibility="Auto"
+                             Focusable="True"
                              Margin="10"
                              ClipToBounds="True"
-                             Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"
+                             Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToCollapsedConverter}}"
                              FontSize="{Binding Config.FontSize}"
                              Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
                              TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
