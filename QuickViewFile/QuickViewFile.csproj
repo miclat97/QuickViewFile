@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Version>1.4.2.2</Version>
+    <ApplicationIcon>QuickViewFile.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -23,6 +24,10 @@
     <None Remove="Controls\Resources\play.png" />
     <None Remove="Controls\Resources\previous.png" />
     <None Remove="Controls\Resources\stop.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="QuickViewFile.ico" />
   </ItemGroup>
 
   <ItemGroup>
