@@ -33,59 +33,40 @@ namespace QuickViewFile.Controls
             InitializeComponent();
 
             //_config = ConfigHelper.LoadConfig();
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += timer_Tick;
-            timer.Start();
         }
 
         public VideoPlayerFullScreen(string filePath)
         {
             InitializeComponent();
-
+            //videoFullScreenPlayer.Height = heigth;
             //_config = ConfigHelper.LoadConfig();
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += timer_Tick;
-            timer.Start();
-
             StartPlaying(filePath);
         }
 
         public void StartPlaying(string filePath)
         {
-            videoPlayer.Source = new Uri(filePath);
-            videoPlayer.Play();
+            videoFullScreenPlayer.Source = new Uri(filePath);
+            videoFullScreenPlayer.Play();
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
-            videoPlayer.Volume = 1;
-            //videoPlayer.Height = _config.VideoHeigth;
-            //videoPlayer.RenderSize = new Size(_config.VideoWidth, _config.VideoHeigth);
+            videoFullScreenPlayer.Volume = 1;
+            //videoFullScreenPlayer.Height = _config.VideoHeigth;
+            //videoFullScreenPlayer.RenderSize = new Size(_config.VideoWidth, _config.VideoHeigth);
         }
 
-        private void timer_Tick(object sender, EventArgs e)
-        {
-            if ((videoPlayer.Source != null) && (videoPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
-            {
-                sliProgress.Minimum = 0;
-                sliProgress.Maximum = videoPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                sliProgress.Value = videoPlayer.Position.TotalSeconds;
-            }
-        }
 
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
-            PlayButton.Opacity = 1;
         }
 
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             if (mediaPlayerIsPlaying)
             {
-                videoPlayer.Stop();
+                videoFullScreenPlayer.Stop();
             }
-            videoPlayer.Play();
+            videoFullScreenPlayer.Play();
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
         }
@@ -95,18 +76,16 @@ namespace QuickViewFile.Controls
             if (mediaPlayerIsPlaying && !isVideoPaused)
             {
                 e.CanExecute = true;
-                PauseButton.Opacity = 1;
             }
             else
             {
                 e.CanExecute = false;
-                PauseButton.Opacity = 0.1;
             }
         }
 
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            videoPlayer.Pause();
+            videoFullScreenPlayer.Pause();
             isVideoPaused = true;
             mediaPlayerIsPlaying = false;
         }
@@ -114,50 +93,32 @@ namespace QuickViewFile.Controls
         private void Stop_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
-            StopButton.Opacity = 1;
         }
 
         private void Stop_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            videoPlayer.Stop();
+            videoFullScreenPlayer.Stop();
             isVideoPaused = true;
             mediaPlayerIsPlaying = false;
         }
 
-        private void sliProgress_DragStarted(object sender, DragStartedEventArgs e)
-        {
-            userIsDraggingSlider = true;
-        }
-
-        private void sliProgress_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            userIsDraggingSlider = false;
-            videoPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
-        }
-
-        private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            videoPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
-            lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss");
-            fullTime.Text = TimeSpan.FromSeconds(sliProgress.Maximum).ToString(@"hh\:mm\:ss");
-        }
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            videoPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
+            videoFullScreenPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
         }
 
         private void PlayOrPauseMedia()
         {
             if (!isVideoPaused)
             {
-                videoPlayer.Pause();
+                videoFullScreenPlayer.Pause();
                 isVideoPaused = true;
                 mediaPlayerIsPlaying = false;
             }
             else
             {
-                videoPlayer.Play();
+                videoFullScreenPlayer.Play();
                 isVideoPaused = false;
                 mediaPlayerIsPlaying = true;
             }
@@ -191,23 +152,23 @@ namespace QuickViewFile.Controls
             }
             else if (key == Key.Add)
             {
-                videoPlayer.Volume += 0.1;
+                videoFullScreenPlayer.Volume += 0.1;
             }
             else if (key == Key.Subtract)
             {
-                videoPlayer.Volume -= 0.1;
+                videoFullScreenPlayer.Volume -= 0.1;
             }
             else if (key == Key.Left)
             {
-                TimeSpan actualTime = videoPlayer.Position;
+                TimeSpan actualTime = videoFullScreenPlayer.Position;
                 TimeSpan newTime = actualTime.Subtract(TimeSpan.FromSeconds(10));
-                videoPlayer.Position = newTime;
+                videoFullScreenPlayer.Position = newTime;
             }
             else if (key == Key.Right)
             {
-                TimeSpan actualTime = videoPlayer.Position;
+                TimeSpan actualTime = videoFullScreenPlayer.Position;
                 TimeSpan newTime = actualTime.Add(TimeSpan.FromSeconds(10));
-                videoPlayer.Position = newTime;
+                videoFullScreenPlayer.Position = newTime;
             }
         }
 
@@ -217,9 +178,9 @@ namespace QuickViewFile.Controls
             {
                 if (disposing)
                 {
-                    videoPlayer.Stop();
+                    videoFullScreenPlayer.Stop();
                     mediaPlayerIsPlaying = false;
-                    videoPlayer.Close();
+                    videoFullScreenPlayer.Close();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
@@ -229,7 +190,7 @@ namespace QuickViewFile.Controls
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~VideoPlayerControl()
+        // ~videoFullScreenPlayerControl()
         // {
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         //     Dispose(disposing: false);

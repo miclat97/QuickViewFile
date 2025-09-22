@@ -1,4 +1,4 @@
-using QuickViewFile.Models;
+﻿using QuickViewFile.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 namespace QuickViewFile.Controls
 {
-    public class ZoomableImage : Image
+    public class ZoomableMediaElement : MediaElement
     {
         private readonly ConfigModel _config;
         private Point? lastDragPoint;
@@ -15,14 +15,12 @@ namespace QuickViewFile.Controls
         private ScaleTransform scaleTransform = new ScaleTransform();
         private TransformGroup transformGroup = new TransformGroup();
 
-        public ZoomableImage()
+        public ZoomableMediaElement()
         {
             this.UseLayoutRounding = true;
             transformGroup.Children.Add(scaleTransform);
             transformGroup.Children.Add(translateTransform);
             this.ClipToBounds = true;
-
-            _config = ConfigHelper.LoadConfig();
 
             this.RenderTransform = transformGroup;
             this.RenderTransformOrigin = new Point(0, 0);
@@ -41,15 +39,16 @@ namespace QuickViewFile.Controls
 
         private void ClampTranslation()
         {
-            if (this.Source == null) return;
+            double mediaElementWidth = this.NaturalVideoWidth * currentScale;
+            double mediaElementHeight = this.NaturalVideoHeight * currentScale;
+            double viewportWidth = this.ActualWidth;
+            double viewportHeight = this.ActualHeight;
 
-            double imageX = this.Source.Width * currentScale;
-            double imageY = this.Source.Height * currentScale;
-            double viewportX = this.ActualWidth;
-            double viewportY = this.ActualHeight;
+            double maxX = Math.Max((mediaElementWidth - viewportWidth), 0);
+            double maxY = Math.Max((mediaElementHeight - viewportHeight), 0);
 
-            double maxX = Math.Max((imageX - viewportX), 0);
-            double maxY = Math.Max((imageY - viewportY), 0);
+            maxY *= 2;
+            maxX *= 2;
 
             // Clamp so the image cannot be dragged outside the visible area
             translateTransform.X = Math.Min(Math.Max(translateTransform.X, -maxX), maxX);
@@ -86,13 +85,13 @@ namespace QuickViewFile.Controls
         private void Image_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             Point mousePosition = e.GetPosition(this);
-            double zoomFactor = e.Delta > 0 ? _config.MouseWheelZoomStepFactor : 1 / _config.MouseWheelZoomStepFactor;
+            double zoomFactor = e.Delta > 0 ? 1.1 : 1 / 1.1;
 
             double newScale = currentScale * zoomFactor;
-            if (newScale < _config.MinScale)
-                newScale = _config.MinScale;
-            if (newScale > _config.MaxScale)
-                newScale = _config.MaxScale;
+            if (newScale < 1)
+                newScale = 1;
+            if (newScale > 100)
+                newScale = 100;
 
             if (Math.Abs(newScale - currentScale) < 0.001)
                 return;

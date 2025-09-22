@@ -8,7 +8,7 @@ using System.Windows.Threading;
 namespace QuickViewFile.Controls
 {
     /// <summary>
-    /// Interaction logic for VideoPlayerControl.xaml
+    /// Interaction logic for VideoPlayerControl .xaml
     /// </summary>
     public partial class VideoPlayerControl : UserControl, IDisposable
     {
@@ -45,22 +45,22 @@ namespace QuickViewFile.Controls
 
         public void StartPlaying(string filePath)
         {
-            videoPlayer.Source = new Uri(filePath);
-            videoPlayer.Play();
+            videoInWindowPlayer.Source = new Uri(filePath);
+            videoInWindowPlayer.Play();
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
-            videoPlayer.Volume = 1;
-            //videoPlayer.Height = _config.VideoHeigth;
-            //videoPlayer.RenderSize = new Size(_config.VideoWidth, _config.VideoHeigth);
+            videoInWindowPlayer.Volume = 1;
+            //videoInWindowPlayer.Height = _config.VideoHeigth;
+            //videoInWindowPlayer.RenderSize = new Size(_config.VideoWidth, _config.VideoHeigth);
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            if ((videoPlayer.Source != null) && (videoPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
+            if ((videoInWindowPlayer.Source != null) && (videoInWindowPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
             {
                 sliProgress.Minimum = 0;
-                sliProgress.Maximum = videoPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                sliProgress.Value = videoPlayer.Position.TotalSeconds;
+                sliProgress.Maximum = videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                sliProgress.Value = videoInWindowPlayer.Position.TotalSeconds;
             }
         }
 
@@ -74,9 +74,9 @@ namespace QuickViewFile.Controls
         {
             if (mediaPlayerIsPlaying)
             {
-                videoPlayer.Stop();
+                videoInWindowPlayer.Stop();
             }
-            videoPlayer.Play();
+            videoInWindowPlayer.Play();
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
         }
@@ -97,7 +97,7 @@ namespace QuickViewFile.Controls
 
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            videoPlayer.Pause();
+            videoInWindowPlayer.Pause();
             isVideoPaused = true;
             mediaPlayerIsPlaying = false;
         }
@@ -110,7 +110,7 @@ namespace QuickViewFile.Controls
 
         private void Stop_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            videoPlayer.Stop();
+            videoInWindowPlayer.Stop();
             isVideoPaused = true;
             mediaPlayerIsPlaying = false;
         }
@@ -123,32 +123,32 @@ namespace QuickViewFile.Controls
         private void sliProgress_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             userIsDraggingSlider = false;
-            videoPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
+            videoInWindowPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
         }
 
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            videoPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
+            videoInWindowPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
             lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss");
             fullTime.Text = TimeSpan.FromSeconds(sliProgress.Maximum).ToString(@"hh\:mm\:ss");
         }
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            videoPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
+            videoInWindowPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
         }
 
         private void PlayOrPauseMedia()
         {
             if (!isVideoPaused)
             {
-                videoPlayer.Pause();
+                videoInWindowPlayer.Pause();
                 isVideoPaused = true;
                 mediaPlayerIsPlaying = false;
             }
             else
             {
-                videoPlayer.Play();
+                videoInWindowPlayer.Play();
                 isVideoPaused = false;
                 mediaPlayerIsPlaying = true;
             }
@@ -182,23 +182,23 @@ namespace QuickViewFile.Controls
             }
             else if (key == Key.Add)
             {
-                videoPlayer.Volume += 0.1;
+                videoInWindowPlayer.Volume += 0.1;
             }
             else if (key == Key.Subtract)
             {
-                videoPlayer.Volume -= 0.1;
+                videoInWindowPlayer.Volume -= 0.1;
             }
             else if (key == Key.Left)
             {
-                TimeSpan actualTime = videoPlayer.Position;
+                TimeSpan actualTime = videoInWindowPlayer.Position;
                 TimeSpan newTime = actualTime.Subtract(TimeSpan.FromSeconds(10));
-                videoPlayer.Position = newTime;
+                videoInWindowPlayer.Position = newTime;
             }
             else if (key == Key.Right)
             {
-                TimeSpan actualTime = videoPlayer.Position;
+                TimeSpan actualTime = videoInWindowPlayer.Position;
                 TimeSpan newTime = actualTime.Add(TimeSpan.FromSeconds(10));
-                videoPlayer.Position = newTime;
+                videoInWindowPlayer.Position = newTime;
             }
         }
 
@@ -208,9 +208,9 @@ namespace QuickViewFile.Controls
             {
                 if (disposing)
                 {
-                    videoPlayer.Stop();
+                    videoInWindowPlayer.Stop();
                     mediaPlayerIsPlaying = false;
-                    videoPlayer.Close();
+                    videoInWindowPlayer.Close();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
@@ -220,7 +220,7 @@ namespace QuickViewFile.Controls
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~VideoPlayerControl()
+        // ~videoInWindowPlayerControl()
         // {
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         //     Dispose(disposing: false);

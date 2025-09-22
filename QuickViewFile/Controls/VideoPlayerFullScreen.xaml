@@ -7,65 +7,15 @@
         mc:Ignorable="d"
         WindowStyle="None"
         AllowsTransparency="True"
+        Background="Transparent"
         WindowState="Maximized"
         KeyDown="Window_KeyDown"
-        Title="VideoPlayerFullScreen" Height="450" Width="800">
-    <Window.CommandBindings>
-        <CommandBinding Command="MediaCommands.Play" CanExecute="Play_CanExecute" Executed="Play_Executed" />
-        <CommandBinding Command="MediaCommands.Pause" CanExecute="Pause_CanExecute" Executed="Pause_Executed" />
-        <CommandBinding Command="MediaCommands.Stop" CanExecute="Stop_CanExecute" Executed="Stop_Executed" />
-    </Window.CommandBindings>
-    <Grid MouseWheel="Grid_MouseWheel" KeyDown="videoPlayer_KeyDown">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        Title="VideoPlayerFullScreen" Height="1080" Width="1920">
+    <Grid KeyDown="videoPlayer_KeyDown">
 
-        <MediaElement Name="videoPlayer" LoadedBehavior="Manual" />
+        <Border Background="Gold">
+            <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" Stretch="Uniform" StretchDirection="Both" LoadedBehavior="Manual" />
+        </Border>
 
-        <StatusBar Grid.Row="1" Height="22">
-            <StatusBar.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                    </Grid>
-                </ItemsPanelTemplate>
-            </StatusBar.ItemsPanel>
-            <StatusBarItem Grid.Column="0">
-                <Button Name="PlayButton" Command="MediaCommands.Play" Focusable="False">
-                    <Image Source="/Controls/Resources/play.png" Stretch="Uniform"/>
-                </Button>
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="1">
-                <Button Name="PauseButton" Command="MediaCommands.Pause" Focusable="False">
-                    <Image Source="/Controls/Resources/pause.png" Stretch="Uniform"/>
-                </Button>
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="2">
-                <Button Name="StopButton" Command="MediaCommands.Stop" Focusable="False">
-                    <Image Source="/Controls/Resources/stop.png" Stretch="Uniform"/>
-                </Button>
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="3">
-                <TextBlock Name="lblProgressStatus">00:00:00</TextBlock>
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="4">
-                <TextBlock Name="fullTime">00:00:00</TextBlock>
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="5" HorizontalContentAlignment="Stretch" Height="15" Background="#FFF6D70F">
-                <Slider Name="sliProgress" Focusable="False" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" />
-            </StatusBarItem>
-            <StatusBarItem Grid.Column="6">
-                <ProgressBar Name="pbVolume" Width="50" Height="12" Maximum="1" Value="{Binding ElementName=videoPlayer, Path=Volume}" />
-            </StatusBarItem>
-        </StatusBar>
     </Grid>
 </Window>
