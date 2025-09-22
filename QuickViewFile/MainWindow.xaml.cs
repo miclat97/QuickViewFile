@@ -77,6 +77,18 @@ namespace QuickViewFile
                     }
                 }
 
+                if (e.Key == Key.F11)
+                {
+                    if (_filesListViewVisible)
+                    {
+                        HideUI();
+                    }
+                    else
+                    {
+                        ShowUI();
+                    }
+                }
+
                 if (!_filesListViewVisible) // When UI is hidden and user click anything on keyboard it have to be different implementation due to "standard/Windows"
                                             // handling keyboard - like arrow up or arrow down, when focused on list will change element to previous/net
                 {
@@ -136,18 +148,11 @@ namespace QuickViewFile
                     {
                         if (_filesListViewVisible)
                         {
-                            FilesListView.Visibility = Visibility.Collapsed;
-                            MainWindowGridSplitter.Visibility = Visibility.Collapsed;
-                            FileFullPathTextBlock.Visibility = Visibility.Collapsed;
-                            _filesListViewVisible = false;
+                            HideUI();
                         }
                         else
                         {
-                            FilesListView.Visibility = Visibility.Visible;
-                            MainWindowGridSplitter.Visibility = Visibility.Visible;
-                            FileFullPathTextBlock.Visibility = Visibility.Visible;
-                            _filesListViewVisible = true;
-                            FilesListView.Focus();
+                            ShowUI();
                         }
                     }
                 }
@@ -155,6 +160,51 @@ namespace QuickViewFile
             catch
             {
 
+            }
+        }
+
+        private void HideUI()
+        {
+            FilesListView.Visibility = Visibility.Collapsed;
+            MainWindowGridSplitter.Visibility = Visibility.Collapsed;
+            FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+            WindowStyle = WindowStyle.None;
+            _filesListViewVisible = false;
+        }
+
+        private void ShowUI()
+        {
+            FilesListView.Visibility = Visibility.Visible;
+            MainWindowGridSplitter.Visibility = Visibility.Visible;
+            FileFullPathTextBlock.Visibility = Visibility.Visible;
+            _filesListViewVisible = true;
+            WindowStyle = WindowStyle.ThreeDBorderWindow;
+            FilesListView.Focus();
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm)
+            {
+                if (vm.SelectedItem?.FileContentModel.ImageSource is not null)
+                {
+                    Point mousePosition = e.GetPosition(ContentGrid);
+
+                    double previousPhoto = ContentGrid.ActualWidth * 0.008;
+                    double nextPhoto = ContentGrid.ActualWidth * 0.92;
+
+                    int nextFileIndex = FilesListView.SelectedIndex + 1;
+                    int previousFileIndex = FilesListView.SelectedIndex - 1;
+
+                    if ((mousePosition.X < previousPhoto) && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false)
+                    {
+                        FilesListView.SelectedIndex++;
+                    }
+                    else if ((mousePosition.X > nextPhoto) && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false)
+                    {
+                        FilesListView.SelectedIndex--;
+                    }
+                }
             }
         }
     }

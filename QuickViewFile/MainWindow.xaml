@@ -11,6 +11,7 @@
         mc:Ignorable="d"
         WindowState="Maximized"
         KeyDown="AppWindow_KeyDown"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
         WindowStartupLocation="CenterOwner"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
         Title="QuickViewFile" Height="600" Width="1200">
@@ -68,6 +69,7 @@
                       Focusable="False"/>
         <Border Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
             <Grid KeyDown="AppWindow_KeyDown"
+                  Name="ContentGrid"
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
                   Width="Auto"
@@ -99,15 +101,19 @@
                         Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"
                     />
 
+
                     <Grid Focusable="False"
                          Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
                          ClipToBounds="True">
                         <local:ZoomableImage
                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
                             VerticalAlignment="Center"
+                            Stretch="Uniform"
+                            x:Name="ZoomableImageElement"
+                            Height="Auto"
+                            Width="Auto"
                             HorizontalAlignment="Center"
                             RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
-                            Stretch="{Binding Config.ImageStretch}" 
                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
                             ClipToBounds="True"/>
                     </Grid>
