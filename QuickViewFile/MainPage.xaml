@@ -1,0 +1,139 @@
+﻿<Page x:Class="QuickViewFile.MainPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuickViewFile.Controls"
+        xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
+        xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
+        d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
+        xmlns:uc="clr-namespace:QuickViewFile.Controls"
+        mc:Ignorable="d"
+        
+        KeyDown="AppWindow_KeyDown"
+        ShowsNavigationUI="True"
+        FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
+        Title="QuickViewFile" Width="1920" Height="1080">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <helpers:ScrollBarsVisibilityConverter x:Key="ScrollBarsVisibilityConverter"/>
+        <Style TargetType="ListViewItem">
+            <Setter Property="MinHeight" Value="40"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Grid.Row="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ListView Grid.Column="0"
+              x:Name="FilesListView"
+              SelectionMode="Single"
+              ItemsSource="{Binding ActiveListItems}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+              MouseDoubleClick="FilesListView_MouseDoubleClick"
+              Margin="10"
+              KeyDown="AppWindow_KeyDown"
+              Focusable="True"
+              TabIndex="1"
+              ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Size (KB)" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <GridSplitter Grid.Column="1"
+                  Width="3"
+                  Name="MainWindowGridSplitter"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Background="Gold" 
+                  Focusable="False"/>
+        <Border Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
+            <Grid KeyDown="AppWindow_KeyDown"
+              MouseRightButtonDown="Grid_MouseRightButtonDown"
+              Height="Auto"
+              Width="Auto"
+              UseLayoutRounding="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- FileName TextBox -->
+                <TextBlock Grid.Row="0"
+                  Text="{Binding SelectedItem.FullPath}"
+                  FontWeight="Bold"
+                  Name="FileFullPathTextBlock"
+                  FontSize="12"
+                  Padding="10,5,10,5"
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="NoWrap"
+                  Foreground="Black"/>
+
+                <!-- File content: Image, Video or Text-->
+                <Grid Grid.Row="1" Width="Auto">
+
+                    <local:VideoPlayerControl
+                    KeyDown="AppWindow_KeyDown"
+                    Focusable="False"
+                    x:Name="VideoMedia"
+                    Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
+                    Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToVisibilityConverter}}"
+                />
+
+                    <Grid Focusable="False"
+                     Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
+                     ClipToBounds="True">
+                        <local:ZoomableImage
+                        Source="{Binding SelectedItem.FileContentModel.ImageSource}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
+                        Stretch="{Binding Config.ImageStretch}" 
+                        MaxHeight="{Binding Config.PreviewHeight}" 
+                        MaxWidth="{Binding Config.PreviewWidth}" 
+                        Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
+                        ClipToBounds="True"/>
+                    </Grid>
+
+                    <Grid ClipToBounds="True"
+                      Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
+                    <TextBox FontFamily="Consolas"
+                         SpellCheck.IsEnabled="False"
+                         IsReadOnly="True"
+                         KeyDown="AppWindow_KeyDown"
+                         Name="TextBoxTextContent"
+                         HorizontalScrollBarVisibility="Auto"
+                         VerticalScrollBarVisibility="Visible"
+                         Focusable="False"
+                         Margin="10"
+                         ClipToBounds="True"
+                         Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"
+                         FontSize="{Binding Config.FontSize}"
+                         Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
+                         TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>
