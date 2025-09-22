@@ -25,7 +25,7 @@ namespace QuickViewFile.Controls
             _config = ConfigHelper.LoadConfig();
 
             this.RenderTransform = transformGroup;
-            this.RenderTransformOrigin = new Point((this.ActualHeight / 2), (this.ActualWidth / 2)); //by default picture is centered in control
+            this.RenderTransformOrigin = new Point(0, 0);
 
             this.MouseLeftButtonDown += Image_MouseLeftButtonDown;
             this.MouseLeftButtonUp += Image_MouseLeftButtonUp;
@@ -43,13 +43,13 @@ namespace QuickViewFile.Controls
         {
             if (this.Source == null) return;
 
-            double imageWidth = this.Source.Width * currentScale;
-            double imageHeight = this.Source.Height * currentScale;
-            double viewportWidth = this.ActualWidth;
-            double viewportHeight = this.ActualHeight;
+            double imageX = this.Source.Width * currentScale;
+            double imageY = this.Source.Height * currentScale;
+            double viewportX = this.ActualWidth;
+            double viewportY = this.ActualHeight;
 
-            double maxX = Math.Max((imageWidth - viewportWidth), 0);
-            double maxY = Math.Max((imageHeight - viewportHeight), 0);
+            double maxX = Math.Max((imageX - viewportX), 0);
+            double maxY = Math.Max((imageY - viewportY), 0);
 
             // Clamp so the image cannot be dragged outside the visible area
             translateTransform.X = Math.Min(Math.Max(translateTransform.X, -maxX), maxX);

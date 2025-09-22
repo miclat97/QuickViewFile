@@ -39,13 +39,16 @@ namespace QuickViewFile.Controls
 
         private void ClampTranslation()
         {
-            double imageWidth = this.NaturalVideoWidth * currentScale;
-            double imageHeight = this.NaturalVideoHeight * currentScale;
+            double mediaElementWidth = this.NaturalVideoWidth * currentScale;
+            double mediaElementHeight = this.NaturalVideoHeight * currentScale;
             double viewportWidth = this.ActualWidth;
             double viewportHeight = this.ActualHeight;
 
-            double maxX = Math.Max((imageWidth - viewportWidth), 0);
-            double maxY = Math.Max((imageHeight - viewportHeight), 0);
+            double maxX = Math.Max((mediaElementWidth - viewportWidth), 0);
+            double maxY = Math.Max((mediaElementHeight - viewportHeight), 0);
+
+            maxY *= 2;
+            maxX *= 2;
 
             // Clamp so the image cannot be dragged outside the visible area
             translateTransform.X = Math.Min(Math.Max(translateTransform.X, -maxX), maxX);

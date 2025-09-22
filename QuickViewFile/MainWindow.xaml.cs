@@ -56,7 +56,10 @@ namespace QuickViewFile
                     }
                     else if (e.Key == Key.Subtract)
                     {
-                        TextBoxTextContent.FontSize -= 0.5;
+                        if (TextBoxTextContent.FontSize >= 1)
+                        {
+                            TextBoxTextContent.FontSize -= 0.5;
+                        }
                     }
                 }
             }
@@ -78,9 +81,9 @@ namespace QuickViewFile
                     {
                         if (_filesListViewVisible)
                         {
-                            FilesListView.Visibility = Visibility.Collapsed;
-                            MainWindowGridSplitter.Visibility = Visibility.Collapsed;
-                            FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+                            FilesListView.Visibility = Visibility.Hidden;
+                            MainWindowGridSplitter.Visibility = Visibility.Hidden;
+                            FileFullPathTextBlock.Visibility = Visibility.Hidden;
                             _filesListViewVisible = false;
                         }
                         else
