@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         WindowStyle="None"
         AllowsTransparency="True"
+        Background="Transparent"
         WindowState="Maximized"
         KeyDown="Window_KeyDown"
         Title="VideoPlayerFullScreen" Height="1080" Width="1920">
@@ -21,7 +22,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" LoadedBehavior="Manual" Stretch="None" Height="1080"/>
+        <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" LoadedBehavior="Manual" />
 
         <StatusBar Grid.Row="1" Height="25">
             <StatusBar.ItemsPanel>
