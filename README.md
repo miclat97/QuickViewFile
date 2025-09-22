@@ -8,4 +8,4 @@ Windows desktop application in (.NET 8, WPF) to quickly open any filetype - with
 
 ![screenshot](https://raw.githubusercontent.com/miclat97/QuickViewFile/refs/heads/master/QuickViewFile/Screenshots/text.png)
 
-![screenshot](https://raw.githubusercontent.com/miclat97/QuickViewFile/refs/heads/master/QuickViewFile/Screenshots/video.png)
+![screenshot](https://raw.githubusercontent.com/miclat97/QuickViewFile/refs/heads/master/QuickViewFile/Screenshots/videoAI_quickviewfile.png)
