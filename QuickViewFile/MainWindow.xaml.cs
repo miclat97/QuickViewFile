@@ -118,9 +118,9 @@ namespace QuickViewFile
                     {
                         if (_filesListViewVisible)
                         {
-                            FilesListView.Visibility = Visibility.Hidden;
-                            MainWindowGridSplitter.Visibility = Visibility.Hidden;
-                            FileFullPathTextBlock.Visibility = Visibility.Hidden;
+                            FilesListView.Visibility = Visibility.Collapsed;
+                            MainWindowGridSplitter.Visibility = Visibility.Collapsed;
+                            FileFullPathTextBlock.Visibility = Visibility.Collapsed;
                             _filesListViewVisible = false;
                         }
                         else
