@@ -14,22 +14,30 @@ namespace QuickViewFile.ViewModel
 
         public FilesListViewModel(string folderPath)
         {
-            _folderPath = folderPath;
-            RefreshFiles();
-            _folderWatcher = new FolderWatcher(_folderPath);
-            _folderWatcher.OnFolderChanged += RefreshFiles;
             Config = ConfigHelper.LoadConfig();
-            PreviewHeight = Config.PreviewHeight;
-            PreviewWidth = Config.PreviewWidth;
+
+            _filesListViewVisible = true;
+
+            _folderPath = Path.GetDirectoryName(folderPath)!;
+            if (_folderPath.Equals(folderPath, StringComparison.OrdinalIgnoreCase)) // if directory name is the same as directory from parameter,
+                                                                                    // it means that user doesn't picked any exeact file, but directory
+            {
+                RefreshFiles();
+            }
+            else
+            {
+                RefreshFiles(folderPath);
+            }
         }
 
         private ItemList? _selectedItem;
         private readonly FolderWatcher _folderWatcher;
-        private string _folderPath = Directory.GetCurrentDirectory();
+        private string _folderPath;
 
         public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
-
+        private bool _filesListViewVisible;
+        public bool FilesListViewVisible { get; set; }
 
         private double _previewHeight;
         public double PreviewHeight
@@ -76,7 +84,7 @@ namespace QuickViewFile.ViewModel
 
         public event System.Action<ItemList?>? SelectedFileChanged;
 
-        private void RefreshFiles()
+        private void RefreshFiles(string? fileToSelect = null)
         {
             try
             {
@@ -106,6 +114,12 @@ namespace QuickViewFile.ViewModel
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 ActiveListItems.Clear();
+
+                bool userGivesPathToFile = false;
+                if (fileToSelect is not null)
+                {
+                    userGivesPathToFile = true;
+                }
 
                 if (dirInfo.Parent != null)
                 {
@@ -141,6 +155,14 @@ namespace QuickViewFile.ViewModel
                         IsDirectory = false,
                         FileContentModel = new FileContentModel()
                     });
+
+                    if (userGivesPathToFile)
+                    {
+                        if (file.FullName.Equals(fileToSelect))
+                        {
+                            SelectedItem = ActiveListItems.LastOrDefault();
+                        }
+                    }
                 }
             });
         }

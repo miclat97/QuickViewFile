@@ -108,8 +108,6 @@
                             HorizontalAlignment="Center"
                             RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
                             Stretch="{Binding Config.ImageStretch}" 
-                            MaxHeight="{Binding Config.PreviewHeight}" 
-                            MaxWidth="{Binding Config.PreviewWidth}" 
                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToVisibilityConverter}}"
                             ClipToBounds="True"/>
                     </Grid>
@@ -118,7 +116,7 @@
                           Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToVisibilityConverter}}"/>
                     <TextBox FontFamily="Consolas"
                              SpellCheck.IsEnabled="False"
-                             IsReadOnly="True"
+                             IsReadOnly="False"
                              KeyDown="AppWindow_KeyDown"
                              Name="TextBoxTextContent"
                              HorizontalScrollBarVisibility="Auto"

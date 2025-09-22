@@ -13,10 +13,28 @@ namespace QuickViewFile
         private bool _filesListViewVisible = true;
         public MainWindow()
         {
-            InitializeComponent();
-            var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
+            try
+            {
+                string[] args = Environment.GetCommandLineArgs();
 
-            DataContext = vm;
+                if (args.ElementAtOrDefault(1) is not null)
+                {
+                    var vm = new FilesListViewModel(Path.Combine(args.ElementAt(1)));
+                    DataContext = vm;
+                }
+                else
+                {
+                    var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
+                    DataContext = vm;
+                }
+                InitializeComponent();
+            }
+            catch
+            {
+                var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
+                DataContext = vm;
+                InitializeComponent();
+            }
         }
 
         private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory or force load file (using double click)
