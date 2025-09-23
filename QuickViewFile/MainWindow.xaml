@@ -37,19 +37,20 @@
     </Window.Resources>
     <Grid Background="#FF252525">
         <Grid.RowDefinitions>
-            <RowDefinition Height="56"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <TextBlock
+        <DockPanel Name="DockNavigationPanel" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.Row="0" VerticalAlignment="Top" Background="Transparent">
+            <TextBlock
                   Text="{Binding SelectedItem.FullPath}"
                   FontWeight="Bold"
                   Name="FileFullPathTextBlock"
-                  FontSize="12"
+                  FontSize="12.5"
+                  Margin="0,3,0,0"
                   Padding="10,10,10,10"
                   TextWrapping="NoWrap"
                   Foreground="WhiteSmoke"/>
-        <DockPanel MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top">
-            <StackPanel Background="Transparent" Opacity="1" Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Right" Margin="10" UseLayoutRounding="True">
+            <StackPanel HorizontalAlignment="Right" Background="Transparent" Opacity="1" Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Right" Margin="10" UseLayoutRounding="True">
                 <Button Content="—" Width="40" Click="Minimize_Click"/>
                 <Button Content="▢" Width="40" Click="Maximize_Click"/>
                 <Button Content="X" Width="40" Background="Red" Foreground="White" Click="Close_Click"/>
@@ -71,16 +72,16 @@
                   Margin="10"
                   KeyDown="AppWindow_KeyDown"
                   Focusable="True"
-                  TabIndex="1"
-                  Foreground="Gold"
-                  Background="Gray"
+                  TabIndex="0"
+                  Foreground="#FFF4B900"
+                  Background="#FF646464"
                   ScrollViewer.CanContentScroll="True" BorderBrush="Transparent" d:ItemsSource="{d:SampleData ItemCount=5}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="120">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -101,7 +102,7 @@
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       Focusable="False"/>
-            <Border Visibility="Visible" Name="ContentBorder" Grid.Column="2" BorderBrush="Transparent" BorderThickness="1" Margin="1">
+            <Border Name="ContentBorder" Grid.Column="2" BorderBrush="Transparent" BorderThickness="1" Margin="1">
                 <Grid KeyDown="AppWindow_KeyDown"
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
@@ -116,52 +117,47 @@
                     <Grid Grid.Row="1" Width="Auto" Background="Transparent">
 
                         <local:VideoPlayerControl
-                        KeyDown="AppWindow_KeyDown"
-                        Focusable="False"
-                        x:Name="VideoMedia"
-                        Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
-                        Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}"
-                    />
+                            KeyDown="AppWindow_KeyDown"
+                            Focusable="False"
+                            x:Name="VideoMedia"
+                            Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
+                            Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />
 
 
                         <Grid Focusable="False"
-                         Background="Transparent"
-                         Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
-                         ClipToBounds="True">
+                             Background="Transparent"
+                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
+                             ClipToBounds="True">
                             <local:ZoomableImage
-                            Source="{Binding SelectedItem.FileContentModel.ImageSource}"
-                            VerticalAlignment="Center"
-                            Stretch="Uniform"
-                            x:Name="ZoomableImageElement"
-                            Height="Auto"
-                            Width="Auto"
-                            HorizontalAlignment="Center"
-                            RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
-                            Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
-                            ClipToBounds="True"/>
+                                Source="{Binding SelectedItem.FileContentModel.ImageSource}"
+                                VerticalAlignment="Center"
+                                Stretch="Uniform"
+                                x:Name="ZoomableImageElement"
+                                Height="Auto"
+                                Width="Auto"
+                                HorizontalAlignment="Center"
+                                RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
+                                Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
+                                ClipToBounds="True"/>
                         </Grid>
 
-                        <Grid
-                          Background="Transparent"
-                          />
-                        <TextBox FontFamily="Consolas"
-                             SpellCheck.IsEnabled="False"
-                             IsReadOnly="False"
-                             KeyDown="AppWindow_KeyDown"
-                             Name="TextBoxTextContent"
-                             HorizontalScrollBarVisibility="Auto"
-                             VerticalScrollBarVisibility="Auto"
-                             Focusable="True"
-                             Margin="10"
-                             Background="#FF252525"
-                             Foreground="White"
-                             ClipToBounds="True"
-                             BorderThickness="1"
-                             Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
-                             FontSize="{Binding Config.FontSize}"
-                             Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
-                             TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
 
+                        <TextBox FontFamily="Consolas"
+                                 SpellCheck.IsEnabled="False"
+                                 IsReadOnly="False"
+                                 KeyDown="AppWindow_KeyDown"
+                                 Name="TextBoxTextContent"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 VerticalScrollBarVisibility="Auto"
+                                 Focusable="True"
+                                 Margin="10"
+                                 Background="#FF252525"
+                                 Foreground="White"
+                                 ClipToBounds="True"
+                                 Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                 FontSize="{Binding Config.FontSize}"
+                                 Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
+                                 TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
                     </Grid>
                 </Grid>
             </Border>

@@ -123,8 +123,7 @@ namespace QuickViewFile.Controls
 
         private void ZoomableImage_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
-            // Skalowanie
-            double zoomFactor = e.DeltaManipulation.Scale.X; // X i Y s¹ zwykle takie same przy pinch
+            double zoomFactor = e.DeltaManipulation.Scale.X;
             double newScale = currentScale * zoomFactor;
 
             if (newScale < _config.MinScale)
@@ -132,24 +131,19 @@ namespace QuickViewFile.Controls
             if (newScale > _config.MaxScale)
                 newScale = _config.MaxScale;
 
-            // Punkt odniesienia (œrodek gestu)
             Point center = e.ManipulationOrigin;
 
-            // Przeliczenie pozycji absolutnej
             double absoluteX = center.X * currentScale + translateTransform.X;
             double absoluteY = center.Y * currentScale + translateTransform.Y;
 
-            // Ustawienie skali
             scaleTransform.ScaleX = newScale;
             scaleTransform.ScaleY = newScale;
 
-            // Korekta przesuniêcia, ¿eby œrodek gestu zosta³ pod palcami
             translateTransform.X = absoluteX - center.X * newScale;
             translateTransform.Y = absoluteY - center.Y * newScale;
 
             currentScale = newScale;
 
-            // Przesuniêcie wynikaj¹ce z gestu (drag dwoma palcami)
             translateTransform.X += e.DeltaManipulation.Translation.X;
             translateTransform.Y += e.DeltaManipulation.Translation.Y;
 
