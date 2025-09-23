@@ -74,8 +74,9 @@
                   Focusable="True"
                   TabIndex="0"
                   Foreground="#FFF4B900"
-                  Background="#FF646464"
-                  ScrollViewer.CanContentScroll="True" BorderBrush="Transparent" d:ItemsSource="{d:SampleData ItemCount=5}">
+                  Background="Transparent"
+                  ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                  ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="120">
@@ -96,8 +97,9 @@
                 </ListView.View>
             </ListView>
             <GridSplitter Grid.Column="1"
-                      Width="3"
-                      Background="Gray"
+                      Width="4"
+                      Background="Transparent"
+                      Foreground="Transparent"
                       Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
@@ -114,7 +116,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- File content: Image, Video or Text-->
-                    <Grid MouseLeftButtonDown="FileContentGrid_MouseLeftButtonDown"  Grid.Row="1" Width="Auto" Background="Transparent">
+                    <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  Grid.Row="1" Width="Auto" Background="Transparent">
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"

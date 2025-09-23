@@ -212,7 +212,7 @@ namespace QuickViewFile
                 this.DragMove();
         }
 
-        private void FileContentGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void FileContentGrid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
             {
