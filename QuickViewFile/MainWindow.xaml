@@ -35,12 +35,12 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    <Grid Background="#FF252525">
+    <Grid Background="#FF252525" KeyDown="AppWindow_KeyDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <DockPanel Name="DockNavigationPanel" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.Row="0" VerticalAlignment="Top" Background="Transparent">
+        <DockPanel KeyDown="AppWindow_KeyDown" Name="DockNavigationPanel" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.Row="0" VerticalAlignment="Top" Background="Transparent">
             <TextBlock
                   Text="{Binding SelectedItem.FullPath}"
                   FontWeight="Bold"
@@ -81,14 +81,14 @@
                         <GridViewColumn Header="Name" Width="120">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" FontWeight="Normal" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Header="Size (KB)" Width="80">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Size}" FontSize="13" VerticalAlignment="Center" FontWeight="Normal"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -114,7 +114,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- File content: Image, Video or Text-->
-                    <Grid Grid.Row="1" Width="Auto" Background="Transparent">
+                    <Grid MouseLeftButtonDown="FileContentGrid_MouseLeftButtonDown"  Grid.Row="1" Width="Auto" Background="Transparent">
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"
@@ -125,6 +125,7 @@
 
 
                         <Grid Focusable="False"
+                             KeyDown="AppWindow_KeyDown"
                              Background="Transparent"
                              Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
                              ClipToBounds="True">
@@ -135,6 +136,7 @@
                                 x:Name="ZoomableImageElement"
                                 Height="Auto"
                                 Width="Auto"
+                                KeyDown="AppWindow_KeyDown"
                                 HorizontalAlignment="Center"
                                 RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
                                 Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"

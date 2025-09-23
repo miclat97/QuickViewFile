@@ -54,6 +54,20 @@ namespace QuickViewFile
 
         private void AppWindow_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Key == Key.F11)
+            {
+                if (_filesListViewVisible)
+                {
+                    HideUI();
+                    WindowState = WindowState.Maximized;
+                }
+                else
+                {
+                    ShowUI();
+                    WindowState = WindowState.Normal;
+                }
+            }
+
             if (DataContext is FilesListViewModel vm)
             {
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
@@ -74,18 +88,6 @@ namespace QuickViewFile
                                 await vm.LazyLoadFile(true);
                             });
                         }
-                    }
-                }
-
-                if (e.Key == Key.F11)
-                {
-                    if (_filesListViewVisible)
-                    {
-                        HideUI();
-                    }
-                    else
-                    {
-                        ShowUI();
                     }
                 }
 
@@ -134,33 +136,7 @@ namespace QuickViewFile
 
         private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            try
-            {
-                if (DataContext is FilesListViewModel vm)
-                {
-                    if (vm.SelectedItem?.FileContentModel.VideoMedia is not null)
-                    {
-                        VideoPlayerFullScreen fullScreenVideo = new VideoPlayerFullScreen(vm.SelectedItem.FullPath);
-                        vm.SelectedItem = null;
-                        fullScreenVideo.Show();
-                    }
-                    else
-                    {
-                        if (_filesListViewVisible)
-                        {
-                            HideUI();
-                        }
-                        else
-                        {
-                            ShowUI();
-                        }
-                    }
-                }
-            }
-            catch
-            {
 
-            }
         }
 
         private void HideUI()
@@ -168,7 +144,7 @@ namespace QuickViewFile
             FilesListView.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
             DockNavigationPanel.Visibility = Visibility.Collapsed;
-            FileFullPathTextBlock.Visibility = Visibility.Hidden;
+            FileFullPathTextBlock.Visibility = Visibility.Collapsed;
             _filesListViewVisible = false;
         }
 
@@ -234,6 +210,31 @@ namespace QuickViewFile
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 this.DragMove();
+        }
+
+        private void FileContentGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                try
+                {
+                    if (DataContext is FilesListViewModel vm)
+                    {
+                        if (_filesListViewVisible)
+                        {
+                            HideUI();
+                        }
+                        else
+                        {
+                            ShowUI();
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
         }
     }
 }
