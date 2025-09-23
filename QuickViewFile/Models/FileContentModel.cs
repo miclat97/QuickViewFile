@@ -5,10 +5,11 @@ namespace QuickViewFile.Models
 {
     public class FileContentModel : IDisposable
     {
-        public string? TextContent { get; set; } = string.Empty;
+        public string? TextContent { get; set; } = null;
         public ImageSource? ImageSource { get; set; } = null;
         public VideoPlayerControl? VideoMedia { get; set; } = null;
         public bool IsLoaded { get; set; } = false;
+        public bool ShowTextBox { get; set; } = false;
 
         public void Dispose()
         {

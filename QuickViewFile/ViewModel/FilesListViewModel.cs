@@ -75,6 +75,7 @@ namespace QuickViewFile.ViewModel
                         catch (Exception ex)
                         {
                             SelectedItem.FileContentModel.TextContent = $"{ex.Message}";
+                            SelectedItem.FileContentModel.ShowTextBox = true;
                             SelectedItem.FileContentModel.ImageSource = null;
                         }
                     }
@@ -195,6 +196,8 @@ namespace QuickViewFile.ViewModel
                     SelectedItem.FileContentModel = new FileContentModel
                     {
                         TextContent = "Loading...",
+                        ShowTextBox = false,
+                        VideoMedia = null,
                         ImageSource = null
                     };
                     await this.LazyLoadFile(true);
@@ -237,6 +240,7 @@ namespace QuickViewFile.ViewModel
                         {
                             SelectedItem.FileContentModel.ImageSource = rotatedImageBitmap;
                             SelectedItem.FileContentModel.TextContent = null;
+                            SelectedItem.FileContentModel.ShowTextBox = false;
                             SelectedItem.FileContentModel.VideoMedia = null;
                             SelectedItem.FileContentModel.IsLoaded = true;
                         });
@@ -245,6 +249,7 @@ namespace QuickViewFile.ViewModel
                 catch (Exception ex)
                 {
                     SelectedItem.FileContentModel.TextContent = ex.Message;
+                    SelectedItem.FileContentModel.ShowTextBox = true;
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.VideoMedia = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
@@ -256,12 +261,14 @@ namespace QuickViewFile.ViewModel
                 {
                     SelectedItem.FileContentModel.VideoMedia = new Controls.VideoPlayerControl(filePath);
                     SelectedItem.FileContentModel.TextContent = null;
+                    SelectedItem.FileContentModel.ShowTextBox = false;
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.IsLoaded = true;
                 }
                 catch (Exception ex)
                 {
                     SelectedItem.FileContentModel.TextContent = ex.Message;
+                    SelectedItem.FileContentModel.ShowTextBox = true;
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.VideoMedia = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
@@ -275,6 +282,7 @@ namespace QuickViewFile.ViewModel
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         SelectedItem.FileContentModel.TextContent = asciiCharsToView;
+                        SelectedItem.FileContentModel.ShowTextBox = true;
                         SelectedItem.FileContentModel.ImageSource = null;
                         SelectedItem.FileContentModel.VideoMedia = null;
                         SelectedItem.FileContentModel.IsLoaded = true;
@@ -283,6 +291,7 @@ namespace QuickViewFile.ViewModel
                 else
                 {
                     SelectedItem.FileContentModel.TextContent = $"File size has more than {Config.MaxSizePreviewKB} KiB, press ENTER to force load it";
+                    SelectedItem.FileContentModel.ShowTextBox = true;
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.VideoMedia = null;
                     SelectedItem.FileContentModel.IsLoaded = false;

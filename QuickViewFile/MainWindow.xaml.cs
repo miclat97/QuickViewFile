@@ -168,7 +168,6 @@ namespace QuickViewFile
             FilesListView.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
             FileFullPathTextBlock.Visibility = Visibility.Collapsed;
-            WindowStyle = WindowStyle.None;
             _filesListViewVisible = false;
         }
 
@@ -178,7 +177,6 @@ namespace QuickViewFile
             MainWindowGridSplitter.Visibility = Visibility.Visible;
             FileFullPathTextBlock.Visibility = Visibility.Visible;
             _filesListViewVisible = true;
-            WindowStyle = WindowStyle.ThreeDBorderWindow;
             FilesListView.Focus();
         }
 
@@ -212,6 +210,28 @@ namespace QuickViewFile
             {
 
             }
+        }
+
+        private void Minimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void Maximize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = this.WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                this.DragMove();
         }
     }
 }

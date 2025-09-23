@@ -11,11 +11,16 @@
         mc:Ignorable="d"
         WindowState="Maximized"
         KeyDown="AppWindow_KeyDown"
-        WindowStyle="ThreeDBorderWindow"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
-        Title="QuickViewFile" Height="600" Width="1200">
+        Title="QuickViewFile" Height="720" Width="1280">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="20" ResizeBorderThickness="5" />
+    </WindowChrome.WindowChrome>
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
@@ -25,14 +30,28 @@
             <Setter Property="MinHeight" Value="40"/>
         </Style>
     </Window.Resources>
-    <Grid Grid.Row="0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Grid Background="#FF252525">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <ListView Grid.Column="0"
+        <DockPanel MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top">
+            <StackPanel Background="Transparent" Opacity="1" Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="—" Width="40" Click="Minimize_Click"/>
+                <Button Content="▢" Width="40" Click="Maximize_Click"/>
+                <Button Content="X" Width="40" Background="Red" Foreground="White" Click="Close_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ListView Grid.Column="0"
                   x:Name="FilesListView"
                   SelectionMode="Single"
                   ItemsSource="{Binding ActiveListItems}"
@@ -42,46 +61,48 @@
                   KeyDown="AppWindow_KeyDown"
                   Focusable="True"
                   TabIndex="1"
-                  ScrollViewer.CanContentScroll="True" UseLayoutRounding="True">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Name" Width="120">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Size (KB)" Width="Auto">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <GridSplitter Grid.Column="1"
+                  Foreground="WhiteSmoke"
+                  Background="#FF252525"
+                  ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" BorderBrush="#FF252525">
+                <ListView.View >
+                    <GridView>
+                        <GridViewColumn Header="Name" Width="120">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Size (KB)" Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <GridSplitter Grid.Column="1"
                       Width="3"
+                      Background="Transparent"
                       Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Background="Gold" 
                       Focusable="False"/>
-        <Border Name="ContentBorder" Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
-            <Grid KeyDown="AppWindow_KeyDown"
+            <Border Name="ContentBorder" Grid.Column="2" BorderBrush="Transparent" BorderThickness="1" Margin="1">
+                <Grid KeyDown="AppWindow_KeyDown"
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
                   Width="Auto"
-                  UseLayoutRounding="True">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                  Background="#FF252525">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <!-- FileName TextBox -->
-                <TextBlock Grid.Row="0"
+                    <!-- FileName TextBox -->
+                    <TextBlock Grid.Row="0"
                       Text="{Binding SelectedItem.FullPath}"
                       FontWeight="Bold"
                       Name="FileFullPathTextBlock"
@@ -89,12 +110,12 @@
                       Padding="10,5,10,5"
                       TextTrimming="CharacterEllipsis"
                       TextWrapping="NoWrap"
-                      Foreground="Black"/>
+                      Foreground="White"/>
 
-                <!-- File content: Image, Video or Text-->
-                <Grid Grid.Row="1" Width="Auto">
+                    <!-- File content: Image, Video or Text-->
+                    <Grid Grid.Row="1" Width="Auto" Background="Transparent">
 
-                    <local:VideoPlayerControl
+                        <local:VideoPlayerControl
                         KeyDown="AppWindow_KeyDown"
                         Focusable="False"
                         x:Name="VideoMedia"
@@ -103,10 +124,11 @@
                     />
 
 
-                    <Grid Focusable="False"
+                        <Grid Focusable="False"
+                         Background="Transparent"
                          Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
                          ClipToBounds="True">
-                        <local:ZoomableImage
+                            <local:ZoomableImage
                             Source="{Binding SelectedItem.FileContentModel.ImageSource}"
                             VerticalAlignment="Center"
                             Stretch="Uniform"
@@ -117,11 +139,12 @@
                             RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
                             ClipToBounds="True"/>
-                    </Grid>
+                        </Grid>
 
-                    <Grid ClipToBounds="True"
-                          Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToCollapsedConverter}}"/>
-                    <TextBox FontFamily="Consolas"
+                        <Grid ClipToBounds="True"
+                          Background="Transparent"
+                          Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBox FontFamily="Consolas"
                              SpellCheck.IsEnabled="False"
                              IsReadOnly="False"
                              KeyDown="AppWindow_KeyDown"
@@ -130,14 +153,17 @@
                              VerticalScrollBarVisibility="Auto"
                              Focusable="True"
                              Margin="10"
+                             Background="#FF252525"
+                             Foreground="White"
                              ClipToBounds="True"
-                             Visibility="{Binding SelectedItem.FileContentModel.TextContent, Converter={StaticResource NullToCollapsedConverter}}"
+                             Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
                              FontSize="{Binding Config.FontSize}"
                              Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
                              TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
 
+                    </Grid>
                 </Grid>
-            </Grid>
-        </Border>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
