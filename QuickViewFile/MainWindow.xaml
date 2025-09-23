@@ -69,9 +69,8 @@
                       VerticalAlignment="Stretch"
                       Background="Gold" 
                       Focusable="False"/>
-        <Border Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
+        <Border Name="ContentBorder" Grid.Column="2" BorderBrush="WhiteSmoke" BorderThickness="1" Margin="1">
             <Grid KeyDown="AppWindow_KeyDown"
-                  Name="ContentGrid"
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
                   Width="Auto"
