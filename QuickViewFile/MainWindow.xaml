@@ -9,7 +9,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
         xmlns:uc="clr-namespace:QuickViewFile.Controls"
         mc:Ignorable="d"
-        WindowState="Maximized"
+        WindowState="Normal"
+        WindowStartupLocation="CenterScreen"
         KeyDown="AppWindow_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         WindowStyle="None"
@@ -19,7 +20,7 @@
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
         Title="QuickViewFile" Height="720" Width="1280">
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="20" ResizeBorderThickness="5" />
+        <WindowChrome CaptionHeight="14" ResizeBorderThickness="4" />
     </WindowChrome.WindowChrome>
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -28,16 +29,27 @@
         <helpers:ScrollBarsVisibilityConverter x:Key="ScrollBarsVisibilityConverter"/>
         <Style TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="Background" Value="Gray"/>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
     <Grid Background="#FF252525">
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="56"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
+        <TextBlock
+                  Text="{Binding SelectedItem.FullPath}"
+                  FontWeight="Bold"
+                  Name="FileFullPathTextBlock"
+                  FontSize="12"
+                  Padding="10,10,10,10"
+                  TextWrapping="NoWrap"
+                  Foreground="WhiteSmoke"/>
         <DockPanel MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top">
-            <StackPanel Background="Transparent" Opacity="1" Orientation="Horizontal" DockPanel.Dock="Right">
+            <StackPanel Background="Transparent" Opacity="1" Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Right" Margin="10" UseLayoutRounding="True">
                 <Button Content="—" Width="40" Click="Minimize_Click"/>
                 <Button Content="▢" Width="40" Click="Maximize_Click"/>
                 <Button Content="X" Width="40" Background="Red" Foreground="White" Click="Close_Click"/>
@@ -50,7 +62,6 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-
             <ListView Grid.Column="0"
                   x:Name="FilesListView"
                   SelectionMode="Single"
@@ -61,10 +72,10 @@
                   KeyDown="AppWindow_KeyDown"
                   Focusable="True"
                   TabIndex="1"
-                  Foreground="WhiteSmoke"
-                  Background="#FF252525"
-                  ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" BorderBrush="#FF252525">
-                <ListView.View >
+                  Foreground="Gold"
+                  Background="Gray"
+                  ScrollViewer.CanContentScroll="True" BorderBrush="Transparent" d:ItemsSource="{d:SampleData ItemCount=5}">
+                <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="120">
                             <GridViewColumn.CellTemplate>
@@ -73,7 +84,7 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Size (KB)" Width="Auto">
+                        <GridViewColumn Header="Size (KB)" Width="80">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Size}" VerticalAlignment="Center"/>
@@ -85,12 +96,12 @@
             </ListView>
             <GridSplitter Grid.Column="1"
                       Width="3"
-                      Background="Transparent"
+                      Background="Gray"
                       Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       Focusable="False"/>
-            <Border Name="ContentBorder" Grid.Column="2" BorderBrush="Transparent" BorderThickness="1" Margin="1">
+            <Border Visibility="Visible" Name="ContentBorder" Grid.Column="2" BorderBrush="Transparent" BorderThickness="1" Margin="1">
                 <Grid KeyDown="AppWindow_KeyDown"
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
@@ -100,17 +111,6 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-
-                    <!-- FileName TextBox -->
-                    <TextBlock Grid.Row="0"
-                      Text="{Binding SelectedItem.FullPath}"
-                      FontWeight="Bold"
-                      Name="FileFullPathTextBlock"
-                      FontSize="12"
-                      Padding="10,5,10,5"
-                      TextTrimming="CharacterEllipsis"
-                      TextWrapping="NoWrap"
-                      Foreground="White"/>
 
                     <!-- File content: Image, Video or Text-->
                     <Grid Grid.Row="1" Width="Auto" Background="Transparent">
@@ -141,9 +141,9 @@
                             ClipToBounds="True"/>
                         </Grid>
 
-                        <Grid ClipToBounds="True"
+                        <Grid
                           Background="Transparent"
-                          Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                          />
                         <TextBox FontFamily="Consolas"
                              SpellCheck.IsEnabled="False"
                              IsReadOnly="False"
@@ -156,6 +156,7 @@
                              Background="#FF252525"
                              Foreground="White"
                              ClipToBounds="True"
+                             BorderThickness="1"
                              Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
                              FontSize="{Binding Config.FontSize}"
                              Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"

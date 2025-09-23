@@ -167,7 +167,7 @@ namespace QuickViewFile
         {
             FilesListView.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
-            FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+            FileFullPathTextBlock.Visibility = Visibility.Hidden;
             _filesListViewVisible = false;
         }
 

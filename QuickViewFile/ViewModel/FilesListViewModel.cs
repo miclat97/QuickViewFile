@@ -34,6 +34,8 @@ namespace QuickViewFile.ViewModel
         private readonly FolderWatcher _folderWatcher;
         private string _folderPath;
 
+        public Visibility TextBoxVisibility { get; set; }
+
         public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
         private bool _filesListViewVisible;
