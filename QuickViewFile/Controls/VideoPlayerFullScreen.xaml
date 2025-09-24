@@ -13,7 +13,7 @@
         Title="VideoPlayerFullScreen" Height="1080" Width="1920">
     <Grid KeyDown="videoPlayer_KeyDown">
 
-        <Border Background="Gold">
+        <Border Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}">
             <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" Stretch="Uniform" StretchDirection="Both" LoadedBehavior="Manual" />
         </Border>
 

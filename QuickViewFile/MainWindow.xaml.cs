@@ -54,83 +54,100 @@ namespace QuickViewFile
 
         private void AppWindow_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.F11)
+            try
             {
-                if (_filesListViewVisible)
+                if (e.Key == Key.F11)
                 {
-                    HideUI();
-                    WindowState = WindowState.Maximized;
+                    if (_filesListViewVisible)
+                    {
+                        HideUI();
+                        WindowState = WindowState.Maximized;
+                    }
+                    else
+                    {
+                        ShowUI();
+                        WindowState = WindowState.Normal;
+                    }
                 }
-                else
+
+                if (DataContext is FilesListViewModel vm)
                 {
-                    ShowUI();
-                    WindowState = WindowState.Normal;
+                    if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
+                    {
+                        if (e.Key == Key.Enter)
+                        {
+                            if (file.IsDirectory)
+                            {
+                                Application.Current.Dispatcher.BeginInvoke(async () =>
+                                {
+                                    await vm.OnFileDoubleClick(file);
+                                });
+                            }
+                            else if (file.IsDirectory == false && file.FileContentModel.IsLoaded == false)
+                            {
+                                Application.Current.Dispatcher.BeginInvoke(async () =>
+                                {
+                                    await vm.LazyLoadFile(true);
+                                });
+                            }
+                        }
+                    }
+
+                    if (!_filesListViewVisible) // When UI is hidden and user click anything on keyboard it have to be different implementation due to "standard/Windows"
+                                                // handling keyboard - like arrow up or arrow down, when focused on list will change element to previous/net
+                    {
+                        if (vm.SelectedItem?.FileContentModel?.VideoMedia is null) // when video is playing - arrows are handled to change video time position
+                        {
+                            int nextFileIndex = FilesListView.SelectedIndex + 1;
+                            int previousFileIndex = FilesListView.SelectedIndex - 1;
+
+                            if (e.Key == Key.Right && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false)
+                            {
+                                FilesListView.SelectedIndex++;
+                            }
+                            else if (e.Key == Key.Left && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false)
+                            {
+                                FilesListView.SelectedIndex--;
+                            }
+                            else if (e.Key == Key.Enter)
+                            {
+                                Application.Current.Dispatcher.BeginInvoke(async () =>
+                                {
+                                    await vm.LazyLoadFile(true);
+                                });
+                            }
+                        }
+                    }
+
+                    if (vm.SelectedItem?.FileContentModel?.ShowTextBox == true)
+                    {
+                        if (e.Key == Key.Add)
+                        {
+                            TextBoxTextContent.FontSize += 0.5;
+                        }
+                        else if (e.Key == Key.Subtract)
+                        {
+                            if (TextBoxTextContent.FontSize >= 1)
+                            {
+                                TextBoxTextContent.FontSize -= 0.5;
+                            }
+                        }
+                    }
+
+                    if (vm.SelectedItem?.FileContentModel?.VideoMedia is not null)
+                    {
+                        if (e.Key == Key.F4)
+                        {
+                            VideoPlayerFullScreen fullScreenVideo = new VideoPlayerFullScreen(vm.SelectedItem.FullPath);
+                            vm.SelectedItem = null;
+                            fullScreenVideo.Show();
+                        }
+                    }
                 }
             }
-
-            if (DataContext is FilesListViewModel vm)
+            catch
             {
-                if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
-                {
-                    if (e.Key == Key.Enter)
-                    {
-                        if (file.IsDirectory)
-                        {
-                            Application.Current.Dispatcher.BeginInvoke(async () =>
-                            {
-                                await vm.OnFileDoubleClick(file);
-                            });
-                        }
-                        else if (file.IsDirectory == false && file.FileContentModel.IsLoaded == false)
-                        {
-                            Application.Current.Dispatcher.BeginInvoke(async () =>
-                            {
-                                await vm.LazyLoadFile(true);
-                            });
-                        }
-                    }
-                }
 
-                if (!_filesListViewVisible) // When UI is hidden and user click anything on keyboard it have to be different implementation due to "standard/Windows"
-                                            // handling keyboard - like arrow up or arrow down, when focused on list will change element to previous/net
-                {
-                    if (vm.SelectedItem?.FileContentModel?.VideoMedia is null) // when video is playing - arrows are handled to change video time position
-                    {
-                        int nextFileIndex = FilesListView.SelectedIndex + 1;
-                        int previousFileIndex = FilesListView.SelectedIndex - 1;
-
-                        if (e.Key == Key.Right && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false)
-                        {
-                            FilesListView.SelectedIndex++;
-                        }
-                        else if (e.Key == Key.Left && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false)
-                        {
-                            FilesListView.SelectedIndex--;
-                        }
-                        else if (e.Key == Key.Enter)
-                        {
-                            Application.Current.Dispatcher.BeginInvoke(async () =>
-                            {
-                                await vm.LazyLoadFile(true);
-                            });
-                        }
-                    }
-                }
-
-                if (TextBoxTextContent.Text is not null)
-                {
-                    if (e.Key == Key.Add)
-                    {
-                        TextBoxTextContent.FontSize += 0.5;
-                    }
-                    else if (e.Key == Key.Subtract)
-                    {
-                        if (TextBoxTextContent.FontSize >= 1)
-                        {
-                            TextBoxTextContent.FontSize -= 0.5;
-                        }
-                    }
-                }
             }
         }
 
