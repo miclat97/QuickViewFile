@@ -160,25 +160,30 @@ namespace QuickViewFile
         {
             try
             {
-                if (DataContext is FilesListViewModel vm)
+                if (e.OriginalSource is Border)
                 {
-                    if (vm.SelectedItem?.FileContentModel.ImageSource is not null || vm.SelectedItem?.FileContentModel.VideoMedia is not null)
+                    if (DataContext is FilesListViewModel vm)
                     {
-                        Point mousePosition = e.GetPosition(ContentBorder);
+                        if (vm.SelectedItem?.FileContentModel.ImageSource is not null || vm.SelectedItem?.FileContentModel.VideoMedia is not null)
+                        {
+                            Point mousePosition = e.GetPosition(ContentBorder);
 
-                        double previousItem = ContentBorder.ActualWidth * 0.08;
-                        double nextItem = ContentBorder.ActualWidth * 0.92;
+                            double previousItem = ContentBorder.ActualWidth * 0.08;
+                            double nextItem = ContentBorder.ActualWidth * 0.92;
 
-                        int nextFileIndex = FilesListView.SelectedIndex + 1;
-                        int previousFileIndex = FilesListView.SelectedIndex - 1;
+                            int nextFileIndex = FilesListView.SelectedIndex + 1;
+                            int previousFileIndex = FilesListView.SelectedIndex - 1;
 
-                        if ((vm.ActiveListItems.ElementAtOrDefault(previousFileIndex) is not null
-                            && mousePosition.X < previousItem) && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false) // to prevent changing to left from item at position 0 (but it shouldn't crash the app anyway)
-                            FilesListView.SelectedIndex--;
+                            if ((vm.ActiveListItems.ElementAtOrDefault(previousFileIndex) is not null
+                                && mousePosition.X < previousItem) &&
+                                vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false) // to prevent changing to left from item at position 0 (but it shouldn't crash the app anyway)
+                                FilesListView.SelectedIndex--;
 
-                        if ((mousePosition.X > nextItem) && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false
-                            && vm.ActiveListItems.ElementAtOrDefault(nextFileIndex) is not null) // to prevent situation when We will try to check ElementAt poisiton out of list (when last photo of directory will be clicked at the right bound (doing so will crash whole appication)
-                            FilesListView.SelectedIndex++;
+                            if ((mousePosition.X > nextItem) &&
+                                vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false
+                                && vm.ActiveListItems.ElementAt(nextFileIndex) is not null) // to prevent situation when We will try to check ElementAt poisiton out of list (when last photo of directory will be clicked at the right bound (doing so will crash whole appication)
+                                FilesListView.SelectedIndex++;
+                        }
                     }
                 }
             }
