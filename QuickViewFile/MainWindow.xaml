@@ -1,17 +1,15 @@
 ﻿<Window x:Class="QuickViewFile.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QuickViewFile.Controls"
         xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
         xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
-        xmlns:uc="clr-namespace:QuickViewFile.Controls"
         mc:Ignorable="d"
         WindowState="Normal"
         WindowStartupLocation="CenterScreen"
-        ThemeMode="System"
         KeyDown="AppWindow_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         ResizeMode="CanResizeWithGrip"
@@ -35,6 +33,7 @@
         <TextBlock
                   Text="{Binding SelectedItem.FullPath}"
                   FontWeight="Bold"
+                  Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                   Name="FileFullPathTextBlock"
                   FontSize="12.5"
                   Margin="0,3,0,0"
@@ -65,14 +64,22 @@
                         <GridViewColumn Header="Name" Width="120">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" FontWeight="Normal" />
+                                    <TextBlock Text="{Binding Name}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"
+                                               FontWeight="Normal"
+                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColor}}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Header="Size (KB)" Width="80">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Size}" FontSize="13" VerticalAlignment="Center" FontWeight="Normal"/>
+                                    <TextBlock Text="{Binding Size}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"
+                                               FontWeight="Normal"
+                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColor}}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -83,20 +90,26 @@
                       Width="4"
                       Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
+                      Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                       VerticalAlignment="Stretch"
                       Focusable="False"/>
-            <Border Name="ContentBorder" Grid.Column="2" BorderThickness="1" Margin="1">
+            <Border Name="ContentBorder"
+                    Grid.Column="2"
+                    BorderThickness="1"
+                    Margin="1">
                 <Grid KeyDown="AppWindow_KeyDown"
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
                   Width="Auto">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <!-- File content: Image, Video or Text-->
-                    <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  Grid.Row="1" Width="Auto" >
+                    <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  
+                          Grid.Row="1" 
+                          Name="GridFileContent"
+                          Width="Auto">
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"

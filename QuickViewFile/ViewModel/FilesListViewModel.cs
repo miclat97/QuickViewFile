@@ -1,6 +1,5 @@
 ﻿using QuickViewFile.Helpers;
 using QuickViewFile.Models;
-using QuickViewFile.Watchers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -16,8 +15,6 @@ namespace QuickViewFile.ViewModel
         {
             Config = ConfigHelper.LoadConfig();
 
-            _filesListViewVisible = true;
-
             _folderPath = Path.GetDirectoryName(folderPath)!;
             if (_folderPath.Equals(folderPath, StringComparison.OrdinalIgnoreCase)) // if directory name is the same as directory from parameter,
                                                                                     // it means that user doesn't picked any exeact file, but directory
@@ -31,15 +28,12 @@ namespace QuickViewFile.ViewModel
         }
 
         private ItemList? _selectedItem;
-        private readonly FolderWatcher _folderWatcher;
         private string _folderPath;
 
         public Visibility TextBoxVisibility { get; set; }
 
         public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
-        private bool _filesListViewVisible;
-        public bool FilesListViewVisible { get; set; }
 
         private double _previewHeight;
         public double PreviewHeight

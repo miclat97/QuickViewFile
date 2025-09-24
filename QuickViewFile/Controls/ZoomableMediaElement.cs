@@ -8,7 +8,6 @@ namespace QuickViewFile.Controls
 {
     public class ZoomableMediaElement : MediaElement
     {
-        private readonly ConfigModel _config;
         private Point? lastDragPoint;
         private double currentScale = 1.0;
         private TranslateTransform translateTransform = new TranslateTransform();
