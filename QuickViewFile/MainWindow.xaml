@@ -57,6 +57,7 @@
                   KeyDown="AppWindow_KeyDown"
                   Focusable="True"
                   TabIndex="0"
+                  IsManipulationEnabled="True"
                   ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
@@ -68,7 +69,7 @@
                                                FontSize="13"
                                                VerticalAlignment="Center"
                                                FontWeight="Normal"
-                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColor}}"/>
+                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -79,7 +80,7 @@
                                                FontSize="13"
                                                VerticalAlignment="Center"
                                                FontWeight="Normal"
-                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColor}}"/>
+                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
