@@ -49,4 +49,9 @@
     </Resource>
   </ItemGroup>
 
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Switch.System.Windows.Media.EnableHardwareAccelerationInRdp" Value="true" />
+  </ItemGroup>
+
 </Project>
