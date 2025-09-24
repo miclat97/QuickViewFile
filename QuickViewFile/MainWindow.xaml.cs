@@ -143,7 +143,6 @@ namespace QuickViewFile
         {
             FilesListView.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
-            DockNavigationPanel.Visibility = Visibility.Collapsed;
             FileFullPathTextBlock.Visibility = Visibility.Collapsed;
             _filesListViewVisible = false;
         }
@@ -153,7 +152,6 @@ namespace QuickViewFile
             FilesListView.Visibility = Visibility.Visible;
             MainWindowGridSplitter.Visibility = Visibility.Visible;
             FileFullPathTextBlock.Visibility = Visibility.Visible;
-            DockNavigationPanel.Visibility = Visibility.Visible;
             _filesListViewVisible = true;
             FilesListView.Focus();
         }
