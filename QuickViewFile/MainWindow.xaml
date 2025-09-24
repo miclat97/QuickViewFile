@@ -35,8 +35,8 @@
                   FontWeight="Bold"
                   Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                   Name="FileFullPathTextBlock"
-                  FontSize="12.5"
-                  Margin="0,3,0,0"
+                  FontSize="13"
+                  Margin="0,0,0,0"
                   Padding="10,10,10,10"
                   TextWrapping="NoWrap" />
 
@@ -55,8 +55,10 @@
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
                   Margin="10"
                   KeyDown="AppWindow_KeyDown"
+                  ScrollViewer.PanningMode="VerticalFirst"
                   Focusable="True"
-                  TabIndex="0"
+                  SelectedIndex="0"
+                  SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                   IsManipulationEnabled="True"
                   ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                   ScrollViewer.CanContentScroll="True" >
@@ -68,8 +70,7 @@
                                     <TextBlock Text="{Binding Name}"
                                                FontSize="13"
                                                VerticalAlignment="Center"
-                                               FontWeight="Normal"
-                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}" />
+                                               FontWeight="Normal"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -79,8 +80,7 @@
                                     <TextBlock Text="{Binding Size}"
                                                FontSize="13"
                                                VerticalAlignment="Center"
-                                               FontWeight="Normal"
-                                               Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"/>
+                                               FontWeight="Normal"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -89,11 +89,12 @@
             </ListView>
             <GridSplitter Grid.Column="1"
                       Width="4"
+                      Margin="0,20,0,20"
                       Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                       VerticalAlignment="Stretch"
-                      Focusable="False"/>
+                      Focusable="False" IsTabStop="False" HorizontalContentAlignment="Center" />
             <Border Name="ContentBorder"
                     Grid.Column="2"
                     BorderThickness="1"

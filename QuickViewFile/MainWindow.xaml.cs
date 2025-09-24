@@ -74,6 +74,18 @@ namespace QuickViewFile
                 {
                     if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                     {
+                        if (e.Key > Key.D0 && e.Key < Key.Z)
+                        {
+                            char ASCIINumberWhichUserWantToSelect = (char)((int)e.Key + 21); ///because ASCII at keyboard has code 65, in .NET A on keyboard is 44, so after adding 21 it will be this letter which user want to find
+                            var itemToSelect = vm.ActiveListItems.FirstOrDefault
+                                (x => x.Name?.ToUpperInvariant().ElementAt(0) == ASCIINumberWhichUserWantToSelect);
+                            if (itemToSelect is not null)
+                            {
+                                FilesListView.SelectedItem = itemToSelect;
+                                FilesListView.ScrollIntoView(itemToSelect);
+                            }
+                        }
+
                         if (e.Key == Key.Enter)
                         {
                             if (file.IsDirectory)

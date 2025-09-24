@@ -161,6 +161,7 @@ namespace QuickViewFile.ViewModel
                         }
                     }
                 }
+                SelectedItem = ActiveListItems.ElementAt(0);
             });
         }
 
