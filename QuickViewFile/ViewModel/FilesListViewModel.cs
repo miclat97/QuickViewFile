@@ -108,15 +108,10 @@ namespace QuickViewFile.ViewModel
                 return;
             }
 
+
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 ActiveListItems.Clear();
-
-                bool userGivesPathToFile = false;
-                if (fileToSelect is not null)
-                {
-                    userGivesPathToFile = true;
-                }
 
                 if (dirInfo.Parent != null)
                 {
@@ -152,16 +147,20 @@ namespace QuickViewFile.ViewModel
                         IsDirectory = false,
                         FileContentModel = new FileContentModel()
                     });
-
-                    if (userGivesPathToFile)
-                    {
-                        if (file.FullName.Equals(fileToSelect))
-                        {
-                            SelectedItem = ActiveListItems.LastOrDefault();
-                        }
-                    }
                 }
-                SelectedItem = ActiveListItems.ElementAt(0);
+
+                try
+                {
+                    var selectThisFile = ActiveListItems.LastOrDefault(x => x.FullPath.Equals(fileToSelect, StringComparison.OrdinalIgnoreCase));
+                    if (selectThisFile is not null)
+                        SelectedItem = selectThisFile;
+                    else
+                        SelectedItem = ActiveListItems.First();
+                }
+                catch
+                {
+
+                }
             });
         }
 
@@ -183,7 +182,7 @@ namespace QuickViewFile.ViewModel
 
                 _folderPath = file.FullPath!;
                 RefreshFiles();
-                SelectedItem = null;
+                //SelectedItem = null;
             }
             else if (!file.IsDirectory && File.Exists(file.FullPath))
             {

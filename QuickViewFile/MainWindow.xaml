@@ -12,8 +12,8 @@
         WindowStartupLocation="CenterScreen"
         KeyDown="AppWindow_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        ResizeMode="CanResizeWithGrip"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
+        ResizeMode="CanResizeWithGrip"
         Title="QuickViewFile" Height="720" Width="1280">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -54,10 +54,9 @@
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
                   Margin="10"
+                  IsSynchronizedWithCurrentItem="True"
                   KeyDown="AppWindow_KeyDown"
                   ScrollViewer.PanningMode="VerticalFirst"
-                  Focusable="True"
-                  SelectedIndex="0"
                   SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                   IsManipulationEnabled="True"
                   ScrollViewer.HorizontalScrollBarVisibility="Hidden"
@@ -94,7 +93,7 @@
                       HorizontalAlignment="Stretch"
                       Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                       VerticalAlignment="Stretch"
-                      Focusable="False" IsTabStop="False" HorizontalContentAlignment="Center" />
+                      HorizontalContentAlignment="Center" />
             <Border Name="ContentBorder"
                     Grid.Column="2"
                     BorderThickness="1"
@@ -115,13 +114,12 @@
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"
-                            Focusable="False"
                             x:Name="VideoMedia"
                             Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                             Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />
 
 
-                        <Grid Focusable="False"
+                        <Grid
                              KeyDown="AppWindow_KeyDown"
                              Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
                              ClipToBounds="True">
@@ -147,7 +145,6 @@
                                  Name="TextBoxTextContent"
                                  HorizontalScrollBarVisibility="Auto"
                                  VerticalScrollBarVisibility="Auto"
-                                 Focusable="True"
                                  Margin="10"
                                  ClipToBounds="True"
                                  Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"

@@ -11,29 +11,40 @@ namespace QuickViewFile
     public partial class MainWindow : Window
     {
         private bool _filesListViewVisible = true;
+
         public MainWindow()
         {
             try
             {
+                InitializeComponent();
+                FilesListView.Focus();
+
                 string[] args = Environment.GetCommandLineArgs();
 
                 if (args.ElementAtOrDefault(1) is not null)
                 {
-                    var vm = new FilesListViewModel(Path.Combine(args.ElementAt(1)));
-                    DataContext = vm;
+                    var fileToSelectFullPath = args.ElementAt(1);
+                    if (File.Exists(fileToSelectFullPath))
+                    {
+                        var vm = new FilesListViewModel(fileToSelectFullPath);
+                        DataContext = vm;
+                    }
                 }
                 else
                 {
                     var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                     DataContext = vm;
+
                 }
-                InitializeComponent();
             }
             catch
             {
                 var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                 DataContext = vm;
-                InitializeComponent();
+            }
+            finally
+            {
+                FilesListView.Focus();
             }
         }
 
