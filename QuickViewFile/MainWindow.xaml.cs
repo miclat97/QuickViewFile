@@ -166,6 +166,18 @@ namespace QuickViewFile
                             fullScreenVideo.Show();
                         }
                     }
+
+                    if (vm.SelectedItem?.FileContentModel.TextContent is not null)
+                    {
+                        if (e.Key == Key.Escape)
+                        {
+                            SearchTextBox.Text = string.Empty;
+                            SearchResultsCount.Text = string.Empty;
+                            _searchResults.Clear();
+                            _currentSearchIndex = -1;
+                            e.Handled = true;
+                        }
+                    }
                 }
             }
             catch
@@ -184,6 +196,7 @@ namespace QuickViewFile
             FilesListView.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
             FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+            GridSearchBox.Visibility = Visibility.Collapsed;
             _filesListViewVisible = false;
         }
 
@@ -278,6 +291,74 @@ namespace QuickViewFile
 
                 }
             }
+        }
+
+        private List<int> _searchResults = new List<int>();
+        private int _currentSearchIndex = -1;
+
+        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                FindNext_Click(sender, null);
+                e.Handled = true;
+            }
+        }
+
+        private void FindNext_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(SearchTextBox.Text)) return;
+
+            if (_searchResults.Count == 0 || TextBoxTextContent.Text.IndexOf(SearchTextBox.Text, StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                // New search
+                _searchResults.Clear();
+                int index = 0;
+                while ((index = TextBoxTextContent.Text.IndexOf(SearchTextBox.Text, index, StringComparison.OrdinalIgnoreCase)) != -1)
+                {
+                    _searchResults.Add(index);
+                    index += SearchTextBox.Text.Length;
+                }
+                _currentSearchIndex = -1;
+            }
+
+            if (_searchResults.Count > 0)
+            {
+                _currentSearchIndex = (_currentSearchIndex + 1) % _searchResults.Count;
+                HighlightSearchResult();
+            }
+
+            UpdateSearchCount();
+        }
+
+        private void FindPrevious_Click(object sender, RoutedEventArgs e)
+        {
+            if (_searchResults.Count == 0 || string.IsNullOrEmpty(SearchTextBox.Text)) return;
+
+            _currentSearchIndex--;
+            if (_currentSearchIndex < 0)
+                _currentSearchIndex = _searchResults.Count - 1;
+
+            HighlightSearchResult();
+            UpdateSearchCount();
+        }
+
+        private void HighlightSearchResult()
+        {
+            if (_currentSearchIndex >= 0 && _currentSearchIndex < _searchResults.Count)
+            {
+                TextBoxTextContent.Focus();
+                TextBoxTextContent.Select(_searchResults[_currentSearchIndex], SearchTextBox.Text.Length);
+                TextBoxTextContent.ScrollToLine(TextBoxTextContent.GetLineIndexFromCharacterIndex(_searchResults[_currentSearchIndex]));
+            }
+        }
+
+        private void UpdateSearchCount()
+        {
+            if (_searchResults.Count > 0)
+                SearchResultsCount.Text = $"{_currentSearchIndex + 1} of {_searchResults.Count} matches";
+            else
+                SearchResultsCount.Text = "No matches";
         }
     }
 }
