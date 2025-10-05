@@ -138,19 +138,51 @@
                         </Grid>
 
 
-                        <TextBox FontFamily="Consolas"
-                                 SpellCheck.IsEnabled="False"
-                                 IsReadOnly="False"
-                                 KeyDown="AppWindow_KeyDown"
-                                 Name="TextBoxTextContent"
-                                 HorizontalScrollBarVisibility="Auto"
-                                 VerticalScrollBarVisibility="Auto"
-                                 Margin="10"
-                                 ClipToBounds="True"
-                                 Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
-                                 FontSize="{Binding Config.FontSize}"
-                                 Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
-                                 TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+                        <Grid Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="GridSearchBox">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Search Panel -->
+                            <StackPanel Grid.Row="0" 
+                                        Orientation="Horizontal" 
+                                        Margin="10,5,10,5">
+                                <TextBox x:Name="SearchTextBox"
+                                         Width="200"
+                                         Margin="5,0,5,0"
+                                         VerticalContentAlignment="Center"
+                                         KeyDown="SearchTextBox_KeyDown"/>
+                                <Button Content="Find Next"
+                                        Height="24"
+                                        Padding="10,0"
+                                        Click="FindNext_Click"
+                                        Margin="0,0,5,0"/>
+                                <Button Content="Find Previous"
+                                        Height="24"
+                                        Padding="10,0"
+                                        Click="FindPrevious_Click"
+                                        Margin="0,0,5,0"/>
+                                <TextBlock x:Name="SearchResultsCount"
+                                          VerticalAlignment="Center"
+                                          Margin="5,0"/>
+                            </StackPanel>
+
+                            <TextBox Grid.Row="1"
+                                     FontFamily="Consolas"
+                                     SpellCheck.IsEnabled="False"
+                                     IsReadOnly="False"
+                                     KeyDown="AppWindow_KeyDown"
+                                     Name="TextBoxTextContent"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Margin="10"
+                                     ClipToBounds="True"
+                                     Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                     FontSize="{Binding Config.FontSize}"
+                                     Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
+                                     TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Border>
