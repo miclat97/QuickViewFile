@@ -255,7 +255,7 @@ namespace QuickViewFile.ViewModel
             {
                 try
                 {
-                    SelectedItem.FileContentModel.VideoMedia = new Controls.VideoPlayerControl(filePath);
+                    SelectedItem.FileContentModel.VideoMedia = new Controls.VideoPlayerControl(filePath, Config.BitmapScalingMode);
                     SelectedItem.FileContentModel.TextContent = null;
                     SelectedItem.FileContentModel.ShowTextBox = false;
                     SelectedItem.FileContentModel.ImageSource = null;

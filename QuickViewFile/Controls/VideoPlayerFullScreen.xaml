@@ -14,7 +14,8 @@
     <Grid KeyDown="videoPlayer_KeyDown">
 
         <Border Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}">
-            <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" Stretch="Uniform" StretchDirection="Both" LoadedBehavior="Manual" />
+            <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" Stretch="Uniform" StretchDirection="Both" LoadedBehavior="Manual"
+                                         RenderOptions.BitmapScalingMode="{Binding videoQuality}"/>
         </Border>
 
     </Grid>

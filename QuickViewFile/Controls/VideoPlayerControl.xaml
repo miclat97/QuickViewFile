@@ -18,7 +18,7 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
-            <local:ZoomableMediaElement x:Name="videoInWindowPlayer" LoadedBehavior="Manual" />
+            <local:ZoomableMediaElement x:Name="videoInWindowPlayer" LoadedBehavior="Manual" RenderOptions.BitmapScalingMode="{Binding videoQuality}"/>
         </Grid>
 
         <StatusBar Grid.Row="1" Height="Auto">

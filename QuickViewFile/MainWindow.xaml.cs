@@ -1,4 +1,5 @@
 ﻿using QuickViewFile.Controls;
+using QuickViewFile.Models;
 using QuickViewFile.ViewModel;
 using System.IO;
 using System.Windows;
@@ -11,11 +12,14 @@ namespace QuickViewFile
     public partial class MainWindow : Window
     {
         private bool _filesListViewVisible = true;
+        private readonly ConfigModel _config;
 
         public MainWindow()
         {
             try
             {
+                _config = ConfigHelper.LoadConfig();
+
                 InitializeComponent();
                 FilesListView.Focus();
 
@@ -161,7 +165,8 @@ namespace QuickViewFile
                     {
                         if (e.Key == Key.F4)
                         {
-                            VideoPlayerFullScreen fullScreenVideo = new VideoPlayerFullScreen(vm.SelectedItem.FullPath);
+                            TimeSpan currentVideoPosition = VideoMedia.GetCurrentVideoPosition();
+                            VideoPlayerFullScreen fullScreenVideo = new VideoPlayerFullScreen(vm.SelectedItem.FullPath, _config.BitmapScalingMode, currentVideoPosition);
                             vm.SelectedItem = null;
                             fullScreenVideo.Show();
                         }

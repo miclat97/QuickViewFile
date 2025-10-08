@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace QuickViewFile.Controls
@@ -17,6 +18,8 @@ namespace QuickViewFile.Controls
         private bool isVideoPaused = false;
         private bool disposedValue;
 
+        private string videoQuality;
+
         //private readonly ConfigModel _config;
 
         public VideoPlayerControl()
@@ -30,8 +33,9 @@ namespace QuickViewFile.Controls
             timer.Start();
         }
 
-        public VideoPlayerControl(string filePath)
+        public VideoPlayerControl(string filePath, string qualityFromConfig)
         {
+            videoQuality = qualityFromConfig;
             InitializeComponent();
 
             //_config = ConfigHelper.LoadConfig();
@@ -217,6 +221,11 @@ namespace QuickViewFile.Controls
                 // TODO: set large fields to null
                 disposedValue = true;
             }
+        }
+
+        public TimeSpan GetCurrentVideoPosition()
+        {
+            return TimeSpan.FromSeconds(sliProgress.Value);
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources

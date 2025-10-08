@@ -26,6 +26,8 @@ namespace QuickViewFile.Controls
         private bool isVideoPaused = false;
         private bool disposedValue;
 
+        private string videoQuality;
+
         //private readonly ConfigModel _config;
 
         public VideoPlayerFullScreen()
@@ -35,18 +37,21 @@ namespace QuickViewFile.Controls
             //_config = ConfigHelper.LoadConfig();
         }
 
-        public VideoPlayerFullScreen(string filePath)
+        public VideoPlayerFullScreen(string filePath, string videoQualityFromConfig, TimeSpan position)
         {
+            this.videoQuality = videoQualityFromConfig;
             InitializeComponent();
             //videoFullScreenPlayer.Height = heigth;
             //_config = ConfigHelper.LoadConfig();
-            StartPlaying(filePath);
+            StartPlaying(filePath, position);
         }
 
-        public void StartPlaying(string filePath)
+        public void StartPlaying(string filePath, TimeSpan positionFromContstructor)
         {
             videoFullScreenPlayer.Source = new Uri(filePath);
             videoFullScreenPlayer.Play();
+            videoFullScreenPlayer.Position = positionFromContstructor;
+
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
             videoFullScreenPlayer.Volume = 1;
@@ -170,6 +175,11 @@ namespace QuickViewFile.Controls
                 TimeSpan newTime = actualTime.Add(TimeSpan.FromSeconds(10));
                 videoFullScreenPlayer.Position = newTime;
             }
+        }
+
+        public TimeSpan GetCurrentVideoPosition()
+        {
+            return userIsDraggingSlider ? videoFullScreenPlayer.Position : TimeSpan.Zero;
         }
 
         protected virtual void Dispose(bool disposing)
