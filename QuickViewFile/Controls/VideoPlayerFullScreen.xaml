@@ -1,0 +1,22 @@
+﻿<Window x:Class="QuickViewFile.Controls.VideoPlayerFullScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuickViewFile.Controls"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowState="Maximized"
+        KeyDown="Window_KeyDown"
+        Title="VideoPlayerFullScreen" Height="1080" Width="1920">
+    <Grid KeyDown="videoPlayer_KeyDown">
+
+        <Border Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}">
+            <local:ZoomableMediaElement x:Name="videoFullScreenPlayer" Stretch="Uniform" StretchDirection="Both" LoadedBehavior="Manual"
+                                         RenderOptions.BitmapScalingMode="{Binding videoQuality}"/>
+        </Border>
+
+    </Grid>
+</Window>

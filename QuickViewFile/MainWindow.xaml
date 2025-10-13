@@ -1,0 +1,191 @@
+﻿<Window x:Class="QuickViewFile.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuickViewFile.Controls"
+        xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
+        xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
+        d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
+        mc:Ignorable="d"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        KeyDown="AppWindow_KeyDown"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
+        ResizeMode="CanResize"
+        Title="QuickViewFile" Height="720" Width="1280">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <helpers:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
+        <helpers:ScrollBarsVisibilityConverter x:Key="ScrollBarsVisibilityConverter"/>
+        <Style TargetType="ListViewItem">
+            <Setter Property="MinHeight" Value="40"/>
+        </Style>
+    </Window.Resources>
+    <Grid KeyDown="AppWindow_KeyDown" Name="MainGrid" ClipToBounds="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock
+                  Text="{Binding SelectedItem.FullPath}"
+                  FontWeight="Bold"
+                  Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
+                  Name="FileFullPathTextBlock"
+                  FontSize="13"
+                  Margin="0,0,0,0"
+                  Padding="10,10,10,10"
+                  TextWrapping="NoWrap" />
+
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="FilesList"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="FilesList"/>
+                <ColumnDefinition Width="*" SharedSizeGroup="FilesList"/>
+            </Grid.ColumnDefinitions>
+            <ListView Grid.Column="0"
+                  x:Name="FilesListView"
+                  SelectionMode="Single"
+                  ItemsSource="{Binding ActiveListItems}"
+                  SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                  MouseDoubleClick="FilesListView_MouseDoubleClick"
+                  Margin="10"
+                  IsSynchronizedWithCurrentItem="True"
+                  KeyDown="AppWindow_KeyDown"
+                  Width="Auto"
+                  ScrollViewer.PanningMode="VerticalFirst"
+                  SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                  IsManipulationEnabled="True"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                  ScrollViewer.CanContentScroll="True" >
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name" Width="140">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"
+                                               FontWeight="Normal"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Size (KB)" Width="80">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Size}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"
+                                               FontWeight="Normal"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <GridSplitter Grid.Column="1"
+                      Width="4"
+                      x:Name="MainWindowGridSplitter"
+                      HorizontalAlignment="Stretch"
+                      Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
+                      VerticalAlignment="Stretch"
+                      HorizontalContentAlignment="Center" Focusable="False"/>
+            <Border x:Name="ContentBorder"
+                    Grid.Column="2"
+                    BorderThickness="1"
+                    Margin="1">
+                <Grid KeyDown="AppWindow_KeyDown"
+                  MouseRightButtonDown="Grid_MouseRightButtonDown"
+                  Height="Auto"
+                  HorizontalAlignment="Stretch"
+                  Width="Auto">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- File content: Image, Video or Text-->
+                    <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  
+                          Grid.Row="0"                         
+                          Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True">
+
+                        <local:VideoPlayerControl
+                            KeyDown="AppWindow_KeyDown"
+                            x:Name="VideoMedia"
+                            Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
+                            Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />
+
+
+                        <Grid
+                             KeyDown="AppWindow_KeyDown"
+                             Height="Auto"
+                             Width="Auto"
+                             Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
+                             ClipToBounds="True">
+                            <local:ZoomableImage
+                                Source="{Binding SelectedItem.FileContentModel.ImageSource}"
+                                VerticalAlignment="Center"
+                                Stretch="Uniform"
+                                x:Name="ZoomableImageElement"
+                                KeyDown="AppWindow_KeyDown"
+                                HorizontalAlignment="Center"
+                                RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
+                                Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
+                                />
+                        </Grid>
+
+
+                        <Grid Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="GridSearchBox">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Search Panel -->
+                            <StackPanel Grid.Row="0" 
+                                        Orientation="Horizontal" 
+                                        Margin="10,5,10,5">
+                                <TextBox x:Name="SearchTextBox"
+                                         Width="200"
+                                         Margin="5,0,5,0"
+                                         VerticalContentAlignment="Center"
+                                         KeyDown="SearchTextBox_KeyDown"/>
+                                <Button Content="Find Next"
+                                        Height="24"
+                                        Padding="10,0"
+                                        Click="FindNext_Click"
+                                        Margin="0,0,5,0"/>
+                                <Button Content="Find Previous"
+                                        Height="24"
+                                        Padding="10,0"
+                                        Click="FindPrevious_Click"
+                                        Margin="0,0,5,0"/>
+                                <TextBlock x:Name="SearchResultsCount"
+                                          VerticalAlignment="Center"
+                                          Margin="5,0"/>
+                            </StackPanel>
+
+                            <TextBox Grid.Row="1"
+                                     FontFamily="Consolas"
+                                     SpellCheck.IsEnabled="False"
+                                     IsReadOnly="True"
+                                     KeyDown="AppWindow_KeyDown"
+                                     Name="TextBoxTextContent"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Margin="10"
+                                     ClipToBounds="True"
+                                     Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                     FontSize="{Binding Config.FontSize}"
+                                     Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
+                                     TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
