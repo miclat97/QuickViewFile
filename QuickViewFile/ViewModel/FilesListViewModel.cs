@@ -3,7 +3,12 @@ using QuickViewFile.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using WinRT;
 
 namespace QuickViewFile.ViewModel
 {
@@ -212,12 +217,7 @@ namespace QuickViewFile.ViewModel
             if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.FullPath) || !File.Exists(SelectedItem.FullPath))
                 return;
 
-            if (SelectedItem.FileContentModel.IsLoaded == true)
-                return;
-
             var filePath = SelectedItem.FullPath;
-            SelectedItem.FileContentModel = new FileContentModel();
-
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif" || ext == ".heic";
             bool isVideo = ext == ".mpg" || ext == ".mp4" || ext == ".mkv" || ext == ".webm";
@@ -225,19 +225,35 @@ namespace QuickViewFile.ViewModel
 
             var fileInfo = new FileInfo(filePath);
 
+            // Dispose of the previous FileContentModel
+            SelectedItem.FileContentModel?.Dispose();
+            SelectedItem.FileContentModel = new FileContentModel();
+
             if (isImage)
             {
                 try
                 {
                     await Task.Run(() =>
                     {
-                        var rotatedImageBitmap = LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath);
+                        BitmapSource? bitmap = null;
+                        try
+                        {
+                            bitmap = LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                SelectedItem.FileContentModel.TextContent = $"Error loading image: {ex.Message}";
+                                SelectedItem.FileContentModel.IsLoaded = false;
+                            });
+                            return;
+                        }
+
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            SelectedItem.FileContentModel.ImageSource = rotatedImageBitmap;
+                            SelectedItem.FileContentModel.ImageSource = bitmap;
                             SelectedItem.FileContentModel.TextContent = null;
-                            SelectedItem.FileContentModel.ShowTextBox = false;
-                            SelectedItem.FileContentModel.VideoMedia = null;
                             SelectedItem.FileContentModel.IsLoaded = true;
                         });
                     });
@@ -266,7 +282,6 @@ namespace QuickViewFile.ViewModel
                     SelectedItem.FileContentModel.TextContent = ex.Message;
                     SelectedItem.FileContentModel.ShowTextBox = true;
                     SelectedItem.FileContentModel.ImageSource = null;
-                    SelectedItem.FileContentModel.VideoMedia = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
@@ -274,14 +289,13 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                 {
-                    string asciiCharsToView = await Task.Run(() => FileContentReader.ReadTextFileAsync(filePath));
+                    var loadedFileText = await _ReadTextFileAsync(filePath, Config.CharsToPreview);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        SelectedItem.FileContentModel.TextContent = asciiCharsToView;
-                        SelectedItem.FileContentModel.ShowTextBox = true;
+                        SelectedItem.FileContentModel.TextContent = loadedFileText;
                         SelectedItem.FileContentModel.ImageSource = null;
-                        SelectedItem.FileContentModel.VideoMedia = null;
                         SelectedItem.FileContentModel.IsLoaded = true;
+                        SelectedItem.FileContentModel.ShowTextBox = true;
                     });
                 }
                 else
@@ -293,8 +307,42 @@ namespace QuickViewFile.ViewModel
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
-
             OnPropertyChanged(nameof(SelectedItem));
+        }
+
+        private async Task<string> _ReadTextFileAsync(string filePath, double maxChars)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                return string.Empty;
+
+            try
+            {
+                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true); // Async file stream
+                {
+                    using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, 4096, true)) // Add encoding and buffer size
+                    {
+                        StringBuilder result = new StringBuilder();
+                        char[] buffer = new char[4096]; // Smaller buffer
+                        int charsRead;
+
+                        while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
+                        {
+                            result.Append(buffer, 0, charsRead);
+                        }
+
+                        if (result.Length == maxChars)
+                        {
+                            result.AppendLine("\n[File truncated - too large to display completely]");
+                        }
+
+                        return result.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

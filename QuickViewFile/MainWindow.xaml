@@ -8,7 +8,7 @@
         xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
         mc:Ignorable="d"
-        WindowState="Normal"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         KeyDown="AppWindow_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
@@ -24,7 +24,7 @@
             <Setter Property="MinHeight" Value="40"/>
         </Style>
     </Window.Resources>
-    <Grid KeyDown="AppWindow_KeyDown">
+    <Grid KeyDown="AppWindow_KeyDown" Name="MainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -43,9 +43,9 @@
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="FilesList"/>
+                <ColumnDefinition Width="6" SharedSizeGroup="FilesList"/>
+                <ColumnDefinition Width="*" SharedSizeGroup="FilesList"/>
             </Grid.ColumnDefinitions>
             <ListView Grid.Column="0"
                   x:Name="FilesListView"
@@ -63,7 +63,7 @@
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" Width="120">
+                        <GridViewColumn Header="Name" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}"
@@ -73,7 +73,7 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Size (KB)" Width="80">
+                        <GridViewColumn Header="Size (KB)" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Size}"
@@ -88,19 +88,19 @@
             </ListView>
             <GridSplitter Grid.Column="1"
                       Width="4"
-                      Margin="0,20,0,20"
                       Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                       VerticalAlignment="Stretch"
-                      HorizontalContentAlignment="Center" />
-            <Border Name="ContentBorder"
+                      HorizontalContentAlignment="Center" Focusable="False"/>
+            <Border x:Name="ContentBorder"
                     Grid.Column="2"
                     BorderThickness="1"
                     Margin="1">
                 <Grid KeyDown="AppWindow_KeyDown"
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
+                  HorizontalAlignment="Stretch"
                   Width="Auto">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -108,9 +108,8 @@
 
                     <!-- File content: Image, Video or Text-->
                     <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  
-                          Grid.Row="1" 
-                          Name="GridFileContent"
-                          Width="Auto">
+                          Grid.Row="0" 
+                          Name="GridFileContent">
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"
@@ -121,6 +120,8 @@
 
                         <Grid
                              KeyDown="AppWindow_KeyDown"
+                             Height="Auto"
+                             Width="Auto"
                              Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
                              ClipToBounds="True">
                             <local:ZoomableImage
@@ -128,13 +129,11 @@
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"
                                 x:Name="ZoomableImageElement"
-                                Height="Auto"
-                                Width="Auto"
                                 KeyDown="AppWindow_KeyDown"
                                 HorizontalAlignment="Center"
                                 RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
                                 Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
-                                ClipToBounds="True"/>
+                                />
                         </Grid>
 
 

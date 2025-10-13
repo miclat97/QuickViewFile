@@ -198,17 +198,23 @@ namespace QuickViewFile
 
         private void HideUI()
         {
+            MainWindowGridSplitter.Width = 0;
+            FilesListView.Width = 0;
             FilesListView.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
             FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+            MainGrid.UpdateLayout();
             _filesListViewVisible = false;
         }
 
         private void ShowUI()
         {
+            MainWindowGridSplitter.Width = 6;
+            FilesListView.Width = 150;
             FilesListView.Visibility = Visibility.Visible;
             MainWindowGridSplitter.Visibility = Visibility.Visible;
             FileFullPathTextBlock.Visibility = Visibility.Visible;
+            MainGrid.UpdateLayout();
             _filesListViewVisible = true;
             FilesListView.Focus();
         }

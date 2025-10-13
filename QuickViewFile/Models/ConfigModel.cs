@@ -12,8 +12,9 @@
         public string TextPreviewWordWrap { get; set; } = "Wrap";
         public double MaxScale { get; set; } = 100.0;
         public double MinScale { get; set; } = 1;
-        public double MouseWheelZoomStepFactor { get; set; } = 1.1;
+        public double MouseWheelZoomStepFactor { get; set; } = 1.2;
         public string BitmapScalingMode { get; set; } = "Fant";
-        public double FontSize { get; set; } = 12;
+        public double FontSize { get; set; } = 13;
+        public double CharsToPreview { get; set; } = 100000000;
     }
 }
