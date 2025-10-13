@@ -289,7 +289,8 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                 {
-                    var loadedFileText = await _ReadTextFileAsync(filePath, Config.CharsToPreview);
+                    //var loadedFileText = await FileContentReader.ReadTextFileAsync(filePath, Config.MaxCharsToLoad);
+                    var loadedFileText = await FileContentReader.ReadTextFileAsync(filePath, Config.CharsToPreview);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         SelectedItem.FileContentModel.TextContent = loadedFileText;
@@ -308,41 +309,6 @@ namespace QuickViewFile.ViewModel
                 }
             }
             OnPropertyChanged(nameof(SelectedItem));
-        }
-
-        private async Task<string> _ReadTextFileAsync(string filePath, double maxChars)
-        {
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                return string.Empty;
-
-            try
-            {
-                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true); // Async file stream
-                {
-                    using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, 4096, true)) // Add encoding and buffer size
-                    {
-                        StringBuilder result = new StringBuilder();
-                        char[] buffer = new char[4096]; // Smaller buffer
-                        int charsRead;
-
-                        while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
-                        {
-                            result.Append(buffer, 0, charsRead);
-                        }
-
-                        if (result.Length == maxChars)
-                        {
-                            result.AppendLine("\n[File truncated - too large to display completely]");
-                        }
-
-                        return result.ToString();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
