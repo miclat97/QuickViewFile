@@ -7,7 +7,7 @@ namespace QuickViewFile.Helpers
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var isNull = value is null;
+            bool isNull = value is null;
             return isNull ? "True" : "False";
         }
 

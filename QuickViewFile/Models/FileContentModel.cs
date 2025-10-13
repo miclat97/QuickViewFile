@@ -1,33 +1,16 @@
 ﻿using QuickViewFile.Controls;
 using System.Windows.Media;
-using System;
 using System.Windows.Media.Imaging;
 
 namespace QuickViewFile.Models
 {
     public class FileContentModel : IDisposable
     {
-        private string? _textContent = null;
-        private ImageSource? _imageSource = null;
-        private VideoPlayerControl? _videoMedia = null;
+        public string? TextContent { get; set; } = null;
 
-        public string? TextContent
-        {
-            get => _textContent;
-            set { _textContent = value; }
-        }
+        public ImageSource? ImageSource { get; set; } = null;
 
-        public ImageSource? ImageSource
-        {
-            get => _imageSource;
-            set { _imageSource = value; }
-        }
-
-        public VideoPlayerControl? VideoMedia
-        {
-            get => _videoMedia;
-            set { _videoMedia = value; }
-        }
+        public VideoPlayerControl? VideoMedia { get; set; } = null;
 
         public bool IsLoaded { get; set; } = false;
         public bool ShowTextBox { get; set; } = false;

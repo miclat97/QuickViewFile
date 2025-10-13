@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace System
+namespace QuickViewFile.Extensions
 {
     public static class StringExtension
     {

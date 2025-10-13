@@ -1,20 +1,18 @@
-﻿using QuickViewFile.Helpers;
+﻿using QuickViewFile.Extensions;
+using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using WinRT;
 
 namespace QuickViewFile.ViewModel
 {
     public class FilesListViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<ItemList> ActiveListItems { get; set; } = new();
+        public ObservableCollection<ItemList> ActiveListItems { get; set; } = [];
 
         public FilesListViewModel(string folderPath)
         {
@@ -71,7 +69,7 @@ namespace QuickViewFile.ViewModel
                     {
                         try
                         {
-                            this.LazyLoadFile(false);
+                            LazyLoadFile(false);
                         }
                         catch (Exception ex)
                         {
@@ -90,7 +88,7 @@ namespace QuickViewFile.ViewModel
         {
             try
             {
-                var check = new DirectoryInfo(_folderPath);
+                DirectoryInfo check = new DirectoryInfo(_folderPath);
             }
             catch
             {
@@ -130,7 +128,7 @@ namespace QuickViewFile.ViewModel
                     });
                 }
 
-                foreach (var folder in foldersInDirectory)
+                foreach (DirectoryInfo folder in foldersInDirectory)
                 {
                     ActiveListItems.Add(new ItemList
                     {
@@ -142,7 +140,7 @@ namespace QuickViewFile.ViewModel
                     });
                 }
 
-                foreach (var file in filesInDirectory)
+                foreach (FileInfo file in filesInDirectory)
                 {
                     ActiveListItems.Add(new ItemList
                     {
@@ -156,7 +154,7 @@ namespace QuickViewFile.ViewModel
 
                 try
                 {
-                    var selectThisFile = ActiveListItems.LastOrDefault(x => x.FullPath.Equals(fileToSelect, StringComparison.OrdinalIgnoreCase));
+                    ItemList? selectThisFile = ActiveListItems.LastOrDefault(x => x.FullPath.Equals(fileToSelect, StringComparison.OrdinalIgnoreCase));
                     if (selectThisFile is not null)
                         SelectedItem = selectThisFile;
                     else
@@ -178,7 +176,7 @@ namespace QuickViewFile.ViewModel
             {
                 try
                 {
-                    var check = new DirectoryInfo(file.FullPath);
+                    DirectoryInfo check = new DirectoryInfo(file.FullPath);
                 }
                 catch
                 {
@@ -201,7 +199,7 @@ namespace QuickViewFile.ViewModel
                         VideoMedia = null,
                         ImageSource = null
                     };
-                    await this.LazyLoadFile(true);
+                    await LazyLoadFile(true);
                 });
             }
             else
@@ -217,13 +215,13 @@ namespace QuickViewFile.ViewModel
             if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.FullPath) || !File.Exists(SelectedItem.FullPath))
                 return;
 
-            var filePath = SelectedItem.FullPath;
-            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            string filePath = SelectedItem.FullPath;
+            string ext = Path.GetExtension(filePath).ToLowerInvariant();
             bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif" || ext == ".heic";
             bool isVideo = ext == ".mpg" || ext == ".mp4" || ext == ".mkv" || ext == ".webm";
             bool isAudio = ext == ".mp3" || ext == ".wav" || ext == ".aac";
 
-            var fileInfo = new FileInfo(filePath);
+            FileInfo fileInfo = new FileInfo(filePath);
 
             // Dispose of the previous FileContentModel
             SelectedItem.FileContentModel?.Dispose();
@@ -289,7 +287,7 @@ namespace QuickViewFile.ViewModel
             {
                 if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                 {
-                    var loadedFileText = await _ReadTextFileAsync(filePath, Config.CharsToPreview);
+                    string loadedFileText = await _ReadTextFileAsync(filePath, Config.CharsToPreview);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         SelectedItem.FileContentModel.TextContent = loadedFileText;
@@ -317,26 +315,25 @@ namespace QuickViewFile.ViewModel
 
             try
             {
-                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true); // Async file stream
+                using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true); // Async file stream
                 {
-                    using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, 4096, true)) // Add encoding and buffer size
+                    using StreamReader reader = new StreamReader(fileStream, Encoding.UTF8, true, 4096, true); // Add encoding and buffer size
+                    StringBuilder result = new StringBuilder();
+                    char[] buffer = new char[4096]; // Smaller buffer
+                    int charsRead;
+
+                    while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
                     {
-                        StringBuilder result = new StringBuilder();
-                        char[] buffer = new char[4096]; // Smaller buffer
-                        int charsRead;
-
-                        while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
-                        {
-                            result.Append(buffer, 0, charsRead);
-                        }
-
-                        if (result.Length == maxChars)
-                        {
-                            result.AppendLine("\n[File truncated - too large to display completely]");
-                        }
-
-                        return result.ToString();
+                        string asciiBuffer = new string(buffer, 0, charsRead).ToAscii();
+                        result.Append(asciiBuffer);
                     }
+
+                    if (result.Length == maxChars)
+                    {
+                        result.AppendLine("\n[File truncated - too large to display completely]");
+                    }
+
+                    return result.ToString();
                 }
             }
             catch (Exception ex)
