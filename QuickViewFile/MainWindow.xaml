@@ -13,7 +13,7 @@
         KeyDown="AppWindow_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
-        ResizeMode="CanResizeWithGrip"
+        ResizeMode="CanResize"
         Title="QuickViewFile" Height="720" Width="1280">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -24,7 +24,7 @@
             <Setter Property="MinHeight" Value="40"/>
         </Style>
     </Window.Resources>
-    <Grid KeyDown="AppWindow_KeyDown" Name="MainGrid">
+    <Grid KeyDown="AppWindow_KeyDown" Name="MainGrid" ClipToBounds="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -44,7 +44,7 @@
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" SharedSizeGroup="FilesList"/>
-                <ColumnDefinition Width="6" SharedSizeGroup="FilesList"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="FilesList"/>
                 <ColumnDefinition Width="*" SharedSizeGroup="FilesList"/>
             </Grid.ColumnDefinitions>
             <ListView Grid.Column="0"
@@ -56,14 +56,15 @@
                   Margin="10"
                   IsSynchronizedWithCurrentItem="True"
                   KeyDown="AppWindow_KeyDown"
+                  Width="Auto"
                   ScrollViewer.PanningMode="VerticalFirst"
                   SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                   IsManipulationEnabled="True"
-                  ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" Width="Auto">
+                        <GridViewColumn Header="Name" Width="140">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}"
@@ -73,7 +74,7 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Size (KB)" Width="Auto">
+                        <GridViewColumn Header="Size (KB)" Width="80">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Size}"
@@ -88,7 +89,7 @@
             </ListView>
             <GridSplitter Grid.Column="1"
                       Width="4"
-                      Name="MainWindowGridSplitter"
+                      x:Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                       VerticalAlignment="Stretch"
@@ -108,8 +109,8 @@
 
                     <!-- File content: Image, Video or Text-->
                     <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  
-                          Grid.Row="0" 
-                          Name="GridFileContent">
+                          Grid.Row="0"                         
+                          Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True">
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"
@@ -170,7 +171,7 @@
                             <TextBox Grid.Row="1"
                                      FontFamily="Consolas"
                                      SpellCheck.IsEnabled="False"
-                                     IsReadOnly="False"
+                                     IsReadOnly="True"
                                      KeyDown="AppWindow_KeyDown"
                                      Name="TextBoxTextContent"
                                      HorizontalScrollBarVisibility="Auto"

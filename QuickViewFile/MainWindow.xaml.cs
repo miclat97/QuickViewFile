@@ -13,6 +13,7 @@ namespace QuickViewFile
     {
         private bool _filesListViewVisible = true;
         private readonly ConfigModel _config;
+        private int _fileListViewWidth;
 
         public MainWindow()
         {
@@ -198,22 +199,25 @@ namespace QuickViewFile
 
         private void HideUI()
         {
-            MainWindowGridSplitter.Width = 0;
+            _fileListViewWidth = (int)FilesListView.ActualWidth;
             FilesListView.Width = 0;
             FilesListView.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
             FileFullPathTextBlock.Visibility = Visibility.Collapsed;
+            GridFileContent.Width = MainGrid.Width;
+            ContentBorder.Width = MainGrid.Width;
             MainGrid.UpdateLayout();
             _filesListViewVisible = false;
         }
 
         private void ShowUI()
         {
-            MainWindowGridSplitter.Width = 6;
-            FilesListView.Width = 150;
+            FilesListView.Width = _fileListViewWidth;
             FilesListView.Visibility = Visibility.Visible;
             MainWindowGridSplitter.Visibility = Visibility.Visible;
             FileFullPathTextBlock.Visibility = Visibility.Visible;
+            ContentBorder.Width = MainGrid.Width - FilesListView.Width - MainWindowGridSplitter.Width;
+            GridFileContent.Width = MainGrid.Width - FilesListView.Width - MainWindowGridSplitter.Width;
             MainGrid.UpdateLayout();
             _filesListViewVisible = true;
             FilesListView.Focus();
