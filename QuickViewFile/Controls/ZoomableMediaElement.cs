@@ -1,5 +1,4 @@
-﻿using QuickViewFile.Models;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -10,25 +9,25 @@ namespace QuickViewFile.Controls
     {
         private Point? lastDragPoint;
         private double currentScale = 1.0;
-        private TranslateTransform translateTransform = new TranslateTransform();
-        private ScaleTransform scaleTransform = new ScaleTransform();
-        private TransformGroup transformGroup = new TransformGroup();
+        private readonly TranslateTransform translateTransform = new TranslateTransform();
+        private readonly ScaleTransform scaleTransform = new ScaleTransform();
+        private readonly TransformGroup transformGroup = new TransformGroup();
 
         public ZoomableMediaElement()
         {
-            this.UseLayoutRounding = true;
+            UseLayoutRounding = true;
             transformGroup.Children.Add(scaleTransform);
             transformGroup.Children.Add(translateTransform);
-            this.ClipToBounds = true;
+            ClipToBounds = true;
 
-            this.RenderTransform = transformGroup;
-            this.RenderTransformOrigin = new Point(0, 0);
+            RenderTransform = transformGroup;
+            RenderTransformOrigin = new Point(0, 0);
 
-            this.MouseLeftButtonDown += Image_MouseLeftButtonDown;
-            this.MouseLeftButtonUp += Image_MouseLeftButtonUp;
-            this.MouseMove += Image_MouseMove;
-            this.MouseWheel += Image_MouseWheel;
-            this.SizeChanged += ZoomableImage_SizeChanged;
+            MouseLeftButtonDown += Image_MouseLeftButtonDown;
+            MouseLeftButtonUp += Image_MouseLeftButtonUp;
+            MouseMove += Image_MouseMove;
+            MouseWheel += Image_MouseWheel;
+            SizeChanged += ZoomableImage_SizeChanged;
         }
 
         private void ZoomableImage_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -38,10 +37,10 @@ namespace QuickViewFile.Controls
 
         private void ClampTranslation()
         {
-            double mediaElementWidth = this.NaturalVideoWidth * currentScale;
-            double mediaElementHeight = this.NaturalVideoHeight * currentScale;
-            double viewportWidth = this.ActualWidth;
-            double viewportHeight = this.ActualHeight;
+            double mediaElementWidth = NaturalVideoWidth * currentScale;
+            double mediaElementHeight = NaturalVideoHeight * currentScale;
+            double viewportWidth = ActualWidth;
+            double viewportHeight = ActualHeight;
 
             double maxX = Math.Max((mediaElementWidth - viewportWidth), 0);
             double maxY = Math.Max((mediaElementHeight - viewportHeight), 0);
@@ -57,18 +56,18 @@ namespace QuickViewFile.Controls
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             lastDragPoint = e.GetPosition(this);
-            this.CaptureMouse();
+            CaptureMouse();
         }
 
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             lastDragPoint = null;
-            this.ReleaseMouseCapture();
+            ReleaseMouseCapture();
         }
 
         private void Image_MouseMove(object sender, MouseEventArgs e)
         {
-            if (lastDragPoint.HasValue && this.IsMouseCaptured)
+            if (lastDragPoint.HasValue && IsMouseCaptured)
             {
                 Point currentPoint = e.GetPosition(this);
                 Vector delta = Point.Subtract(currentPoint, lastDragPoint.Value);
@@ -97,8 +96,8 @@ namespace QuickViewFile.Controls
 
             // Calculate point from where we will scale
             Point relativePoint = new Point(
-                mousePosition.X / this.ActualWidth,
-                mousePosition.Y / this.ActualHeight);
+                mousePosition.X / ActualWidth,
+                mousePosition.Y / ActualHeight);
 
             // Save current position before scalling
             double absoluteX = mousePosition.X * currentScale + translateTransform.X;

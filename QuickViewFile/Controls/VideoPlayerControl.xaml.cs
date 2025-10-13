@@ -1,9 +1,7 @@
-﻿using QuickViewFile.Models;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace QuickViewFile.Controls
@@ -18,7 +16,7 @@ namespace QuickViewFile.Controls
         private bool isVideoPaused = false;
         private bool disposedValue;
 
-        private string videoQuality;
+        private readonly string videoQuality;
 
         //private readonly ConfigModel _config;
 
@@ -27,8 +25,10 @@ namespace QuickViewFile.Controls
             InitializeComponent();
 
             //_config = ConfigHelper.LoadConfig();
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
+            DispatcherTimer timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
             timer.Tick += timer_Tick;
             timer.Start();
         }
@@ -39,8 +39,10 @@ namespace QuickViewFile.Controls
             InitializeComponent();
 
             //_config = ConfigHelper.LoadConfig();
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
+            DispatcherTimer timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
             timer.Tick += timer_Tick;
             timer.Start();
 

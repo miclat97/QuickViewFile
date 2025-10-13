@@ -6,11 +6,19 @@ namespace System
     {
         private static readonly ASCIIEncoding asciiEncoding = new ASCIIEncoding();
 
-        public static string ToAscii(this string dirty)
+        public unsafe static string ToAscii(this string dirty)
         {
-            byte[] bytes = asciiEncoding.GetBytes(dirty);
-            string clean = asciiEncoding.GetString(bytes);
-            return clean;
+            fixed (char* p = dirty)
+            {
+                for (int i = 0; i < dirty.Length; i++)
+                {
+                    if (p[i] > 127) // If character is non-ASCII
+                    {
+                        p[i] = ' ';
+                    }
+                }
+            }
+            return dirty;
         }
     }
 }

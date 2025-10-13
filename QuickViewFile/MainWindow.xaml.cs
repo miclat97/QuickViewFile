@@ -1,11 +1,11 @@
 ﻿using QuickViewFile.Controls;
+using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using QuickViewFile.ViewModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Navigation;
 
 namespace QuickViewFile
 {
@@ -28,23 +28,23 @@ namespace QuickViewFile
 
                 if (args.ElementAtOrDefault(1) is not null)
                 {
-                    var fileToSelectFullPath = args.ElementAt(1);
+                    string fileToSelectFullPath = args.ElementAt(1);
                     if (File.Exists(fileToSelectFullPath))
                     {
-                        var vm = new FilesListViewModel(fileToSelectFullPath);
+                        FilesListViewModel vm = new FilesListViewModel(fileToSelectFullPath);
                         DataContext = vm;
                     }
                 }
                 else
                 {
-                    var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
+                    FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                     DataContext = vm;
 
                 }
             }
             catch
             {
-                var vm = new FilesListViewModel(Directory.GetCurrentDirectory());
+                FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                 DataContext = vm;
             }
             finally
@@ -93,7 +93,7 @@ namespace QuickViewFile
                         if (e.Key > Key.D0 && e.Key < Key.Z)
                         {
                             char ASCIINumberWhichUserWantToSelect = (char)((int)e.Key + 21); ///because ASCII at keyboard has code 65, in .NET A on keyboard is 44, so after adding 21 it will be this letter which user want to find
-                            var itemToSelect = vm.ActiveListItems.FirstOrDefault
+                            ItemList? itemToSelect = vm.ActiveListItems.FirstOrDefault
                                 (x => x.Name?.ToUpperInvariant().ElementAt(0) == ASCIINumberWhichUserWantToSelect);
                             if (itemToSelect is not null)
                             {
@@ -262,24 +262,24 @@ namespace QuickViewFile
 
         private void Minimize_Click(object sender, RoutedEventArgs e)
         {
-            this.WindowState = WindowState.Minimized;
+            WindowState = WindowState.Minimized;
         }
 
         private void Maximize_Click(object sender, RoutedEventArgs e)
         {
-            this.WindowState = this.WindowState == WindowState.Maximized
+            WindowState = WindowState == WindowState.Maximized
                 ? WindowState.Normal
                 : WindowState.Maximized;
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
-                this.DragMove();
+                DragMove();
         }
 
         private void FileContentGrid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -307,7 +307,7 @@ namespace QuickViewFile
             }
         }
 
-        private List<int> _searchResults = new List<int>();
+        private readonly List<int> _searchResults = [];
         private int _currentSearchIndex = -1;
 
         private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
