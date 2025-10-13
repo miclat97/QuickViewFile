@@ -1,18 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
 namespace QuickViewFile.Controls
 {
@@ -22,11 +9,11 @@ namespace QuickViewFile.Controls
     public partial class VideoPlayerFullScreen : Window
     {
         private bool mediaPlayerIsPlaying = false;
-        private bool userIsDraggingSlider = false;
+        private readonly bool userIsDraggingSlider = false;
         private bool isVideoPaused = false;
         private bool disposedValue;
 
-        private string videoQuality;
+        private readonly string videoQuality;
 
         //private readonly ConfigModel _config;
 
@@ -39,7 +26,7 @@ namespace QuickViewFile.Controls
 
         public VideoPlayerFullScreen(string filePath, string videoQualityFromConfig, TimeSpan position)
         {
-            this.videoQuality = videoQualityFromConfig;
+            videoQuality = videoQualityFromConfig;
             InitializeComponent();
             //videoFullScreenPlayer.Height = heigth;
             //_config = ConfigHelper.LoadConfig();
@@ -217,8 +204,8 @@ namespace QuickViewFile.Controls
         {
             if (e.Key == Key.Escape)
             {
-                this.Dispose();
-                this.Close();
+                Dispose();
+                Close();
             }
         }
     }

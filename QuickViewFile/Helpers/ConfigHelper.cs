@@ -2,38 +2,38 @@ using QuickViewFile.Models;
 using System.IO;
 using System.Text.Json;
 
-namespace QuickViewFile
+namespace QuickViewFile.Helpers
 {
     public static class ConfigHelper
     {
         private const string ConfigFileName = "QuickViewFileConfig.json";
 
-        private static ConfigModel configDefault = new ConfigModel();
+        private static readonly ConfigModel configDefault = new ConfigModel();
 
-        private static readonly List<string> ImageStretchCorrectValues = new()
-        {
+        private static readonly List<string> ImageStretchCorrectValues =
+        [
             "Uniform",
             "UniformToFill",
             "Fill",
             "None"
-        };
+        ];
 
-        private static readonly List<string> WrapCorrectValues = new()
-        {
+        private static readonly List<string> WrapCorrectValues =
+        [
             "NoWrap",
             "Wrap",
             "WrapWithOverflow"
-        };
+        ];
 
-        private static readonly List<string> BitmapScalingMode = new List<string>
-        {
+        private static readonly List<string> BitmapScalingMode =
+        [
             "Unspecified",
             "LowQuality",
             "HighQuality",
             "Linear",
             "Fant",
             "NearestNeighbor"
-        };
+        ];
 
         public static ConfigModel LoadConfig()
         {
@@ -49,10 +49,10 @@ namespace QuickViewFile
                     configModel = JsonSerializer.Deserialize<ConfigModel>(json) ?? new ConfigModel();
 
                     // Uzupe³nianie braków
-                    foreach (var prop in typeof(ConfigModel).GetProperties())
+                    foreach (System.Reflection.PropertyInfo prop in typeof(ConfigModel).GetProperties())
                     {
-                        var currentValue = prop.GetValue(configModel);
-                        var defaultValue = prop.GetValue(configDefault);
+                        object? currentValue = prop.GetValue(configModel);
+                        object? defaultValue = prop.GetValue(configDefault);
 
                         // Jeœli wartoœæ jest null lub równa domyœlnej wartoœci typu (np. 0 dla int)
                         if (currentValue == null || currentValue.Equals(GetDefault(prop.PropertyType)))
