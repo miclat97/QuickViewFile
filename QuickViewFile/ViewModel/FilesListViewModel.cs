@@ -1,5 +1,4 @@
-﻿using QuickViewFile.Extensions;
-using QuickViewFile.Helpers;
+﻿using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
