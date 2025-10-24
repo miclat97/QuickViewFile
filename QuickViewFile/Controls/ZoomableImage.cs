@@ -52,12 +52,35 @@ namespace QuickViewFile.Controls
             double viewportX = ActualWidth;
             double viewportY = ActualHeight;
 
-            double maxX = Math.Max((imageX - viewportX), 0);
-            double maxY = Math.Max((imageY - viewportY), 0);
+            // When image is smaller than viewport:
+            // - If NOT dragging, center it.
+            // - If dragging (mouse captured), do not force-center; allow the user to drag freely.
+            if (imageX <= viewportX)
+            {
+                if (!IsMouseCaptured)
+                {
+                    translateTransform.X = (viewportX - imageX) / 2;
+                }
+                // else: leave translateTransform.X as-is while dragging to avoid snap/jitter
+            }
+            else
+            {
+                // Image wider than viewport: clamp so edges cannot be dragged beyond view
+                translateTransform.X = Math.Min(0, Math.Max(translateTransform.X, viewportX - imageX));
+            }
 
-            // Clamp so the image cannot be dragged outside the visible area
-            translateTransform.X = Math.Min(Math.Max(translateTransform.X, -maxX), maxX);
-            translateTransform.Y = Math.Min(Math.Max(translateTransform.Y, -maxY), maxY);
+            if (imageY <= viewportY)
+            {
+                if (!IsMouseCaptured)
+                {
+                    translateTransform.Y = (viewportY - imageY) / 2;
+                }
+                // else: leave translateTransform.Y as-is while dragging to avoid snap/jitter
+            }
+            else
+            {
+                translateTransform.Y = Math.Min(0, Math.Max(translateTransform.Y, viewportY - imageY));
+            }
         }
 
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -70,6 +93,8 @@ namespace QuickViewFile.Controls
         {
             lastDragPoint = null;
             ReleaseMouseCapture();
+            // After user releases drag, enforce clamping / centering
+            ClampTranslation();
         }
 
         private void Image_MouseMove(object sender, MouseEventArgs e)
@@ -77,6 +102,16 @@ namespace QuickViewFile.Controls
             if (lastDragPoint.HasValue && IsMouseCaptured)
             {
                 Point currentPoint = e.GetPosition(this);
+
+                // If pointer is outside the control bounds, do NOT move the image.
+                // Still update lastDragPoint so when the pointer returns we don't get a huge delta/jump.
+                if (currentPoint.X < 0 || currentPoint.X > ActualWidth ||
+                    currentPoint.Y < 0 || currentPoint.Y > ActualHeight)
+                {
+                    lastDragPoint = currentPoint;
+                    return;
+                }
+
                 Vector delta = Point.Subtract(currentPoint, lastDragPoint.Value);
 
                 translateTransform.X += delta.X;

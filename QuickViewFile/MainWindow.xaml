@@ -166,12 +166,20 @@
                                 <TextBlock x:Name="SearchResultsCount"
                                           VerticalAlignment="Center"
                                           Margin="5,0"/>
+
+                                <Button 
+                                    Grid.Column="1"
+                                    Content="Save"
+                                    Name="SaveButton"
+                                    Height="24"
+                                    Margin="0,8,10,8"
+                                    Padding="15,0"
+                                    Click="SaveButton_Click" FontStyle="Italic"/>
                             </StackPanel>
 
                             <TextBox Grid.Row="1"
                                      FontFamily="Consolas"
                                      SpellCheck.IsEnabled="False"
-                                     IsReadOnly="True"
                                      KeyDown="AppWindow_KeyDown"
                                      Name="TextBoxTextContent"
                                      HorizontalScrollBarVisibility="Auto"

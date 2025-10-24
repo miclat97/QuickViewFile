@@ -3,6 +3,7 @@ using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using QuickViewFile.ViewModel;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -257,6 +258,56 @@ namespace QuickViewFile
             catch (Exception)
             {
 
+            }
+        }
+
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (DataContext is FilesListViewModel vm &&
+                    vm.SelectedItem?.FileContentModel?.ShowTextBox == true &&
+                    !string.IsNullOrEmpty(vm.SelectedItem.FullPath))
+                {
+                    string content = TextBoxTextContent.Text;
+                    string filePath = vm.SelectedItem.FullPath;
+
+                    try
+                    {
+                        // Zapisz zawartość do pliku
+                        await File.WriteAllTextAsync(filePath, content, Encoding.UTF8);
+
+                        // Pokaż potwierdzenie
+                        var originalBackground = SaveButton.Background;
+                        SaveButton.Content = "Saved!";
+                        await Task.Delay(1500); // Pokazuj "Saved!" przez 1.5 sekundy
+                        SaveButton.Content = "Save";
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        MessageBox.Show(
+                            "Access denied. The file may be read-only or you may not have required permissions.",
+                            "Save Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                    catch (IOException ex)
+                    {
+                        MessageBox.Show(
+                            $"Could not save the file: {ex.Message}",
+                            "Save Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"An error occurred while saving: {ex.Message}",
+                    "Save Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

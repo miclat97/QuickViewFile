@@ -318,12 +318,12 @@ namespace QuickViewFile.ViewModel
                 {
                     using StreamReader reader = new StreamReader(fileStream, Encoding.UTF8, true, 4096, true); // Add encoding and buffer size
                     StringBuilder result = new StringBuilder();
-                    char[] buffer = new char[4096]; // Smaller buffer
+                    char[] buffer = new char[4096];
                     int charsRead;
 
                     while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
                     {
-                        string asciiBuffer = new string(buffer, 0, charsRead).ToAscii();
+                        string asciiBuffer = new string(buffer, 0, charsRead).ToUtf8();
                         result.Append(asciiBuffer);
                     }
 
