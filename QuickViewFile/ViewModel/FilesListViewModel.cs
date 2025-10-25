@@ -36,7 +36,6 @@ namespace QuickViewFile.ViewModel
 
         public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
 
-
         private double _previewHeight;
         public double PreviewHeight
         {
@@ -216,9 +215,21 @@ namespace QuickViewFile.ViewModel
 
             string filePath = SelectedItem.FullPath;
             string ext = Path.GetExtension(filePath).ToLowerInvariant();
-            bool isImage = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp" || ext == ".avif" || ext == ".gif" || ext == ".heic";
-            bool isVideo = ext == ".mpg" || ext == ".mp4" || ext == ".mkv" || ext == ".webm";
-            bool isAudio = ext == ".mp3" || ext == ".wav" || ext == ".aac";
+
+            FileTypeEnum fileType = FileTypeEnum.Text;
+
+            if (ext != null)
+            {
+                if (ConfigHelper.GetStringsFromCommaSeparatedString(Config.ImageExtensions).Contains(ext))
+                {
+                    fileType = FileTypeEnum.Image;
+                }
+                if (ConfigHelper.GetStringsFromCommaSeparatedString(Config.VideoExtensions).Contains(ext) ||
+                    ConfigHelper.GetStringsFromCommaSeparatedString(Config.MusicExtensions).Contains(ext))
+                {
+                    fileType = FileTypeEnum.Multimedia;
+                }
+            }
 
             FileInfo fileInfo = new FileInfo(filePath);
 
@@ -226,7 +237,7 @@ namespace QuickViewFile.ViewModel
             SelectedItem.FileContentModel?.Dispose();
             SelectedItem.FileContentModel = new FileContentModel();
 
-            if (isImage)
+            if (fileType == FileTypeEnum.Image)
             {
                 try
                 {
@@ -264,7 +275,7 @@ namespace QuickViewFile.ViewModel
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
-            else if (isVideo || isAudio)
+            else if (fileType == FileTypeEnum.Multimedia)
             {
                 try
                 {
@@ -323,8 +334,16 @@ namespace QuickViewFile.ViewModel
 
                     while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
                     {
-                        string asciiBuffer = new string(buffer, 0, charsRead).ToUtf8();
-                        result.Append(asciiBuffer);
+                        string bufferContent;
+                        if (Config.Utf8InsteadOfASCIITextPreview == 1)
+                        {
+                            bufferContent = new string(buffer, 0, charsRead).ToUtf8();
+                        }
+                        else if (Config.Utf8InsteadOfASCIITextPreview == 0)
+                        {
+                            bufferContent = new string(buffer, 0, charsRead).ToAscii();
+                        }
+                        result.Append(buffer);
                     }
 
                     if (result.Length == maxChars)

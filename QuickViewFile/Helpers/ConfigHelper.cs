@@ -35,6 +35,7 @@ namespace QuickViewFile.Helpers
             "NearestNeighbor"
         ];
 
+
         public static ConfigModel LoadConfig()
         {
             ConfigModel configDefault = new();
@@ -80,6 +81,36 @@ namespace QuickViewFile.Helpers
                         configModel.BitmapScalingMode = configDefault.BitmapScalingMode;
                         configIsValid = false;
                     }
+
+                    if (!configModel.ImageExtensions.StartsWith('.'))
+                    {
+                        configModel.ImageExtensions = configDefault.ImageExtensions;
+                        configIsValid = false;
+                    }
+                    else
+                    {
+                        configModel.ImageExtensions = configModel.ImageExtensions.ToLower();
+                    }
+
+                    if (!configModel.VideoExtensions.StartsWith('.'))
+                    {
+                        configModel.VideoExtensions = configDefault.VideoExtensions;
+                        configIsValid = false;
+                    }
+                    else
+                    {
+                        configModel.VideoExtensions = configModel.VideoExtensions.ToLower();
+                    }
+
+                    if (!configModel.MusicExtensions.StartsWith('.'))
+                    {
+                        configModel.MusicExtensions = configDefault.MusicExtensions;
+                        configIsValid = false;
+                    }
+                    else
+                    {
+                        configModel.MusicExtensions = configModel.MusicExtensions.ToLower();
+                    }
                 }
                 else
                 {
@@ -113,6 +144,12 @@ namespace QuickViewFile.Helpers
             return configModel;
         }
 
+        public static List<string> GetStringsFromCommaSeparatedString(string input)
+        {
+            return input.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim())
+                        .ToList();
+        }
 
         private static object? GetDefault(Type type) =>
             type.IsValueType ? Activator.CreateInstance(type) : null;
