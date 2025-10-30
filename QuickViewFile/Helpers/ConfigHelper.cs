@@ -102,8 +102,11 @@ namespace QuickViewFile.Helpers
 
                 try
                 {
-                    string json = JsonSerializer.Serialize(configModel, new JsonSerializerOptions { WriteIndented = true });
-                    File.WriteAllText(ConfigFileName, json);
+                    if (File.Exists(ConfigFileName))
+                    {
+                        string json = JsonSerializer.Serialize(configModel, new JsonSerializerOptions { WriteIndented = true });
+                        File.WriteAllText(ConfigFileName, json);
+                    }
                 }
                 catch
                 {
