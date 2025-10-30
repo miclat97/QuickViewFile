@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using QuickViewFile.Helpers;
+using QuickViewFile.Models;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -12,6 +14,22 @@ namespace QuickViewFile.Controls
         private readonly TranslateTransform translateTransform = new TranslateTransform();
         private readonly ScaleTransform scaleTransform = new ScaleTransform();
         private readonly TransformGroup transformGroup = new TransformGroup();
+        private readonly ConfigModel _config;
+
+        private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as ZoomableMediaElement)?.ResetTransforms();
+        }
+
+        // 3. Resetuje tylko transformacje. Centrowaniem zajmuje się XAML.
+        private void ResetTransforms()
+        {
+            currentScale = 1.0;
+            scaleTransform.ScaleX = 1.0;
+            scaleTransform.ScaleY = 1.0;
+            translateTransform.X = 0.0;
+            translateTransform.Y = 0.0;
+        }
 
         public ZoomableMediaElement()
         {
@@ -20,8 +38,14 @@ namespace QuickViewFile.Controls
             transformGroup.Children.Add(translateTransform);
             ClipToBounds = true;
 
+            _config = ConfigHelper.LoadConfig();
+
             RenderTransform = transformGroup;
-            RenderTransformOrigin = new Point(0, 0);
+
+            RenderTransformOrigin = new Point(0.5, 0.5);
+
+            IsManipulationEnabled = true;
+            ManipulationDelta += ZoomableImage_ManipulationDelta;
 
             MouseLeftButtonDown += Image_MouseLeftButtonDown;
             MouseLeftButtonUp += Image_MouseLeftButtonUp;
@@ -30,6 +54,7 @@ namespace QuickViewFile.Controls
             SizeChanged += ZoomableImage_SizeChanged;
         }
 
+
         private void ZoomableImage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClampTranslation();
@@ -37,20 +62,46 @@ namespace QuickViewFile.Controls
 
         private void ClampTranslation()
         {
-            double mediaElementWidth = NaturalVideoWidth * currentScale;
-            double mediaElementHeight = NaturalVideoHeight * currentScale;
-            double viewportWidth = ActualWidth;
-            double viewportHeight = ActualHeight;
+            if (Source == null) return;
 
-            double maxX = Math.Max((mediaElementWidth - viewportWidth), 0);
-            double maxY = Math.Max((mediaElementHeight - viewportHeight), 0);
+            var parent = VisualTreeHelper.GetParent(this) as FrameworkElement;
+            if (parent == null) return;
 
-            maxY *= 2;
-            maxX *= 2;
+            double viewportX = parent.ActualWidth;
+            double viewportY = parent.ActualHeight;
 
-            // Clamp so the image cannot be dragged outside the visible area
-            translateTransform.X = Math.Min(Math.Max(translateTransform.X, -maxX), maxX);
-            translateTransform.Y = Math.Min(Math.Max(translateTransform.Y, -maxY), maxY);
+            double baseImageX = this.ActualWidth;
+            double baseImageY = this.ActualHeight;
+
+            double scaledImageX = baseImageX * currentScale;
+            double scaledImageY = baseImageY * currentScale;
+
+            double minX, maxX, minY, maxY;
+
+            if (scaledImageX <= viewportX)
+            {
+                minX = 0;
+                maxX = 0;
+            }
+            else
+            {
+                maxX = (scaledImageX - baseImageX) / 2;
+                minX = -maxX;
+            }
+
+            if (scaledImageY <= viewportY)
+            {
+                minY = 0;
+                maxY = 0;
+            }
+            else
+            {
+                maxY = (scaledImageY - baseImageY) / 2;
+                minY = -maxY;
+            }
+
+            translateTransform.X = Math.Min(Math.Max(translateTransform.X, minX), maxX);
+            translateTransform.Y = Math.Min(Math.Max(translateTransform.Y, minY), maxY);
         }
 
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -82,37 +133,75 @@ namespace QuickViewFile.Controls
 
         private void Image_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            Point mousePosition = e.GetPosition(this);
-            double zoomFactor = e.Delta > 0 ? 1.1 : 1 / 1.1;
+            if (Source == null) return;
 
+            double zoomFactor = e.Delta > 0 ? _config.MouseWheelZoomStepFactor : 1 / _config.MouseWheelZoomStepFactor;
             double newScale = currentScale * zoomFactor;
-            if (newScale < 1)
-                newScale = 1;
-            if (newScale > 100)
-                newScale = 100;
 
-            if (Math.Abs(newScale - currentScale) < 0.001)
-                return;
+            if (newScale < _config.MinScale) newScale = _config.MinScale;
+            if (newScale > _config.MaxScale) newScale = _config.MaxScale;
 
-            // Calculate point from where we will scale
-            Point relativePoint = new Point(
-                mousePosition.X / ActualWidth,
-                mousePosition.Y / ActualHeight);
+            if (Math.Abs(newScale - currentScale) < 0.001) return;
 
-            // Save current position before scalling
-            double absoluteX = mousePosition.X * currentScale + translateTransform.X;
-            double absoluteY = mousePosition.Y * currentScale + translateTransform.Y;
+            Point mousePosition = e.GetPosition(this);
 
-            // Scale
+            // Position relative to center of control
+            Point relativeMouse = new Point(
+                mousePosition.X - (ActualWidth / 2),
+                mousePosition.Y - (ActualHeight / 2));
+
+            double oldTranslateX = translateTransform.X;
+            double oldTranslateY = translateTransform.Y;
+            double oldScale = currentScale;
+
+            currentScale = newScale;
             scaleTransform.ScaleX = newScale;
             scaleTransform.ScaleY = newScale;
 
-            // Calculate new translation to keep the point under the mouse
-            translateTransform.X = absoluteX - mousePosition.X * newScale;
-            translateTransform.Y = absoluteY - mousePosition.Y * newScale;
+            // Math to keep the mouse position stable
+            translateTransform.X = relativeMouse.X - (relativeMouse.X - oldTranslateX) * (newScale / oldScale);
+            translateTransform.Y = relativeMouse.Y - (relativeMouse.Y - oldTranslateY) * (newScale / oldScale);
+
+            ClampTranslation();
+        }
+
+        private void ZoomableImage_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+        {
+            if (Source == null) return;
+
+            double zoomFactor = e.DeltaManipulation.Scale.X;
+            double newScale = currentScale * zoomFactor;
+
+            if (newScale < _config.MinScale) newScale = _config.MinScale;
+            if (newScale > _config.MaxScale) newScale = _config.MaxScale;
+
+            if (Math.Abs(newScale - currentScale) < 0.001) return;
+
+            Point center = e.ManipulationOrigin;
+
+            // Position relative to center of control
+            Point relativeCenter = new Point(
+                center.X - (ActualWidth / 2),
+                center.Y - (ActualHeight / 2));
+
+            double oldTranslateX = translateTransform.X;
+            double oldTranslateY = translateTransform.Y;
+            double oldScale = currentScale;
 
             currentScale = newScale;
+            scaleTransform.ScaleX = newScale;
+            scaleTransform.ScaleY = newScale;
+
+            // Apply zoom...
+            translateTransform.X = relativeCenter.X - (relativeCenter.X - oldTranslateX) * (newScale / oldScale);
+            translateTransform.Y = relativeCenter.Y - (relativeCenter.Y - oldTranslateY) * (newScale / oldScale);
+
+            // ...then add gesture translation
+            translateTransform.X += e.DeltaManipulation.Translation.X;
+            translateTransform.Y += e.DeltaManipulation.Translation.Y;
+
             ClampTranslation();
+            e.Handled = true;
         }
     }
 }

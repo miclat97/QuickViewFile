@@ -16,19 +16,19 @@ namespace QuickViewFile.Controls
         private readonly ScaleTransform scaleTransform = new ScaleTransform();
         private readonly TransformGroup transformGroup = new TransformGroup();
 
-        // 1. Monitoruje zmianê w³aœciwoœci Source
+        // 1. Monitoring source property changes
         static ZoomableImage()
         {
             SourceProperty.OverrideMetadata(typeof(ZoomableImage), new FrameworkPropertyMetadata(OnSourceChanged));
         }
 
-        // 2. Wywo³ywane przy zmianie obrazu: Resetuje stan
+        // 2. Invoked when the image changes: Resets the state
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             (d as ZoomableImage)?.ResetTransforms();
         }
 
-        // 3. Resetuje tylko transformacje. Centrowaniem zajmuje siê XAML.
+        // 3. Reset only transforms. Centering is handled by XAML.
         private void ResetTransforms()
         {
             currentScale = 1.0;
@@ -49,11 +49,8 @@ namespace QuickViewFile.Controls
 
             RenderTransform = transformGroup;
 
-            // ########## KLUCZOWA POPRAWKA ##########
-            // Ustawia punkt transformacji na œrodek kontrolki (0.5, 0.5).
-            // Dziêki temu skalowanie dzia³a wzglêdem centrum, a nie lewego górnego rogu.
+            // Set the transform origin to the center of the control (0.5, 0.5).
             RenderTransformOrigin = new Point(0.5, 0.5);
-            // ######################################
 
             IsManipulationEnabled = true;
             ManipulationDelta += ZoomableImage_ManipulationDelta;
@@ -67,23 +64,21 @@ namespace QuickViewFile.Controls
 
         private void ZoomableImage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // Przelicz ograniczenia (np. gdy okno siê powiêkszy)
             ClampTranslation();
         }
 
-        // 4. POPRAWIONA METODA: Logika ograniczania
         private void ClampTranslation()
         {
             if (Source == null) return;
 
-            // Pobierz nadrzêdny kontener (Grid), aby poznaæ prawdziwy rozmiar "okna"
+            // Get the parent container (Grid) to know the true size of the "window"
             var parent = VisualTreeHelper.GetParent(this) as FrameworkElement;
             if (parent == null) return;
 
             double viewportX = parent.ActualWidth;
             double viewportY = parent.ActualHeight;
 
-            // ActualWidth/Height to bazowy, przeskalowany rozmiar obrazu (dziêki Stretch=Uniform)
+            // ActualWidth/Height to base, scaled image size (thanks to Stretch=Uniform)
             double baseImageX = this.ActualWidth;
             double baseImageY = this.ActualHeight;
 
@@ -92,8 +87,8 @@ namespace QuickViewFile.Controls
 
             double minX, maxX, minY, maxY;
 
-            // Jeœli przeskalowany obraz jest mniejszy ni¿ okno, nie pozwalaj na przesuwanie
-            // (XAML ju¿ go centruje)
+            // If the scaled image is smaller than the window, don't allow panning
+            // (XAML already centers it)
             if (scaledImageX <= viewportX)
             {
                 minX = 0;
@@ -101,8 +96,8 @@ namespace QuickViewFile.Controls
             }
             else
             {
-                // Obraz jest szerszy: ogranicz przesuwanie
-                // Obliczamy maksymalne przesuniêcie od œrodka
+                // The image is wider: limit panning
+                // Calculate the maximum offset from the center
                 maxX = (scaledImageX - baseImageX) / 2;
                 minX = -maxX;
             }
@@ -118,7 +113,7 @@ namespace QuickViewFile.Controls
                 minY = -maxY;
             }
 
-            // Zastosuj ograniczenia
+            // Apply clamping
             translateTransform.X = Math.Min(Math.Max(translateTransform.X, minX), maxX);
             translateTransform.Y = Math.Min(Math.Max(translateTransform.Y, minY), maxY);
         }
@@ -150,7 +145,6 @@ namespace QuickViewFile.Controls
             }
         }
 
-        // 5. POPRAWIONA METODA: Zoom-do-myszy dla RenderTransformOrigin(0.5, 0.5)
         private void Image_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (Source == null) return;
@@ -165,7 +159,7 @@ namespace QuickViewFile.Controls
 
             Point mousePosition = e.GetPosition(this);
 
-            // Pozycja myszy wzglêdem œrodka kontrolki
+            // Position relative to center of control
             Point relativeMouse = new Point(
                 mousePosition.X - (ActualWidth / 2),
                 mousePosition.Y - (ActualHeight / 2));
@@ -178,7 +172,7 @@ namespace QuickViewFile.Controls
             scaleTransform.ScaleX = newScale;
             scaleTransform.ScaleY = newScale;
 
-            // Matematyka pozwalaj¹ca utrzymaæ punkt pod mysz¹
+            // Math to keep the mouse position stable
             translateTransform.X = relativeMouse.X - (relativeMouse.X - oldTranslateX) * (newScale / oldScale);
             translateTransform.Y = relativeMouse.Y - (relativeMouse.Y - oldTranslateY) * (newScale / oldScale);
 
@@ -199,7 +193,7 @@ namespace QuickViewFile.Controls
 
             Point center = e.ManipulationOrigin;
 
-            // Pozycja gestu wzglêdem œrodka
+            // Position relative to center of control
             Point relativeCenter = new Point(
                 center.X - (ActualWidth / 2),
                 center.Y - (ActualHeight / 2));
@@ -212,11 +206,11 @@ namespace QuickViewFile.Controls
             scaleTransform.ScaleX = newScale;
             scaleTransform.ScaleY = newScale;
 
-            // Zastosuj zoom...
+            // Apply zoom...
             translateTransform.X = relativeCenter.X - (relativeCenter.X - oldTranslateX) * (newScale / oldScale);
             translateTransform.Y = relativeCenter.Y - (relativeCenter.Y - oldTranslateY) * (newScale / oldScale);
 
-            // ...a nastêpnie dodaj przesuniêcie z gestu
+            // ...then add gesture translation
             translateTransform.X += e.DeltaManipulation.Translation.X;
             translateTransform.Y += e.DeltaManipulation.Translation.Y;
 
