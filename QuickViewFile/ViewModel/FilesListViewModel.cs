@@ -344,16 +344,10 @@ namespace QuickViewFile.ViewModel
 
                     while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
                     {
-                        string bufferContent;
-                        if (Config.Utf8InsteadOfASCIITextPreview == 1)
-                        {
-                            bufferContent = new string(buffer, 0, charsRead).ToUtf8();
-                        }
-                        else if (Config.Utf8InsteadOfASCIITextPreview == 0)
-                        {
-                            bufferContent = new string(buffer, 0, charsRead).ToAscii();
-                        }
-                        result.Append(buffer);
+                        // Bezpośrednio dodaj odczytane znaki z bufora.
+                        // Usunięto niepotrzebne i powolne wywołania ToUtf8/ToAscii
+                        // oraz naprawiono błąd, który dodawał cały bufor zamiast odczytanej części.
+                        result.Append(buffer, 0, charsRead);
                     }
 
                     if (result.Length == maxChars)
