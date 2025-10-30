@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QuickViewFile.Helpers;
+using System.ComponentModel.DataAnnotations;
 
 namespace QuickViewFile.Models
 {
@@ -18,7 +19,7 @@ namespace QuickViewFile.Models
         public string BitmapScalingMode { get; set; } = "Fant";
         public double FontSize { get; set; } = 13;
         public double CharsToPreview { get; set; } = 100000000;
-        public string ImageExtensions { get; set; } = ".jpg,.jpeg,.png,.bmp,.gif,.tiff,.ico,.webp";
+        public string ImageExtensions { get; set; } = ".jpg,.jpeg,.png,.bmp,.gif,.tiff,.ico,.webp,.avif";
         public string VideoExtensions { get; set; } = ".mp4,.avi,.mov,.wmv,.flv,.mkv,.webm,.mpg,.mpeg";
         public string MusicExtensions { get; set; } = ".mp3,.wav,.aac,.flac,.ogg,.wma,.m4a";
         [AllowedValues(new object[] { 0, 1 })]

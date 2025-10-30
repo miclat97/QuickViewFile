@@ -81,36 +81,6 @@ namespace QuickViewFile.Helpers
                         configModel.BitmapScalingMode = configDefault.BitmapScalingMode;
                         configIsValid = false;
                     }
-
-                    if (!configModel.ImageExtensions.StartsWith('.'))
-                    {
-                        configModel.ImageExtensions = configDefault.ImageExtensions;
-                        configIsValid = false;
-                    }
-                    else
-                    {
-                        configModel.ImageExtensions = configModel.ImageExtensions.ToLower();
-                    }
-
-                    if (!configModel.VideoExtensions.StartsWith('.'))
-                    {
-                        configModel.VideoExtensions = configDefault.VideoExtensions;
-                        configIsValid = false;
-                    }
-                    else
-                    {
-                        configModel.VideoExtensions = configModel.VideoExtensions.ToLower();
-                    }
-
-                    if (!configModel.MusicExtensions.StartsWith('.'))
-                    {
-                        configModel.MusicExtensions = configDefault.MusicExtensions;
-                        configIsValid = false;
-                    }
-                    else
-                    {
-                        configModel.MusicExtensions = configModel.MusicExtensions.ToLower();
-                    }
                 }
                 else
                 {
@@ -142,6 +112,18 @@ namespace QuickViewFile.Helpers
             }
 
             return configModel;
+        }
+
+        public static ConfigParsedModel LoadParsedConfig()
+        {
+            ConfigModel config = ConfigHelper.LoadConfig();
+            ConfigParsedModel parsedConfig = new ConfigParsedModel
+            {
+                ImageExtensionsParsed = GetStringsFromCommaSeparatedString(config.ImageExtensions),
+                VideoExtensionsParsed = GetStringsFromCommaSeparatedString(config.VideoExtensions),
+                MusicExtensionsParsed = GetStringsFromCommaSeparatedString(config.MusicExtensions)
+            };
+            return parsedConfig;
         }
 
         public static List<string> GetStringsFromCommaSeparatedString(string input)

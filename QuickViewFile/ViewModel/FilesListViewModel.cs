@@ -327,7 +327,17 @@ namespace QuickViewFile.ViewModel
             {
                 using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true); // Async file stream
                 {
-                    using StreamReader reader = new StreamReader(fileStream, Encoding.UTF8, true, 4096, true); // Add encoding and buffer size
+                    StreamReader reader; // Add encoding and buffer size
+
+                    if (Config.Utf8InsteadOfASCIITextPreview == 1)
+                    {
+                        reader = new StreamReader(fileStream, Encoding.UTF8);
+                    }
+                    else // ASCII
+                    {
+                        reader = new StreamReader(fileStream, Encoding.ASCII);
+                    }
+
                     StringBuilder result = new StringBuilder();
                     char[] buffer = new char[4096];
                     int charsRead;
