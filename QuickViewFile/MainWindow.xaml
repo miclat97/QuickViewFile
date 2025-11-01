@@ -30,22 +30,39 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock
-                  Text="{Binding SelectedItem.FullPath}"
-                  FontWeight="Bold"
-                  Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
-                  Name="FileFullPathTextBlock"
-                  FontSize="13"
-                  Margin="0,0,0,0"
-                  Padding="10,10,10,10"
-                  TextWrapping="NoWrap" />
+        <Grid Grid.Row="0" x:Name="TopInfoPanel">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
+            <TextBlock
+              Grid.Column="0"
+              Text="{Binding SelectedItem.FullPath}"
+              FontWeight="Bold"
+              Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
+              Name="FileFullPathTextBlock"
+              FontSize="13"
+              Margin="0,0,0,0"
+              Padding="10,10,10,10"
+              TextWrapping="NoWrap" />
+
+            <Button
+              Grid.Column="1"
+              Content="Save"
+              Name="SaveButton"
+              Height="24"
+              Margin="0,8,10,8"
+              Padding="15,0"
+              Click="SaveButton_Click"
+              Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        </Grid>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" SharedSizeGroup="FilesList"/>
-                <ColumnDefinition Width="Auto" SharedSizeGroup="FilesList"/>
-                <ColumnDefinition Width="*" SharedSizeGroup="FilesList"/>
+                <ColumnDefinition x:Name="FilesListColumn" Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <ListView Grid.Column="0"
                   x:Name="FilesListView"
@@ -114,7 +131,6 @@
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"
-                            IsManipulationEnabled="True"
                             x:Name="VideoMedia"
                             Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                             Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />
@@ -131,7 +147,6 @@
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"
                                 x:Name="ZoomableImageElement"
-                                IsManipulationEnabled="True"
                                 KeyDown="AppWindow_KeyDown"
                                 HorizontalAlignment="Center"
                                 RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
@@ -168,35 +183,20 @@
                                 <TextBlock x:Name="SearchResultsCount"
                                           VerticalAlignment="Center"
                                           Margin="5,0"/>
-
-                                <Button 
-                                    Grid.Column="1"
-                                    Content="Save"
-                                    Name="SaveButton"
-                                    Height="24"
-                                    Margin="0,8,10,8"
-                                    Padding="15,0"
-                                    Click="SaveButton_Click" FontStyle="Italic"/>
                             </StackPanel>
 
                             <TextBox Grid.Row="1"
-                                     Height="Auto"
-                                     Width="Auto"
                                      FontFamily="Consolas"
                                      SpellCheck.IsEnabled="False"
-                                     AcceptsReturn="True"
-                                     AcceptsTab="True"
-                                     IsReadOnlyCaretVisible="True"
-                                     IsManipulationEnabled="True"
-                                     AutoWordSelection="True"
                                      KeyDown="AppWindow_KeyDown"
                                      Name="TextBoxTextContent"
-                                     HorizontalScrollBarVisibility="Visible"
-                                     VerticalScrollBarVisibility="Visible"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     VerticalScrollBarVisibility="Auto"
                                      Margin="10"
+                                     ClipToBounds="True"
                                      Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
                                      FontSize="{Binding Config.FontSize}"
-                                     Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=OneWay}"
+                                     Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=TwoWay}"
                                      TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
                         </Grid>
                     </Grid>
