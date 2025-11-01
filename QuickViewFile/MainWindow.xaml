@@ -114,6 +114,7 @@
 
                         <local:VideoPlayerControl
                             KeyDown="AppWindow_KeyDown"
+                            IsManipulationEnabled="True"
                             x:Name="VideoMedia"
                             Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                             Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />
@@ -130,6 +131,7 @@
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"
                                 x:Name="ZoomableImageElement"
+                                IsManipulationEnabled="True"
                                 KeyDown="AppWindow_KeyDown"
                                 HorizontalAlignment="Center"
                                 RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"

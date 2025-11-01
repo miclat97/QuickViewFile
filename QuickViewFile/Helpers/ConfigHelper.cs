@@ -41,6 +41,7 @@ namespace QuickViewFile.Helpers
             ConfigModel configDefault = new();
             ConfigModel configModel = new();
             bool configIsValid = true;
+            bool fileExistedBeforeStartApp = File.Exists(ConfigFileName);
 
             try
             {
@@ -102,7 +103,7 @@ namespace QuickViewFile.Helpers
 
                 try
                 {
-                    if (File.Exists(ConfigFileName))
+                    if (fileExistedBeforeStartApp)
                     {
                         string json = JsonSerializer.Serialize(configModel, new JsonSerializerOptions { WriteIndented = true });
                         File.WriteAllText(ConfigFileName, json);

@@ -333,9 +333,9 @@ namespace QuickViewFile.ViewModel
                     {
                         reader = new StreamReader(fileStream, Encoding.UTF8);
                     }
-                    else // ASCII
+                    else // Latin1
                     {
-                        reader = new StreamReader(fileStream, Encoding.ASCII);
+                        reader = new StreamReader(fileStream, Encoding.Latin1);
                     }
 
                     StringBuilder result = new StringBuilder();
@@ -344,9 +344,6 @@ namespace QuickViewFile.ViewModel
 
                     while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
                     {
-                        // Bezpośrednio dodaj odczytane znaki z bufora.
-                        // Usunięto niepotrzebne i powolne wywołania ToUtf8/ToAscii
-                        // oraz naprawiono błąd, który dodawał cały bufor zamiast odczytanej części.
                         result.Append(buffer, 0, charsRead);
                     }
 
