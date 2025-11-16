@@ -288,6 +288,7 @@ namespace QuickViewFile.ViewModel
                 catch (Exception ex)
                 {
                     SelectedItem.FileContentModel.TextContent = ex.Message;
+                    SelectedItem.FileContentModel.VideoMedia = null;
                     SelectedItem.FileContentModel.ShowTextBox = true;
                     SelectedItem.FileContentModel.ImageSource = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
