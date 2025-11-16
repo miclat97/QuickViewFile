@@ -12,7 +12,6 @@
         WindowStartupLocation="CenterScreen"
         KeyDown="AppWindow_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        FocusManager.FocusedElement="{Binding ElementName=FilesListView}"
         ResizeMode="CanResize"
         Title="QuickViewFile" Height="720" Width="1280">
     <Window.Resources>
@@ -24,7 +23,7 @@
             <Setter Property="MinHeight" Value="40"/>
         </Style>
     </Window.Resources>
-    <Grid KeyDown="AppWindow_KeyDown" Name="MainGrid" ClipToBounds="True">
+    <Grid Name="MainGrid" ClipToBounds="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -71,16 +70,17 @@
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
                   Margin="10"
+                  KeyDown="FilesListView_KeyDown"
                   IsSynchronizedWithCurrentItem="True"
-                  KeyDown="AppWindow_KeyDown"
                   Width="Auto"
+                  TabIndex="0"
                   ScrollViewer.PanningMode="VerticalFirst"
                   SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                   IsManipulationEnabled="True"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
-                    <GridView>
+                    <GridView FocusManager.FocusedElement="{Binding SelectedItem}">
                         <GridViewColumn Header="Name" Width="140">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -105,7 +105,7 @@
                 </ListView.View>
             </ListView>
             <GridSplitter Grid.Column="1"
-                      Width="4"
+                      Width="2"
                       x:Name="MainWindowGridSplitter"
                       HorizontalAlignment="Stretch"
                       Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
@@ -115,7 +115,7 @@
                     Grid.Column="2"
                     BorderThickness="1"
                     Margin="1">
-                <Grid KeyDown="AppWindow_KeyDown"
+                <Grid
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
                   HorizontalAlignment="Stretch"
@@ -130,14 +130,12 @@
                           Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True">
 
                         <local:VideoPlayerControl
-                            KeyDown="AppWindow_KeyDown"
                             x:Name="VideoMedia"
                             Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                             Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />
 
 
                         <Grid
-                             KeyDown="AppWindow_KeyDown"
                              Height="Auto"
                              Width="Auto"
                              Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
@@ -147,7 +145,6 @@
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"
                                 x:Name="ZoomableImageElement"
-                                KeyDown="AppWindow_KeyDown"
                                 HorizontalAlignment="Center"
                                 RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
                                 Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"
@@ -188,7 +185,6 @@
                             <TextBox Grid.Row="1"
                                      FontFamily="Consolas"
                                      SpellCheck.IsEnabled="False"
-                                     KeyDown="AppWindow_KeyDown"
                                      Name="TextBoxTextContent"
                                      HorizontalScrollBarVisibility="Auto"
                                      VerticalScrollBarVisibility="Auto"

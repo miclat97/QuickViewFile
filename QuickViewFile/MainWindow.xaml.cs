@@ -27,7 +27,7 @@ namespace QuickViewFile
 
                 string[] args = Environment.GetCommandLineArgs();
 
-                if (args.ElementAtOrDefault(1) is not null)
+                if (!String.IsNullOrWhiteSpace(args.ElementAtOrDefault(1)))
                 {
                     string fileToSelectFullPath = args.ElementAt(1);
                     if (File.Exists(fileToSelectFullPath))
@@ -50,7 +50,8 @@ namespace QuickViewFile
             }
             finally
             {
-                FilesListView.Focus();
+                FilesListView.IsSynchronizedWithCurrentItem = true;
+                FilesListView.ScrollIntoView(FilesListView.SelectedItem);
             }
         }
 
@@ -78,74 +79,30 @@ namespace QuickViewFile
                     if (_filesListViewVisible)
                     {
                         HideUI();
-                        WindowState = WindowState.Maximized;
                     }
                     else
                     {
                         ShowUI();
-                        WindowState = WindowState.Normal;
                     }
                 }
 
                 if (DataContext is FilesListViewModel vm)
                 {
-                    if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
+                    try
                     {
-                        if (e.Key > Key.D0 && e.Key < Key.Z)
+                        if (e.Key == Key.Right)
                         {
-                            char ASCIINumberWhichUserWantToSelect = (char)((int)e.Key + 21); ///because ASCII at keyboard has code 65, in .NET A on keyboard is 44, so after adding 21 it will be this letter which user want to find
-                            ItemList? itemToSelect = vm.ActiveListItems.FirstOrDefault
-                                (x => x.Name?.ToUpperInvariant().ElementAt(0) == ASCIINumberWhichUserWantToSelect);
-                            if (itemToSelect is not null)
-                            {
-                                FilesListView.SelectedItem = itemToSelect;
-                                FilesListView.ScrollIntoView(itemToSelect);
-                            }
+                            FilesListView.SelectedIndex++;
                         }
-
-                        if (e.Key == Key.Enter)
+                        else if (e.Key == Key.Left)
                         {
-                            if (file.IsDirectory)
-                            {
-                                Application.Current.Dispatcher.BeginInvoke(async () =>
-                                {
-                                    await vm.OnFileDoubleClick(file);
-                                });
-                            }
-                            else if (file.IsDirectory == false && file.FileContentModel.IsLoaded == false)
-                            {
-                                Application.Current.Dispatcher.BeginInvoke(async () =>
-                                {
-                                    await vm.LazyLoadFile(true);
-                                });
-                            }
+                            FilesListView.SelectedIndex--;
                         }
+                        FilesListView.SetCurrentValue(ListView.SelectedIndexProperty, FilesListView.SelectedIndex);
                     }
-
-                    if (!_filesListViewVisible) // When UI is hidden and user click anything on keyboard it have to be different implementation due to "standard/Windows"
-                                                // handling keyboard - like arrow up or arrow down, when focused on list will change element to previous/net
+                    catch (Exception)
                     {
-                        if (vm.SelectedItem?.FileContentModel?.VideoMedia is null) // when video is playing - arrows are handled to change video time position
-                        {
-                            int nextFileIndex = FilesListView.SelectedIndex + 1;
-                            int previousFileIndex = FilesListView.SelectedIndex - 1;
 
-                            if (e.Key == Key.Right && vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false)
-                            {
-                                FilesListView.SelectedIndex++;
-                            }
-                            else if (e.Key == Key.Left && vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false)
-                            {
-                                FilesListView.SelectedIndex--;
-                            }
-                            else if (e.Key == Key.Enter)
-                            {
-                                Application.Current.Dispatcher.BeginInvoke(async () =>
-                                {
-                                    await vm.LazyLoadFile(true);
-                                });
-                            }
-                        }
                     }
 
                     if (vm.SelectedItem?.FileContentModel?.ShowTextBox == true)
@@ -201,12 +158,12 @@ namespace QuickViewFile
         private void HideUI()
         {
             _filesListColumnWidthCache = FilesListColumn.Width;
-            
-            FilesListColumn.Width = new GridLength(0);
 
+            FilesListColumn.Width = new GridLength(0);
+            FilesListView.Visibility = Visibility.Collapsed;
             TopInfoPanel.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
-            
+
             _filesListViewVisible = false;
         }
 
@@ -216,40 +173,31 @@ namespace QuickViewFile
 
             TopInfoPanel.Visibility = Visibility.Visible;
             MainWindowGridSplitter.Visibility = Visibility.Visible;
-            
+            FilesListView.Visibility = Visibility.Visible;
             _filesListViewVisible = true;
-            FilesListView.Focus();
+            FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+            FilesListView.IsSynchronizedWithCurrentItem = true;
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try
             {
-                if (e.OriginalSource is Border)
+                if (DataContext is FilesListViewModel vm)
                 {
-                    if (DataContext is FilesListViewModel vm)
-                    {
-                        if (vm.SelectedItem?.FileContentModel.ImageSource is not null || vm.SelectedItem?.FileContentModel.VideoMedia is not null)
-                        {
-                            Point mousePosition = e.GetPosition(ContentBorder);
+                    Point mousePosition = e.GetPosition(GridFileContent);
 
-                            double previousItem = ContentBorder.ActualWidth * 0.08;
-                            double nextItem = ContentBorder.ActualWidth * 0.92;
+                    double previousItem = GridFileContent.ActualWidth * 0.08;
+                    double nextItem = GridFileContent.ActualWidth * 0.92;
 
-                            int nextFileIndex = FilesListView.SelectedIndex + 1;
-                            int previousFileIndex = FilesListView.SelectedIndex - 1;
+                    int nextFileIndex = FilesListView.SelectedIndex + 1;
+                    int previousFileIndex = FilesListView.SelectedIndex - 1;
 
-                            if ((vm.ActiveListItems.ElementAtOrDefault(previousFileIndex) is not null
-                                && mousePosition.X < previousItem) &&
-                                vm.ActiveListItems.ElementAt(previousFileIndex).IsDirectory == false) // to prevent changing to left from item at position 0 (but it shouldn't crash the app anyway)
-                                FilesListView.SelectedIndex--;
+                    if (mousePosition.X < previousItem)
+                        FilesListView.SelectedIndex--;
 
-                            if ((mousePosition.X > nextItem) &&
-                                vm.ActiveListItems.ElementAt(nextFileIndex).IsDirectory == false
-                                && vm.ActiveListItems.ElementAt(nextFileIndex) is not null) // to prevent situation when We will try to check ElementAt poisiton out of list (when last photo of directory will be clicked at the right bound (doing so will crash whole appication)
-                                FilesListView.SelectedIndex++;
-                        }
-                    }
+                    if (mousePosition.X > nextItem)
+                        FilesListView.SelectedIndex++;
                 }
             }
             catch (Exception)
@@ -421,6 +369,36 @@ namespace QuickViewFile
                 SearchResultsCount.Text = $"{_currentSearchIndex + 1} of {_searchResults.Count} matches";
             else
                 SearchResultsCount.Text = "No matches";
+        }
+
+        private void FilesListView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key > Key.D0 && e.Key < Key.Z)
+            {
+                char ASCIINumberWhichUserWantToSelect = (char)((int)e.Key + 21); ///because ASCII at keyboard has code 65, in .NET A on keyboard is 44, so after adding 21 it will be this letter which user want to find
+
+                var itemToSelect = FilesListView.Items.Cast<QuickViewFile.Models.ItemList>()
+                    .FirstOrDefault(item => !string.IsNullOrEmpty(item.Name) && char.ToUpper(item.Name[0]) == ASCIINumberWhichUserWantToSelect);
+                if (itemToSelect is not null)
+                {
+                    FilesListView.SelectedItem = itemToSelect;
+                    FilesListView.ScrollIntoView(itemToSelect);
+                }
+            }
+            if (e.Key == Key.Enter)
+            {
+                if (DataContext is FilesListViewModel vm)
+                {
+                    if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
+                    {
+
+                        Application.Current.Dispatcher.BeginInvoke(async () =>
+                        {
+                            await vm.OnFileDoubleClick(file);
+                        });
+                    }
+                }
+            }
         }
     }
 }
