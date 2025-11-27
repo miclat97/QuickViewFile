@@ -20,7 +20,7 @@ namespace QuickViewFile
         {
             try
             {
-                _config = ConfigHelper.LoadConfig();
+                _config = ConfigHelper.loadedConfig;
 
                 InitializeComponent();
                 FilesListView.Focus();

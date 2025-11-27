@@ -15,7 +15,7 @@ namespace QuickViewFile.ViewModel
 
         public FilesListViewModel(string folderPath)
         {
-            Config = ConfigHelper.LoadConfig();
+            Config = ConfigHelper.loadedConfig;
 
             _folderPath = Path.GetDirectoryName(folderPath)!;
             if (_folderPath.Equals(folderPath, StringComparison.OrdinalIgnoreCase)) // if directory name is the same as directory from parameter,
@@ -34,7 +34,7 @@ namespace QuickViewFile.ViewModel
 
         public Visibility TextBoxVisibility { get; set; }
 
-        public ConfigModel Config { get; set; } = ConfigHelper.LoadConfig();
+        public ConfigModel Config { get; set; } = ConfigHelper.loadedConfig;
 
         private double _previewHeight;
         public double PreviewHeight
@@ -217,15 +217,16 @@ namespace QuickViewFile.ViewModel
             string ext = Path.GetExtension(filePath).ToLowerInvariant();
 
             FileTypeEnum fileType = FileTypeEnum.Text;
-
+            var imageExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.ImageExtensions);
+            var musicExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.MusicExtensions);
+            var videoExtension = ConfigHelper.GetStringsFromCommaSeparatedString(Config.VideoExtensions);
             if (ext != null)
             {
-                if (ConfigHelper.GetStringsFromCommaSeparatedString(Config.ImageExtensions).Contains(ext))
+                if (imageExtensions.Contains(ext))
                 {
                     fileType = FileTypeEnum.Image;
                 }
-                if (ConfigHelper.GetStringsFromCommaSeparatedString(Config.VideoExtensions).Contains(ext) ||
-                    ConfigHelper.GetStringsFromCommaSeparatedString(Config.MusicExtensions).Contains(ext))
+                if (musicExtensions.Contains(ext) || videoExtension.Contains(ext))
                 {
                     fileType = FileTypeEnum.Multimedia;
                 }

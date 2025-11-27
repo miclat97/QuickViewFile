@@ -1,131 +1,111 @@
+using Microsoft.Win32;
 using QuickViewFile.Models;
-using System.IO;
-using System.Text.Json;
 
 namespace QuickViewFile.Helpers
 {
     public static class ConfigHelper
     {
-        private const string ConfigFileName = "QuickViewFileConfig.json";
+        private const string RegistryKeyPath = @"Software\QuickViewFile"; // Œcie¿ka do klucza rejestru HKCU
+        public static readonly ConfigModel loadedConfig;
 
-        private static readonly ConfigModel configDefault = new ConfigModel();
+        static ConfigHelper()
+        {
+            loadedConfig = LoadConfig();
+        }
 
-        private static readonly List<string> ImageStretchCorrectValues =
-        [
-            "Uniform",
-            "UniformToFill",
-            "Fill",
-            "None"
-        ];
+        public static void SaveConfig(ConfigModel config)
+        {
+            RegistryKey? key = Registry.CurrentUser.CreateSubKey(RegistryKeyPath);
+            if (key == null)
+            {
+                return;
+            }
 
-        private static readonly List<string> WrapCorrectValues =
-        [
-            "NoWrap",
-            "Wrap",
-            "WrapWithOverflow"
-        ];
+            try
+            {
+                key.SetValue(nameof(ConfigModel.MaxSizePreviewKB), config.MaxSizePreviewKB);
+                key.SetValue(nameof(ConfigModel.ImageStretch), config.ImageStretch);
+                key.SetValue(nameof(ConfigModel.PreviewHeight), config.PreviewHeight);
+                key.SetValue(nameof(ConfigModel.PreviewWidth), config.PreviewWidth);
+                key.SetValue(nameof(ConfigModel.VideoHeigth), config.VideoHeigth);
+                key.SetValue(nameof(ConfigModel.VideoWidth), config.VideoWidth);
+                key.SetValue(nameof(ConfigModel.KeyboardZoomStep), config.KeyboardZoomStep);
+                key.SetValue(nameof(ConfigModel.TextPreviewWordWrap), config.TextPreviewWordWrap);
+                key.SetValue(nameof(ConfigModel.MaxScale), config.MaxScale);
+                key.SetValue(nameof(ConfigModel.MinScale), config.MinScale);
+                key.SetValue(nameof(ConfigModel.MouseWheelZoomStepFactor), config.MouseWheelZoomStepFactor);
+                key.SetValue(nameof(ConfigModel.BitmapScalingMode), config.BitmapScalingMode);
+                key.SetValue(nameof(ConfigModel.FontSize), config.FontSize);
+                key.SetValue(nameof(ConfigModel.CharsToPreview), config.CharsToPreview);
+                key.SetValue(nameof(ConfigModel.ImageExtensions), config.ImageExtensions);
+                key.SetValue(nameof(ConfigModel.VideoExtensions), config.VideoExtensions);
+                key.SetValue(nameof(ConfigModel.MusicExtensions), config.MusicExtensions);
+                key.SetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
+            }
+            catch (Exception ex)
+            {
 
-        private static readonly List<string> BitmapScalingMode =
-        [
-            "Unspecified",
-            "LowQuality",
-            "HighQuality",
-            "Linear",
-            "Fant",
-            "NearestNeighbor"
-        ];
+            }
+            finally
+            {
+                key.Close();
+            }
+        }
 
 
         public static ConfigModel LoadConfig()
         {
-            ConfigModel configDefault = new();
-            ConfigModel configModel = new();
-            bool configIsValid = true;
-            bool fileExistedBeforeStartApp = File.Exists(ConfigFileName);
+            ConfigModel config = new ConfigModel();
+            RegistryKey? key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath);
 
-            try
+            if (key != null)
             {
-                if (File.Exists(ConfigFileName))
-                {
-                    string json = File.ReadAllText(ConfigFileName);
-                    configModel = JsonSerializer.Deserialize<ConfigModel>(json) ?? new ConfigModel();
-
-                    // Uzupe³nianie braków
-                    foreach (System.Reflection.PropertyInfo prop in typeof(ConfigModel).GetProperties())
-                    {
-                        object? currentValue = prop.GetValue(configModel);
-                        object? defaultValue = prop.GetValue(configDefault);
-
-                        // Jeœli wartoœæ jest null lub równa domyœlnej wartoœci typu (np. 0 dla int)
-                        if (currentValue == null || currentValue.Equals(GetDefault(prop.PropertyType)))
-                        {
-                            prop.SetValue(configModel, defaultValue);
-                            configIsValid = false;
-                        }
-                    }
-
-                    // Walidacja pól z listami dozwolonych wartoœci
-                    if (!ImageStretchCorrectValues.Contains(configModel.ImageStretch))
-                    {
-                        configModel.ImageStretch = configDefault.ImageStretch;
-                        configIsValid = false;
-                    }
-
-                    if (!WrapCorrectValues.Contains(configModel.TextPreviewWordWrap))
-                    {
-                        configModel.TextPreviewWordWrap = configDefault.TextPreviewWordWrap;
-                        configIsValid = false;
-                    }
-
-                    if (!BitmapScalingMode.Contains(configModel.BitmapScalingMode))
-                    {
-                        configModel.BitmapScalingMode = configDefault.BitmapScalingMode;
-                        configIsValid = false;
-                    }
-                }
-                else
-                {
-                    configIsValid = false;
-                    configModel = new ConfigModel();
-                }
-            }
-            catch
-            {
-                configIsValid = false;
-                configModel = new ConfigModel();
-            }
-            finally
-            {
-                if (!configIsValid)
-                {
-                    configModel = new ConfigModel();
-                }
-
                 try
                 {
-                    if (fileExistedBeforeStartApp)
-                    {
-                        string json = JsonSerializer.Serialize(configModel, new JsonSerializerOptions { WriteIndented = true });
-                        File.WriteAllText(ConfigFileName, json);
-                    }
+                    // Wczytaj wartoœci z rejestru, jeœli istniej¹, w przeciwnym razie u¿yj wartoœci domyœlnych
+                    config.MaxSizePreviewKB = (int)key.GetValue(nameof(ConfigModel.MaxSizePreviewKB), config.MaxSizePreviewKB);
+                    config.ImageStretch = (string)key.GetValue(nameof(ConfigModel.ImageStretch).ToString(), config.ImageStretch);
+                    config.PreviewHeight = double.Parse((string)key.GetValue(nameof(ConfigModel.PreviewHeight).ToString(), config.PreviewHeight));
+                    config.PreviewWidth = double.Parse((string)key.GetValue(nameof(ConfigModel.PreviewWidth).ToString(), config.PreviewWidth));
+                    config.VideoHeigth = double.Parse((string)key.GetValue(nameof(ConfigModel.VideoHeigth).ToString(), config.VideoHeigth));
+                    config.VideoWidth = double.Parse((string)key.GetValue(nameof(ConfigModel.VideoWidth).ToString(), config.VideoWidth));
+                    config.KeyboardZoomStep = double.Parse((string)key.GetValue(nameof(ConfigModel.KeyboardZoomStep), config.KeyboardZoomStep));
+                    config.TextPreviewWordWrap = (string)key.GetValue(nameof(ConfigModel.TextPreviewWordWrap).ToString(), config.TextPreviewWordWrap);
+                    config.MaxScale = double.Parse((string)key.GetValue(nameof(ConfigModel.MaxScale).ToString(), config.MaxScale));
+                    config.MinScale = double.Parse((string)key.GetValue(nameof(ConfigModel.MinScale).ToString(), config.MinScale));
+                    config.MouseWheelZoomStepFactor = double.Parse((string)key.GetValue(nameof(ConfigModel.MouseWheelZoomStepFactor), config.MouseWheelZoomStepFactor));
+                    config.BitmapScalingMode = (string)key.GetValue(nameof(ConfigModel.BitmapScalingMode).ToString(), config.BitmapScalingMode);
+                    config.FontSize = double.Parse((string)key.GetValue(nameof(ConfigModel.FontSize).ToString(), config.FontSize));
+                    config.CharsToPreview = double.Parse((string)key.GetValue(nameof(ConfigModel.CharsToPreview), config.CharsToPreview));
+                    config.ImageExtensions = (string)key.GetValue(nameof(ConfigModel.ImageExtensions).ToString(), config.ImageExtensions);
+                    config.VideoExtensions = (string)key.GetValue(nameof(ConfigModel.VideoExtensions).ToString(), config.VideoExtensions);
+                    config.MusicExtensions = (string)key.GetValue(nameof(ConfigModel.MusicExtensions).ToString(), config.MusicExtensions);
+                    config.Utf8InsteadOfASCIITextPreview = (int)key.GetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    configModel = new ConfigModel();
+                    SaveConfig(config);
+                }
+                finally
+                {
+                    key.Close();
                 }
             }
-
-            return configModel;
+            else
+            {
+                SaveConfig(config);
+            }
+            return config;
         }
+
 
         public static ConfigParsedModel LoadParsedConfig()
         {
-            ConfigModel config = ConfigHelper.LoadConfig();
             ConfigParsedModel parsedConfig = new ConfigParsedModel
             {
-                ImageExtensionsParsed = GetStringsFromCommaSeparatedString(config.ImageExtensions),
-                VideoExtensionsParsed = GetStringsFromCommaSeparatedString(config.VideoExtensions),
-                MusicExtensionsParsed = GetStringsFromCommaSeparatedString(config.MusicExtensions)
+                ImageExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.ImageExtensions),
+                VideoExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.VideoExtensions),
+                MusicExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.MusicExtensions)
             };
             return parsedConfig;
         }

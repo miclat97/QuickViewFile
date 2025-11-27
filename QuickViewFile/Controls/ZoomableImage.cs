@@ -45,7 +45,7 @@ namespace QuickViewFile.Controls
             transformGroup.Children.Add(translateTransform);
             ClipToBounds = true;
 
-            _config = ConfigHelper.LoadConfig();
+            _config = ConfigHelper.loadedConfig;
 
             RenderTransform = transformGroup;
 
