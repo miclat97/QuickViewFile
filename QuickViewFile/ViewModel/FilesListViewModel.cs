@@ -12,7 +12,7 @@ namespace QuickViewFile.ViewModel
     public class FilesListViewModel : INotifyPropertyChanged
     {
         public ObservableCollection<ItemList> ActiveListItems { get; set; } = [];
-
+        
         public FilesListViewModel(string folderPath)
         {
             Config = ConfigHelper.loadedConfig;
@@ -156,7 +156,7 @@ namespace QuickViewFile.ViewModel
                     if (selectThisFile is not null)
                         SelectedItem = selectThisFile;
                     else
-                        SelectedItem = ActiveListItems.First();
+                        SelectedItem = ActiveListItems.FirstOrDefault();
                 }
                 catch
                 {
@@ -187,10 +187,9 @@ namespace QuickViewFile.ViewModel
             }
             else if (!file.IsDirectory && File.Exists(file.FullPath))
             {
-                SelectedItem = file;
                 await Application.Current.Dispatcher.BeginInvoke(async () =>
                 {
-                    SelectedItem.FileContentModel = new FileContentModel
+                    SelectedItem?.FileContentModel = new FileContentModel
                     {
                         TextContent = "Loading...",
                         ShowTextBox = false,
@@ -204,7 +203,6 @@ namespace QuickViewFile.ViewModel
             {
                 _folderPath = Directory.GetCurrentDirectory();
                 MessageBox.Show("Selected file doesn't exists", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                SelectedItem = null;
             }
         }
 

@@ -23,7 +23,7 @@
             <Setter Property="MinHeight" Value="40"/>
         </Style>
     </Window.Resources>
-    <Grid Name="MainGrid" ClipToBounds="True">
+    <Grid Name="MainGrid" Focusable="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -57,7 +57,7 @@
               Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Focusable="False">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="FilesListColumn" Width="Auto"/>
                 <ColumnDefinition Width="Auto" />
@@ -65,23 +65,24 @@
             </Grid.ColumnDefinitions>
             <ListView Grid.Column="0"
                   x:Name="FilesListView"
+                  Focusable="False"
+                  IsTabStop="False"
                   SelectionMode="Single"
                   ItemsSource="{Binding ActiveListItems}"
-                  SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                  SelectedItem="{Binding SelectedItem}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
                   Margin="10"
                   KeyDown="FilesListView_KeyDown"
-                  IsSynchronizedWithCurrentItem="True"
+                  ClipToBounds="True"
                   Width="Auto"
-                  TabIndex="0"
                   ScrollViewer.PanningMode="VerticalFirst"
                   SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                   IsManipulationEnabled="True"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
-                    <GridView FocusManager.FocusedElement="{Binding SelectedItem}">
-                        <GridViewColumn Header="Name" Width="140">
+                    <GridView>
+                        <GridViewColumn Header="Name" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}"
@@ -105,11 +106,11 @@
                 </ListView.View>
             </ListView>
             <GridSplitter Grid.Column="1"
-                      Width="2"
+                      Width="1"
+                      UseLayoutRounding="True"
+                      Margin="5,5,5,5"
                       x:Name="MainWindowGridSplitter"
-                      HorizontalAlignment="Stretch"
                       Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
-                      VerticalAlignment="Stretch"
                       HorizontalContentAlignment="Center" Focusable="False"/>
             <Border x:Name="ContentBorder"
                     Grid.Column="2"

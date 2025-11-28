@@ -59,7 +59,7 @@
                 <TextBlock Name="fullTime" FontSize="16" FontWeight="Bold">00:00:00</TextBlock>
             </StatusBarItem>
             <StatusBarItem Grid.Column="5" HorizontalContentAlignment="Stretch" Height="Auto">
-                <Slider Name="sliProgress" Focusable="False" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" />
+                <Slider Name="sliProgress" Focusable="False" IsManipulationEnabled="True" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" />
             </StatusBarItem>
             <StatusBarItem Grid.Column="6">
                 <ProgressBar Name="pbVolume" Width="50" Height="12" Foreground="LightGreen" Maximum="1" Value="{Binding ElementName=videoInWindowPlayer, Path=Volume}" />

@@ -107,12 +107,17 @@ namespace QuickViewFile.Controls
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             lastDragPoint = e.GetPosition(this);
+            Mouse.SetCursor(Cursors.Hand);
+            Mouse.OverrideCursor = Cursors.Hand;
+            Mouse.UpdateCursor();
             CaptureMouse();
         }
 
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             lastDragPoint = null;
+            Mouse.OverrideCursor = null;
+            Mouse.UpdateCursor();
             ReleaseMouseCapture();
         }
 

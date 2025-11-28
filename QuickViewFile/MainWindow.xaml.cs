@@ -61,7 +61,6 @@ namespace QuickViewFile
             {
                 if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
                 {
-
                     Application.Current.Dispatcher.BeginInvoke(async () =>
                     {
                         await vm.OnFileDoubleClick(file);
@@ -90,15 +89,55 @@ namespace QuickViewFile
                 {
                     try
                     {
-                        if (e.Key == Key.Right)
+                        if (e.Key == Key.Right || e.Key == Key.Down)
                         {
                             FilesListView.SelectedIndex++;
                         }
-                        else if (e.Key == Key.Left)
+                        else if (e.Key == Key.Left || e.Key == Key.Up)
                         {
                             FilesListView.SelectedIndex--;
                         }
+                        else if (e.Key == Key.PageDown)
+                        {
+                            if (FilesListView.SelectedIndex + 10 >= FilesListView.Items.Count)
+                            {
+                                FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+                            }
+                            else
+                            {
+                                FilesListView.SelectedIndex += 10;
+                            }
+                        }
+                        else if (e.Key == Key.PageUp)
+                        {
+                            if (FilesListView.SelectedIndex - 10 < 0)
+                            {
+                                FilesListView.SelectedIndex = 0;
+                            }
+                            else
+                            {
+                                FilesListView.SelectedIndex -= 10;
+                            }
+                        }
+                        if (e.Key == Key.Home)
+                        {
+                            FilesListView.SelectedIndex = 0;
+                        }
+                        else if (e.Key == Key.End)
+                        {
+                            FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+                        }
+
+                        if (FilesListView.SelectedIndex < 0)
+                        {
+                            FilesListView.SelectedIndex = 0;
+                        }
+                        else if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
+                        {
+                            FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+                        }
                         FilesListView.SetCurrentValue(ListView.SelectedIndexProperty, FilesListView.SelectedIndex);
+                        FilesListView.ScrollIntoView(FilesListView.SelectedItem);
                     }
                     catch (Exception)
                     {
@@ -141,6 +180,25 @@ namespace QuickViewFile
                             _currentSearchIndex = -1;
                             e.Handled = true;
                         }
+                    }
+                    if (e.Key > Key.D0 && e.Key < Key.Z)
+                    {
+                        char ASCIINumberWhichUserWantToSelect = (char)((int)e.Key + 21); ///because ASCII at keyboard has code 65, in .NET A on keyboard is 44, so after adding 21 it will be this letter which user want to find
+
+                        var itemToSelect = FilesListView.Items.Cast<QuickViewFile.Models.ItemList>()
+                            .FirstOrDefault(item => !string.IsNullOrEmpty(item.Name) && char.ToUpper(item.Name[0]) == ASCIINumberWhichUserWantToSelect);
+                        if (itemToSelect is not null)
+                        {
+                            FilesListView.SelectedItem = itemToSelect;
+                            FilesListView.ScrollIntoView(itemToSelect);
+                        }
+                    }
+                    if (e.Key == Key.Enter)
+                    {
+                        Application.Current.Dispatcher.BeginInvoke(async () =>
+                        {
+                            await vm.OnFileDoubleClick(vm.SelectedItem);
+                        });
                     }
                 }
             }
@@ -373,32 +431,7 @@ namespace QuickViewFile
 
         private void FilesListView_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key > Key.D0 && e.Key < Key.Z)
-            {
-                char ASCIINumberWhichUserWantToSelect = (char)((int)e.Key + 21); ///because ASCII at keyboard has code 65, in .NET A on keyboard is 44, so after adding 21 it will be this letter which user want to find
 
-                var itemToSelect = FilesListView.Items.Cast<QuickViewFile.Models.ItemList>()
-                    .FirstOrDefault(item => !string.IsNullOrEmpty(item.Name) && char.ToUpper(item.Name[0]) == ASCIINumberWhichUserWantToSelect);
-                if (itemToSelect is not null)
-                {
-                    FilesListView.SelectedItem = itemToSelect;
-                    FilesListView.ScrollIntoView(itemToSelect);
-                }
-            }
-            if (e.Key == Key.Enter)
-            {
-                if (DataContext is FilesListViewModel vm)
-                {
-                    if (sender is ListView listView && listView.SelectedItem is QuickViewFile.Models.ItemList file)
-                    {
-
-                        Application.Current.Dispatcher.BeginInvoke(async () =>
-                        {
-                            await vm.OnFileDoubleClick(file);
-                        });
-                    }
-                }
-            }
         }
     }
 }
