@@ -75,6 +75,7 @@
                   KeyDown="FilesListView_KeyDown"
                   ClipToBounds="True"
                   Width="Auto"
+                  FocusManager.IsFocusScope="False"
                   ScrollViewer.PanningMode="VerticalFirst"
                   SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                   IsManipulationEnabled="True"
@@ -82,21 +83,23 @@
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" Width="Auto">
+                        <GridViewColumn Header="Name" Width="Auto" FocusManager.IsFocusScope="False">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}"
                                                FontSize="13"
+                                               Focusable="False"
                                                VerticalAlignment="Center"
                                                FontWeight="Normal"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Size (KB)" Width="80">
+                        <GridViewColumn Header="Size (KB)" Width="80" FocusManager.IsFocusScope="False">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Size}"
                                                FontSize="13"
+                                               Focusable="False"
                                                VerticalAlignment="Center"
                                                FontWeight="Normal"/>
                                 </DataTemplate>

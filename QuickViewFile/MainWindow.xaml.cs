@@ -256,6 +256,13 @@ namespace QuickViewFile
 
                     if (mousePosition.X > nextItem)
                         FilesListView.SelectedIndex++;
+
+                    if (FilesListView.SelectedIndex < 0)
+                        FilesListView.SelectedIndex = 0;
+                    if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
+                        FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+
+                    FilesListView.ScrollIntoView(FilesListView.SelectedItem);
                 }
             }
             catch (Exception)
