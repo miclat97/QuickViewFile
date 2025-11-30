@@ -27,6 +27,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" x:Name="TopInfoPanel">
@@ -202,6 +203,16 @@
                     </Grid>
                 </Grid>
             </Border>
+        </Grid>
+        <Grid Grid.Row="2" x:Name="StatusBar">
+            <TextBlock x:Name="StatusBarTextBlock"
+               FontSize="9"
+               VerticalAlignment="Bottom"
+               HorizontalAlignment="Left"
+               Margin="0,0,0,0"
+               MouseDown="StatusBarTextBlock_MouseDown"
+               Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+               Text="{Binding StatusBarText}"/>
         </Grid>
     </Grid>
 </Window>

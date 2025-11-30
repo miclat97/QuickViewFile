@@ -3,6 +3,7 @@ using QuickViewFile.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -12,7 +13,7 @@ namespace QuickViewFile.ViewModel
     public class FilesListViewModel : INotifyPropertyChanged
     {
         public ObservableCollection<ItemList> ActiveListItems { get; set; } = [];
-        
+
         public FilesListViewModel(string folderPath)
         {
             Config = ConfigHelper.loadedConfig;
@@ -27,6 +28,8 @@ namespace QuickViewFile.ViewModel
             {
                 RefreshFiles(folderPath);
             }
+            var appVersion = Assembly.GetExecutingAssembly().GetName().Version!.ToString();
+            StatusBarText = $"QuickViewFile v {appVersion}";
         }
 
         private ItemList? _selectedItem;
@@ -50,6 +53,7 @@ namespace QuickViewFile.ViewModel
             set { _previewWidth = value; OnPropertyChanged(nameof(PreviewWidth)); }
         }
 
+        public string StatusBarText { get; set; }
 
         public ItemList? SelectedItem
         {

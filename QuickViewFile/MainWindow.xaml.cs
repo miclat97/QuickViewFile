@@ -3,10 +3,12 @@ using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using QuickViewFile.ViewModel;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace QuickViewFile
 {
@@ -21,7 +23,31 @@ namespace QuickViewFile
             try
             {
                 _config = ConfigHelper.loadedConfig;
-
+                RenderOptions.ProcessRenderMode = _config.RenderMode == 0 ? System.Windows.Interop.RenderMode.Default : System.Windows.Interop.RenderMode.SoftwareOnly;
+                RenderOptions.SetEdgeMode(this, _config.EdgeMode == 1 ? EdgeMode.Aliased : EdgeMode.Unspecified);
+                if (_config.ShadowEffect == 1)
+                {
+                    System.Windows.Media.Effects.DropShadowEffect dropShadow = new System.Windows.Media.Effects.DropShadowEffect
+                    {
+                        ShadowDepth = _config.ShadowDepth,
+                        Opacity = _config.ShadowOpacity,
+                        BlurRadius = _config.ShadowBlur,
+                        RenderingBias = _config.ShadowQuality == 1 ? System.Windows.Media.Effects.RenderingBias.Quality : System.Windows.Media.Effects.RenderingBias.Performance,
+                    };
+                    Effect = dropShadow;
+                }
+                if (_config.ThemeMode == 2)
+                {
+#pragma warning disable WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    Application.Current.ThemeMode = ThemeMode.Dark;
+#pragma warning restore WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                }
+                else if (_config.ThemeMode == 1)
+                {
+#pragma warning disable WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    Application.Current.ThemeMode = ThemeMode.Light;
+#pragma warning restore WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                }
                 InitializeComponent();
                 FilesListView.Focus();
 
@@ -221,7 +247,7 @@ namespace QuickViewFile
             FilesListView.Visibility = Visibility.Collapsed;
             TopInfoPanel.Visibility = Visibility.Collapsed;
             MainWindowGridSplitter.Visibility = Visibility.Collapsed;
-
+            StatusBar.Visibility = Visibility.Collapsed;
             _filesListViewVisible = false;
         }
 
@@ -232,6 +258,7 @@ namespace QuickViewFile
             TopInfoPanel.Visibility = Visibility.Visible;
             MainWindowGridSplitter.Visibility = Visibility.Visible;
             FilesListView.Visibility = Visibility.Visible;
+            StatusBar.Visibility = Visibility.Visible;
             _filesListViewVisible = true;
             FilesListView.ScrollIntoView(FilesListView.SelectedItem);
             FilesListView.IsSynchronizedWithCurrentItem = true;
@@ -252,10 +279,20 @@ namespace QuickViewFile
                     int previousFileIndex = FilesListView.SelectedIndex - 1;
 
                     if (mousePosition.X < previousItem)
+                    {
                         FilesListView.SelectedIndex--;
+                        Mouse.SetCursor(Cursors.None);
+                        Mouse.OverrideCursor = null;
+                        Mouse.UpdateCursor();
+                    }
 
                     if (mousePosition.X > nextItem)
+                    {
                         FilesListView.SelectedIndex++;
+                        Mouse.SetCursor(Cursors.None);
+                        Mouse.OverrideCursor = null;
+                        Mouse.UpdateCursor();
+                    }
 
                     if (FilesListView.SelectedIndex < 0)
                         FilesListView.SelectedIndex = 0;
@@ -439,6 +476,19 @@ namespace QuickViewFile
         private void FilesListView_KeyDown(object sender, KeyEventArgs e)
         {
 
+        }
+
+        private void StatusBarTextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 4)
+            {
+                var renderCapabilities = typeof(System.Windows.Media.RenderOptions).GetProperty("ProcessRenderMode", BindingFlags.Static | BindingFlags.NonPublic);
+                //var tier = System.Windows.Media.RenderCapability.Tier;
+                int renderingTier = (RenderCapability.Tier >> 16);
+                string maxHardwareTextureSize = $"{RenderCapability.MaxHardwareTextureSize.Height.ToString()} Width: {RenderCapability.MaxHardwareTextureSize.Width.ToString()}";
+
+                MessageBox.Show($"Tier: {renderingTier}\r\nRenderCapabalities: {maxHardwareTextureSize}", "Current Configuration", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

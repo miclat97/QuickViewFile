@@ -40,12 +40,24 @@ namespace QuickViewFile.Controls
 
         public ZoomableImage()
         {
+            _config = ConfigHelper.loadedConfig;
+
+            if (_config?.ShadowEffect == 1)
+            {
+                System.Windows.Media.Effects.DropShadowEffect dropShadow = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Gray,
+                    RenderingBias = _config.ShadowQuality == 1 ? System.Windows.Media.Effects.RenderingBias.Quality : System.Windows.Media.Effects.RenderingBias.Performance,
+                };
+                Effect = dropShadow;
+            }
+
+
             UseLayoutRounding = true;
             transformGroup.Children.Add(scaleTransform);
             transformGroup.Children.Add(translateTransform);
-            ClipToBounds = true;
 
-            _config = ConfigHelper.loadedConfig;
+            ClipToBounds = true;
 
             RenderTransform = transformGroup;
 

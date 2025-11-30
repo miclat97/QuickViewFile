@@ -41,6 +41,14 @@ namespace QuickViewFile.Helpers
                 key.SetValue(nameof(ConfigModel.VideoExtensions), config.VideoExtensions);
                 key.SetValue(nameof(ConfigModel.MusicExtensions), config.MusicExtensions);
                 key.SetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
+                key.SetValue(nameof(ConfigModel.EdgeMode), config.EdgeMode);
+                key.SetValue(nameof(ConfigModel.RenderMode), config.RenderMode);
+                key.SetValue(nameof(ConfigModel.ShadowEffect), config.ShadowEffect);
+                key.SetValue(nameof(ConfigModel.ThemeMode), config.ThemeMode);
+                key.SetValue(nameof(ConfigModel.ShadowQuality), config.ShadowQuality);
+                key.SetValue(nameof(ConfigModel.ShadowDepth), config.ShadowDepth);
+                key.SetValue(nameof(ConfigModel.ShadowOpacity), config.ShadowOpacity);
+                key.SetValue(nameof(ConfigModel.ShadowBlur), config.ShadowBlur);
             }
             catch (Exception ex)
             {
@@ -80,7 +88,15 @@ namespace QuickViewFile.Helpers
                     config.ImageExtensions = (string)key.GetValue(nameof(ConfigModel.ImageExtensions).ToString(), config.ImageExtensions);
                     config.VideoExtensions = (string)key.GetValue(nameof(ConfigModel.VideoExtensions).ToString(), config.VideoExtensions);
                     config.MusicExtensions = (string)key.GetValue(nameof(ConfigModel.MusicExtensions).ToString(), config.MusicExtensions);
+                    config.EdgeMode = (int)key.GetValue(nameof(ConfigModel.EdgeMode), config.EdgeMode);
+                    config.RenderMode = (int)key.GetValue(nameof(ConfigModel.RenderMode), config.RenderMode);
+                    config.ShadowEffect = (int)key.GetValue(nameof(ConfigModel.ShadowEffect), config.ShadowEffect);
+                    config.ShadowQuality = (int)key.GetValue(nameof(ConfigModel.ShadowQuality), config.ShadowQuality);
+                    config.ThemeMode = (int)key.GetValue(nameof(ConfigModel.ThemeMode), config.ThemeMode);
                     config.Utf8InsteadOfASCIITextPreview = (int)key.GetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
+                    config.ShadowDepth = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowDepth).ToString(), config.ShadowDepth));
+                    config.ShadowOpacity = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowOpacity).ToString(), config.ShadowOpacity));
+                    config.ShadowBlur = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowBlur).ToString(), config.ShadowBlur));
                 }
                 catch (Exception ex)
                 {
