@@ -31,5 +31,6 @@ namespace QuickViewFile.Models
         public double ShadowDepth { get; set; } = 2;
         public double ShadowOpacity { get; set; } = 1;
         public double ShadowBlur { get; set; } = 25;
+        public double Volume { get; set; } = 1;
     }
 }

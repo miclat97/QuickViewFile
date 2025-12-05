@@ -22,6 +22,7 @@ namespace QuickViewFile
         {
             try
             {
+                RenderOptions.SetCachingHint(this, CachingHint.Cache);
                 _config = ConfigHelper.loadedConfig;
                 RenderOptions.ProcessRenderMode = _config.RenderMode == 0 ? System.Windows.Interop.RenderMode.Default : System.Windows.Interop.RenderMode.SoftwareOnly;
                 RenderOptions.SetEdgeMode(this, _config.EdgeMode == 1 ? EdgeMode.Aliased : EdgeMode.Unspecified);

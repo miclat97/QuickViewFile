@@ -49,6 +49,7 @@ namespace QuickViewFile.Helpers
                 key.SetValue(nameof(ConfigModel.ShadowDepth), config.ShadowDepth);
                 key.SetValue(nameof(ConfigModel.ShadowOpacity), config.ShadowOpacity);
                 key.SetValue(nameof(ConfigModel.ShadowBlur), config.ShadowBlur);
+                key.SetValue(nameof(ConfigModel.Volume), config.Volume);
             }
             catch (Exception ex)
             {
@@ -97,6 +98,7 @@ namespace QuickViewFile.Helpers
                     config.ShadowDepth = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowDepth).ToString(), config.ShadowDepth));
                     config.ShadowOpacity = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowOpacity).ToString(), config.ShadowOpacity));
                     config.ShadowBlur = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowBlur).ToString(), config.ShadowBlur));
+                    config.Volume = double.Parse((string)key.GetValue(nameof(ConfigModel.Volume).ToString(), config.Volume));
                 }
                 catch (Exception ex)
                 {
@@ -114,6 +116,16 @@ namespace QuickViewFile.Helpers
             return config;
         }
 
+        public static void SetVolume(double volume)
+        {
+            loadedConfig.Volume = volume;
+            SaveConfig(loadedConfig);
+        }
+
+        public static double GetVolume()
+        {
+            return loadedConfig.Volume;
+        }
 
         public static ConfigParsedModel LoadParsedConfig()
         {

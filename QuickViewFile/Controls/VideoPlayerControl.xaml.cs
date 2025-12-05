@@ -1,7 +1,10 @@
-﻿using System.Windows;
+﻿using QuickViewFile.Helpers;
+using QuickViewFile.Models;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
 namespace QuickViewFile.Controls
@@ -55,9 +58,16 @@ namespace QuickViewFile.Controls
             videoInWindowPlayer.Play();
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
-            videoInWindowPlayer.Volume = 1;
-            //videoInWindowPlayer.Height = _config.VideoHeigth;
-            //videoInWindowPlayer.RenderSize = new Size(_config.VideoWidth, _config.VideoHeigth);
+            double initialVolume = ConfigHelper.GetVolume();
+            if (initialVolume < 0 || initialVolume > 1)
+            {
+                initialVolume = 0.5;
+            }
+            else
+            {
+                videoInWindowPlayer.Volume = initialVolume;
+            }
+
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -142,6 +152,7 @@ namespace QuickViewFile.Controls
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             videoInWindowPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
+            ConfigHelper.SetVolume(videoInWindowPlayer.Volume);
         }
 
         private void PlayOrPauseMedia()
@@ -189,10 +200,12 @@ namespace QuickViewFile.Controls
             else if (key == Key.Add)
             {
                 videoInWindowPlayer.Volume += 0.1;
+                ConfigHelper.SetVolume(videoInWindowPlayer.Volume);
             }
             else if (key == Key.Subtract)
             {
                 videoInWindowPlayer.Volume -= 0.1;
+                ConfigHelper.SetVolume(videoInWindowPlayer.Volume);
             }
             else if (key == Key.Left)
             {
