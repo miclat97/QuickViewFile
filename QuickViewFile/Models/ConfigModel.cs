@@ -1,5 +1,4 @@
-﻿using QuickViewFile.Helpers;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace QuickViewFile.Models
 {
@@ -25,12 +24,12 @@ namespace QuickViewFile.Models
         [AllowedValues(new object[] { 0, 1 })]
         public int Utf8InsteadOfASCIITextPreview { get; set; } = 0;
         public int ShadowEffect { get; set; } = 1; // 0 - Disabled, 1 - Enabled
-        public int ShadowQuality { get; set; } = 1; // 0 - Performance, 1 - Quality
+        public int ShadowQuality { get; set; } = 0; // 0 - Performance, 1 - Quality
         public int RenderMode { get; set; } = 0; // 0 - Default, 1 - SoftwareOnly
         public int EdgeMode { get; set; } = 1; // 0 - Unspecified, 1 - Aliased
         public int ThemeMode { get; set; } = 0; // 0 - System, 1 - Light, 2 - Dark
         public double ShadowDepth { get; set; } = 2;
-        public double ShadowOpacity { get; set; } = 0.25;
+        public double ShadowOpacity { get; set; } = 1;
         public double ShadowBlur { get; set; } = 25;
     }
 }
