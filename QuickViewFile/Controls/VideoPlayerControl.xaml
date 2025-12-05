@@ -21,7 +21,7 @@
             <local:ZoomableMediaElement x:Name="videoInWindowPlayer" LoadedBehavior="Manual" RenderOptions.BitmapScalingMode="{Binding videoQuality}"/>
         </Grid>
 
-        <StatusBar Grid.Row="1" Height="Auto">
+        <StatusBar Grid.Row="1">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>
@@ -56,13 +56,13 @@
                 <TextBlock Name="lblProgressStatus" FontSize="12" FontWeight="Bold">00:00:00</TextBlock>
             </StatusBarItem>
             <StatusBarItem Grid.Column="4">
-                <TextBlock Name="fullTime" FontSize="16" FontWeight="Bold">00:00:00</TextBlock>
+                <TextBlock Name="fullTime" FontSize="12" FontWeight="Bold">00:00:00</TextBlock>
             </StatusBarItem>
             <StatusBarItem Grid.Column="5" HorizontalContentAlignment="Stretch" Height="Auto">
                 <Slider Name="sliProgress" Focusable="False" IsManipulationEnabled="True" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" />
             </StatusBarItem>
             <StatusBarItem Grid.Column="6">
-                <ProgressBar Name="pbVolume" Width="50" Height="12" Foreground="LightGreen" Maximum="1" Value="{Binding ElementName=videoInWindowPlayer, Path=Volume}" />
+                <ProgressBar Name="pbVolume" Width="50" Height="10" Foreground="LightGreen" Maximum="1" Value="{Binding ElementName=videoInWindowPlayer, Path=Volume}" />
             </StatusBarItem>
         </StatusBar>
     </Grid>

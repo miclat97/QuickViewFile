@@ -23,6 +23,7 @@ namespace QuickViewFile
             try
             {
                 RenderOptions.SetCachingHint(this, CachingHint.Cache);
+                this.UseLayoutRounding = true;
                 _config = ConfigHelper.loadedConfig;
                 RenderOptions.ProcessRenderMode = _config.RenderMode == 0 ? System.Windows.Interop.RenderMode.Default : System.Windows.Interop.RenderMode.SoftwareOnly;
                 RenderOptions.SetEdgeMode(this, _config.EdgeMode == 1 ? EdgeMode.Aliased : EdgeMode.Unspecified);
@@ -210,16 +211,25 @@ namespace QuickViewFile
                     }
                     if (e.Key > Key.D0 && e.Key < Key.Z)
                     {
-                        char ASCIINumberWhichUserWantToSelect = (char)((int)e.Key + 21); ///because ASCII at keyboard has code 65, in .NET A on keyboard is 44, so after adding 21 it will be this letter which user want to find
+                        char ASCIINumberWhichUserWantToSelect = e.Key.ToString()[0];
 
-                        var itemToSelect = FilesListView.Items.Cast<QuickViewFile.Models.ItemList>()
+                        var nextItems = new ItemList();
+
+                        var itemToSelect = FilesListView.Items.Cast<QuickViewFile.Models.ItemList>().Skip(FilesListView.SelectedIndex + 1)
                             .FirstOrDefault(item => !string.IsNullOrEmpty(item.Name) && char.ToUpper(item.Name[0]) == ASCIINumberWhichUserWantToSelect);
+
+                        if (itemToSelect is null)                        //search from beginning if not found in next items
+                        {
+                            itemToSelect = FilesListView.Items.Cast<QuickViewFile.Models.ItemList>()
+                                .FirstOrDefault(item => !string.IsNullOrEmpty(item.Name) && char.ToUpper(item.Name[0]) == ASCIINumberWhichUserWantToSelect);
+                        }
                         if (itemToSelect is not null)
                         {
                             FilesListView.SelectedItem = itemToSelect;
                             FilesListView.ScrollIntoView(itemToSelect);
                         }
                     }
+
                     if (e.Key == Key.Enter)
                     {
                         Application.Current.Dispatcher.BeginInvoke(async () =>

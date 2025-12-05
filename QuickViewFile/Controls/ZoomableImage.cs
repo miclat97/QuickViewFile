@@ -57,7 +57,7 @@ namespace QuickViewFile.Controls
             transformGroup.Children.Add(scaleTransform);
             transformGroup.Children.Add(translateTransform);
 
-            ClipToBounds = true;
+            //ClipToBounds = true;
 
             RenderTransform = transformGroup;
 
@@ -151,8 +151,16 @@ namespace QuickViewFile.Controls
         {
             if (lastDragPoint.HasValue && IsMouseCaptured)
             {
+                double multiplier;
+                if (currentScale > 2.0)
+                    multiplier = 2;
+                else if (currentScale > 1.0)
+                    multiplier = currentScale;
+                else
+                    multiplier = 1.0;
+
                 Point currentPoint = e.GetPosition(this);
-                Vector delta = Point.Subtract(currentPoint, lastDragPoint.Value);
+                Vector delta = Point.Subtract(currentPoint, lastDragPoint.Value) * multiplier;
 
                 translateTransform.X += delta.X;
                 translateTransform.Y += delta.Y;
