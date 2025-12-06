@@ -127,10 +127,10 @@ namespace QuickViewFile.Controls
             if (lastDragPoint.HasValue && IsMouseCaptured)
             {
                 double multiplier;
-                if (currentScale > 2.0)
-                    multiplier = 2;
+                if (currentScale > 4)
+                    multiplier = 4.0;
                 else if (currentScale > 1.0)
-                    multiplier = currentScale;
+                    multiplier = Math.Round(currentScale, 1);
                 else
                     multiplier = 1.0;
 

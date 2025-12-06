@@ -17,6 +17,8 @@ namespace QuickViewFile
         private bool _filesListViewVisible = true;
         private readonly ConfigModel _config;
         private GridLength _filesListColumnWidthCache;
+        private int degreesRotation = 0;
+        public FilesListViewModel vm;
 
         public MainWindow()
         {
@@ -60,7 +62,7 @@ namespace QuickViewFile
                     string fileToSelectFullPath = args.ElementAt(1);
                     if (File.Exists(fileToSelectFullPath))
                     {
-                        FilesListViewModel vm = new FilesListViewModel(fileToSelectFullPath);
+                        vm = new FilesListViewModel(fileToSelectFullPath);
                         DataContext = vm;
                     }
                 }
@@ -209,7 +211,22 @@ namespace QuickViewFile
                             e.Handled = true;
                         }
                     }
-                    if (e.Key > Key.D0 && e.Key < Key.Z)
+
+                    if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+                    {
+                        degreesRotation += 90;
+                        if (degreesRotation < 360)
+                        {
+                            GridFileContent.LayoutTransform = new RotateTransform(degreesRotation);
+                        }
+                        else
+                        {
+                            degreesRotation = 0;
+                            GridFileContent.LayoutTransform = new RotateTransform(0);
+                        }
+                    }
+
+                    if (e.Key >= Key.A && e.Key <= Key.Z)
                     {
                         char ASCIINumberWhichUserWantToSelect = e.Key.ToString()[0];
 

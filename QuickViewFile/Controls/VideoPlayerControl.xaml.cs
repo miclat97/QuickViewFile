@@ -1,10 +1,8 @@
 ﻿using QuickViewFile.Helpers;
-using QuickViewFile.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
 namespace QuickViewFile.Controls
@@ -207,13 +205,13 @@ namespace QuickViewFile.Controls
                 videoInWindowPlayer.Volume -= 0.1;
                 ConfigHelper.SetVolume(videoInWindowPlayer.Volume);
             }
-            else if (key == Key.Left)
+            else if (key == Key.NumPad4)
             {
                 TimeSpan actualTime = videoInWindowPlayer.Position;
                 TimeSpan newTime = actualTime.Subtract(TimeSpan.FromSeconds(10));
                 videoInWindowPlayer.Position = newTime;
             }
-            else if (key == Key.Right)
+            else if (key == Key.NumPad6)
             {
                 TimeSpan actualTime = videoInWindowPlayer.Position;
                 TimeSpan newTime = actualTime.Add(TimeSpan.FromSeconds(10));
