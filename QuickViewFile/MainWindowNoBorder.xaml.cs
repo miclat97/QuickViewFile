@@ -12,7 +12,7 @@ using System.Windows.Media;
 
 namespace QuickViewFile
 {
-    public partial class MainWindow : Window
+    public partial class MainWindowNoBorder : Window
     {
         private bool _filesListViewVisible = true;
         private readonly ConfigModel _config;
@@ -20,7 +20,7 @@ namespace QuickViewFile
         private int degreesRotation = 0;
         public FilesListViewModel vm;
 
-        public MainWindow()
+        public MainWindowNoBorder(string? pathNoBorder = null)
         {
             try
             {
@@ -55,72 +55,7 @@ namespace QuickViewFile
                 InitializeComponent();
                 FilesListView.Focus();
 
-                string[] args = Environment.GetCommandLineArgs();
-
-                if (!String.IsNullOrWhiteSpace(args.ElementAtOrDefault(1)))
-                {
-                    string fileToSelectFullPath = args.ElementAt(1);
-                    if (File.Exists(fileToSelectFullPath))
-                    {
-                        vm = new FilesListViewModel(fileToSelectFullPath);
-                        DataContext = vm;
-                    }
-                }
-                else
-                {
-                    FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
-                    DataContext = vm;
-
-                }
-            }
-            catch
-            {
-                FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
-                DataContext = vm;
-            }
-            finally
-            {
-                FilesListView.IsSynchronizedWithCurrentItem = true;
-                FilesListView.ScrollIntoView(FilesListView.SelectedItem);
-            }
-        }
-
-        public MainWindow(string pathNoBorder)
-        {
-            try
-            {
-                RenderOptions.SetCachingHint(this, CachingHint.Cache);
-                this.UseLayoutRounding = true;
-                _config = ConfigHelper.loadedConfig;
-                RenderOptions.ProcessRenderMode = _config.RenderMode == 0 ? System.Windows.Interop.RenderMode.Default : System.Windows.Interop.RenderMode.SoftwareOnly;
-                RenderOptions.SetEdgeMode(this, _config.EdgeMode == 1 ? EdgeMode.Aliased : EdgeMode.Unspecified);
-                if (_config.ShadowEffect == 1)
-                {
-                    System.Windows.Media.Effects.DropShadowEffect dropShadow = new System.Windows.Media.Effects.DropShadowEffect
-                    {
-                        ShadowDepth = _config.ShadowDepth,
-                        Opacity = _config.ShadowOpacity,
-                        BlurRadius = _config.ShadowBlur,
-                        RenderingBias = _config.ShadowQuality == 1 ? System.Windows.Media.Effects.RenderingBias.Quality : System.Windows.Media.Effects.RenderingBias.Performance,
-                    };
-                    Effect = dropShadow;
-                }
-                if (_config.ThemeMode == 2)
-                {
-#pragma warning disable WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                    Application.Current.ThemeMode = ThemeMode.Dark;
-#pragma warning restore WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                }
-                else if (_config.ThemeMode == 1)
-                {
-#pragma warning disable WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                    Application.Current.ThemeMode = ThemeMode.Light;
-#pragma warning restore WPF0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                }
-                InitializeComponent();
-                FilesListView.Focus();
-
-                string fileToSelectFullPath = pathNoBorder;
+                string? fileToSelectFullPath = pathNoBorder;
 
                 vm = new FilesListViewModel(fileToSelectFullPath);
                 DataContext = vm;
@@ -136,6 +71,7 @@ namespace QuickViewFile
                 FilesListView.ScrollIntoView(FilesListView.SelectedItem);
             }
         }
+
         private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory or force load file (using double click)
         {
             if (DataContext is FilesListViewModel vm)
@@ -242,8 +178,8 @@ namespace QuickViewFile
 
                     if (e.Key == Key.F4 && vm.SelectedItem?.FullPath is not null)
                     {
-                        MainWindowNoBorder fullScreen = new MainWindowNoBorder(vm.SelectedItem.FullPath);
-                        fullScreen.Show();
+                        MainWindow normalWindow = new MainWindow(vm.SelectedItem.FullPath);
+                        normalWindow.Show();
                         this.Close();
                     }
 
