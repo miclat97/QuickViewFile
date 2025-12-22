@@ -2,7 +2,7 @@
 
 ![icon](https://raw.githubusercontent.com/miclat97/QuickViewFile/refs/heads/master/qvf.png)
 
-Windows desktop application in .NET 9 (WPF) to quickly open any filetype - with built-in file explorer as well. App can open and play videos, music, open, zoom or scale images as well. Program can also open any text document or any other file and read it as text (ASCII characters)
+Windows desktop application in .NET 10 (WPF) to quickly open any filetype - with built-in file explorer as well. App can open and play videos, music, open, zoom or scale images as well. Program can also open any text document or any other file and read it as text (ASCII characters)
 
 > [!NOTE]
 > Application respects both Windows theme (dark/light mode) and accent color
