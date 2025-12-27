@@ -174,11 +174,16 @@ namespace QuickViewFile
                                 TextBoxTextContent.FontSize -= 0.5;
                             }
                         }
+                        ConfigHelper.SetFontSize(TextBoxTextContent.FontSize);
                     }
 
                     if (e.Key == Key.F4 && vm.SelectedItem?.FullPath is not null)
                     {
                         MainWindow normalWindow = new MainWindow(vm.SelectedItem.FullPath);
+                        if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
+                        {
+                            vm.SelectedItem.FileContentModel.VideoMedia.StopForce();
+                        }
                         normalWindow.Show();
                         this.Close();
                     }
@@ -285,6 +290,12 @@ namespace QuickViewFile
 
                     double previousItem = GridFileContent.ActualWidth * 0.08;
                     double nextItem = GridFileContent.ActualWidth * 0.92;
+
+                    if (vm.SelectedItem.FileContentModel.ImageSource is not null)
+                    {
+                        previousItem = ZoomableImageElementNoBorder.ActualWidth * 0.08;
+                        nextItem = ZoomableImageElementNoBorder.ActualWidth * 0.92;
+                    }
 
                     int nextFileIndex = FilesListView.SelectedIndex + 1;
                     int previousFileIndex = FilesListView.SelectedIndex - 1;

@@ -138,7 +138,7 @@
                           Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True">
 
                         <local:VideoPlayerControl
-                            x:Name="VideoMedia"
+                            x:Name="VideoMediaNoBorder"
                             Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                             Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />
 
@@ -152,7 +152,7 @@
                                 Source="{Binding SelectedItem.FileContentModel.ImageSource}"
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"
-                                x:Name="ZoomableImageElement"
+                                x:Name="ZoomableImageElementNoBorder"
                                 HorizontalAlignment="Center"
                                 RenderOptions.BitmapScalingMode="{Binding Config.BitmapScalingMode}"
                                 Visibility="{Binding SelectedItem.FileContentModel.ImageSource, Converter={StaticResource NullToCollapsedConverter}}"

@@ -126,6 +126,16 @@ namespace QuickViewFile.Helpers
         {
             return loadedConfig.Volume;
         }
+        public static void SetFontSize(double fontSize)
+        {
+            loadedConfig.FontSize = fontSize;
+            SaveConfig(loadedConfig);
+        }
+
+        public static double GetFontSize()
+        {
+            return loadedConfig.FontSize;
+        }
 
         public static ConfigParsedModel LoadParsedConfig()
         {

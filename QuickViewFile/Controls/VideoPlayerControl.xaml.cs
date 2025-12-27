@@ -129,6 +129,13 @@ namespace QuickViewFile.Controls
             mediaPlayerIsPlaying = false;
         }
 
+        public void StopForce()
+        {
+            videoInWindowPlayer.Stop();
+            isVideoPaused = true;
+            mediaPlayerIsPlaying = false;
+        }
+
         private void sliProgress_DragStarted(object sender, DragStartedEventArgs e)
         {
             userIsDraggingSlider = true;

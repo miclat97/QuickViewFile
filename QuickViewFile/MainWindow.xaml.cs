@@ -238,11 +238,16 @@ namespace QuickViewFile
                                 TextBoxTextContent.FontSize -= 0.5;
                             }
                         }
+                        ConfigHelper.SetFontSize(TextBoxTextContent.FontSize);
                     }
 
                     if (e.Key == Key.F4 && vm.SelectedItem?.FullPath is not null)
                     {
                         MainWindowNoBorder fullScreen = new MainWindowNoBorder(vm.SelectedItem.FullPath);
+                        if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
+                        {
+                            vm.SelectedItem.FileContentModel.VideoMedia.StopForce();
+                        }
                         fullScreen.Show();
                         this.Close();
                     }
