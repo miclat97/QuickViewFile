@@ -284,31 +284,51 @@ namespace QuickViewFile
         {
             try
             {
-                if (DataContext is FilesListViewModel vm)
+                if (DataContext is FilesListViewModel vm && vm.SelectedItem != null && vm.SelectedItem.FileContentModel != null)
                 {
-                    Point mousePosition = e.GetPosition(GridFileContent);
-
-                    double previousItem = GridFileContent.ActualWidth * 0.08;
-                    double nextItem = GridFileContent.ActualWidth * 0.92;
+                    bool goPrevious = false;
+                    bool goNext = false;
 
                     if (vm.SelectedItem.FileContentModel.ImageSource is not null)
                     {
-                        previousItem = ZoomableImageElementNoBorder.ActualWidth * 0.08;
-                        nextItem = ZoomableImageElementNoBorder.ActualWidth * 0.92;
+                        Point p = e.GetPosition(ZoomableImageElementNoBorder);
+                        double w = ZoomableImageElementNoBorder.ActualWidth;
+                        if (w > 0)
+                        {
+                            if (p.X >= 0 && p.X < w * 0.08) goPrevious = true;
+                            else if (p.X > w * 0.92 && p.X <= w) goNext = true;
+                        }
+                    }
+                    else if (vm.SelectedItem.FileContentModel.VideoMedia is not null && VideoMediaNoBorder.VideoElement != null)
+                    {
+                        Point p = e.GetPosition(VideoMediaNoBorder.VideoElement);
+                        double w = VideoMediaNoBorder.VideoElement.ActualWidth;
+                        if (w > 0)
+                        {
+                            if (p.X >= 0 && p.X < w * 0.08) goPrevious = true;
+                            else if (p.X > w * 0.92 && p.X <= w) goNext = true;
+                        }
+                    }
+                    else
+                    {
+                        // Fallback for text or other content: use full window width
+                        Point p = e.GetPosition(GridFileContent);
+                        double w = GridFileContent.ActualWidth;
+                        if (w > 0)
+                        {
+                            if (p.X < w * 0.08) goPrevious = true;
+                            else if (p.X > w * 0.92) goNext = true;
+                        }
                     }
 
-                    int nextFileIndex = FilesListView.SelectedIndex + 1;
-                    int previousFileIndex = FilesListView.SelectedIndex - 1;
-
-                    if (mousePosition.X < previousItem)
+                    if (goPrevious)
                     {
                         FilesListView.SelectedIndex--;
                         Mouse.SetCursor(Cursors.None);
                         Mouse.OverrideCursor = null;
                         Mouse.UpdateCursor();
                     }
-
-                    if (mousePosition.X > nextItem)
+                    else if (goNext)
                     {
                         FilesListView.SelectedIndex++;
                         Mouse.SetCursor(Cursors.None);
@@ -316,17 +336,37 @@ namespace QuickViewFile
                         Mouse.UpdateCursor();
                     }
 
-                    if (FilesListView.SelectedIndex < 0)
-                        FilesListView.SelectedIndex = 0;
-                    if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
-                        FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+                    if (goPrevious || goNext)
+                    {
+                        if (FilesListView.SelectedIndex < 0)
+                            FilesListView.SelectedIndex = 0;
+                        if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
+                            FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
 
-                    FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                        FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                    }
                 }
             }
             catch (Exception)
             {
 
+            }
+        }
+
+        private void HQButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm)
+            {
+                if (vm.Config.BitmapScalingMode == "Fant")
+                {
+                    vm.Config.BitmapScalingMode = "Linear";
+                    HQButton.FontWeight = FontWeights.Normal;
+                }
+                else
+                {
+                    vm.Config.BitmapScalingMode = "Fant";
+                    HQButton.FontWeight = FontWeights.Bold;
+                }
             }
         }
 

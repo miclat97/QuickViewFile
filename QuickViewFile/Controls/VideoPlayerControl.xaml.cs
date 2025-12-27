@@ -16,6 +16,9 @@ namespace QuickViewFile.Controls
         private bool userIsDraggingSlider = false;
         private bool isVideoPaused = false;
         private bool disposedValue;
+        private DispatcherTimer _timer;
+
+        public FrameworkElement VideoElement => videoInWindowPlayer;
 
         private readonly string videoQuality;
 
@@ -26,12 +29,12 @@ namespace QuickViewFile.Controls
             InitializeComponent();
 
             //_config = ConfigHelper.LoadConfig();
-            DispatcherTimer timer = new DispatcherTimer
+            _timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
             };
-            timer.Tick += timer_Tick;
-            timer.Start();
+            _timer.Tick += timer_Tick;
+            _timer.Start();
         }
 
         public VideoPlayerControl(string filePath, string qualityFromConfig)
@@ -40,12 +43,12 @@ namespace QuickViewFile.Controls
             InitializeComponent();
 
             //_config = ConfigHelper.LoadConfig();
-            DispatcherTimer timer = new DispatcherTimer
+            _timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
             };
-            timer.Tick += timer_Tick;
-            timer.Start();
+            _timer.Tick += timer_Tick;
+            _timer.Start();
 
             StartPlaying(filePath);
         }
@@ -232,6 +235,7 @@ namespace QuickViewFile.Controls
             {
                 if (disposing)
                 {
+                    _timer?.Stop();
                     videoInWindowPlayer.Stop();
                     mediaPlayerIsPlaying = false;
                     videoInWindowPlayer.Close();

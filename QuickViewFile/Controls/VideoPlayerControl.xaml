@@ -21,7 +21,9 @@
             <local:ZoomableMediaElement x:Name="videoInWindowPlayer"
                                         LoadedBehavior="Manual"
                                         RenderOptions.BitmapScalingMode="{Binding videoQuality}"
-                                        CacheMode="BitmapCache" UnloadedBehavior="Manual"
+                                        UnloadedBehavior="Manual"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
                                         />
         </Grid>
 
