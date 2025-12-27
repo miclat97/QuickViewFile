@@ -314,6 +314,24 @@ namespace QuickViewFile
             }
         }
 
+        private void HQButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm)
+            {
+                if (vm.Config.BitmapScalingMode == "Fant")
+                {
+                    vm.Config.BitmapScalingMode = "Linear";
+                    HQButton.FontWeight = FontWeights.Normal;
+                }
+                else
+                {
+                    vm.Config.BitmapScalingMode = "Fant";
+                    HQButton.FontWeight = FontWeights.Bold;
+                }
+                ConfigHelper.SaveConfig(vm.Config);
+            }
+        }
+
         private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
 

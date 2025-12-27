@@ -299,7 +299,7 @@ namespace QuickViewFile
                             else if (p.X > w * 0.92 && p.X <= w) goNext = true;
                         }
                     }
-                    else if (vm.SelectedItem.FileContentModel.VideoMedia is not null && VideoMediaNoBorder.VideoElement is MediaElement mediaElement)
+                    else if (vm.SelectedItem.FileContentModel.VideoMedia is not null && vm.SelectedItem.FileContentModel.VideoMedia.VideoElement is MediaElement mediaElement)
                     {
                         if (mediaElement.NaturalVideoWidth > 0 && mediaElement.NaturalVideoHeight > 0 && mediaElement.ActualWidth > 0 && mediaElement.ActualHeight > 0)
                         {
@@ -368,23 +368,6 @@ namespace QuickViewFile
             }
         }
 
-        private void HQButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is FilesListViewModel vm)
-            {
-                if (vm.Config.BitmapScalingMode == "Fant")
-                {
-                    vm.Config.BitmapScalingMode = "Linear";
-                    HQButton.FontWeight = FontWeights.Normal;
-                }
-                else
-                {
-                    vm.Config.BitmapScalingMode = "Fant";
-                    HQButton.FontWeight = FontWeights.Bold;
-                }
-                ConfigHelper.SaveConfig(vm.Config);
-            }
-        }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {

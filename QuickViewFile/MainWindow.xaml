@@ -47,15 +47,24 @@
               Padding="10,10,10,10"
               TextWrapping="NoWrap" />
 
-            <Button
-              Grid.Column="1"
-              Content="Save"
-              Name="SaveButton"
-              Height="24"
-              Margin="0,8,10,8"
-              Padding="15,0"
-              Click="SaveButton_Click"
-              Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button
+                  Content="HQ"
+                  Name="HQButton"
+                  Height="24"
+                  Margin="0,8,10,8"
+                  Padding="10,0"
+                  Click="HQButton_Click"
+                  ToolTip="Toggle High Quality (Fant vs Linear)"/>
+                <Button
+                  Content="Save"
+                  Name="SaveButton"
+                  Height="24"
+                  Margin="0,8,10,8"
+                  Padding="15,0"
+                  Click="SaveButton_Click"
+                  Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </StackPanel>
         </Grid>
 
         <Grid Grid.Row="1" Focusable="False">
