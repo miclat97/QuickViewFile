@@ -1,9 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 
 namespace QuickViewFile.Models
 {
-    public class ConfigModel
+    public class ConfigModel : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         public int MaxSizePreviewKB { get; set; } = 50;
         public string ImageStretch { get; set; } = "Uniform";
         public double PreviewHeight { get; set; } = 800;
@@ -15,7 +23,21 @@ namespace QuickViewFile.Models
         public double MaxScale { get; set; } = 100.0;
         public double MinScale { get; set; } = 1;
         public double MouseWheelZoomStepFactor { get; set; } = 1.2;
-        public string BitmapScalingMode { get; set; } = "Fant";
+
+        private string _bitmapScalingMode = "Fant";
+        public string BitmapScalingMode
+        {
+            get => _bitmapScalingMode;
+            set
+            {
+                if (_bitmapScalingMode != value)
+                {
+                    _bitmapScalingMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public double FontSize { get; set; } = 13;
         public double CharsToPreview { get; set; } = 100000000;
         public string ImageExtensions { get; set; } = ".jpg,.jpeg,.png,.bmp,.gif,.tiff,.ico,.webp,.avif,.heic,.jif";

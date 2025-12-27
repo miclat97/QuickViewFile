@@ -137,7 +137,7 @@
                           Grid.Row="0"                         
                           Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True">
 
-                        <local:VideoPlayerControl
+                        <ContentControl
                             x:Name="VideoMediaNoBorder"
                             Content="{Binding SelectedItem.FileContentModel.VideoMedia}"
                             Visibility="{Binding SelectedItem.FileContentModel.VideoMedia, Converter={StaticResource NullToCollapsedConverter}}" />

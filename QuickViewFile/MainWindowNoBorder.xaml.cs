@@ -284,31 +284,66 @@ namespace QuickViewFile
         {
             try
             {
-                if (DataContext is FilesListViewModel vm)
+                if (DataContext is FilesListViewModel vm && vm.SelectedItem != null && vm.SelectedItem.FileContentModel != null)
                 {
-                    Point mousePosition = e.GetPosition(GridFileContent);
-
-                    double previousItem = GridFileContent.ActualWidth * 0.08;
-                    double nextItem = GridFileContent.ActualWidth * 0.92;
+                    bool goPrevious = false;
+                    bool goNext = false;
 
                     if (vm.SelectedItem.FileContentModel.ImageSource is not null)
                     {
-                        previousItem = ZoomableImageElementNoBorder.ActualWidth * 0.08;
-                        nextItem = ZoomableImageElementNoBorder.ActualWidth * 0.92;
+                        Point p = e.GetPosition(ZoomableImageElementNoBorder);
+                        double w = ZoomableImageElementNoBorder.ActualWidth;
+                        if (w > 0)
+                        {
+                            if (p.X >= 0 && p.X < w * 0.08) goPrevious = true;
+                            else if (p.X > w * 0.92 && p.X <= w) goNext = true;
+                        }
+                    }
+                    else if (vm.SelectedItem.FileContentModel.VideoMedia is not null && vm.SelectedItem.FileContentModel.VideoMedia.VideoElement is MediaElement mediaElement)
+                    {
+                        if (mediaElement.NaturalVideoWidth > 0 && mediaElement.NaturalVideoHeight > 0 && mediaElement.ActualWidth > 0 && mediaElement.ActualHeight > 0)
+                        {
+                            // Calculate the actual size of the video displayed within the MediaElement (assuming Uniform stretch)
+                            double scaleX = mediaElement.ActualWidth / mediaElement.NaturalVideoWidth;
+                            double scaleY = mediaElement.ActualHeight / mediaElement.NaturalVideoHeight;
+                            double scale = Math.Min(scaleX, scaleY);
+
+                            double drawnWidth = mediaElement.NaturalVideoWidth * scale;
+                            double drawnHeight = mediaElement.NaturalVideoHeight * scale;
+
+                            double offsetX = (mediaElement.ActualWidth - drawnWidth) / 2;
+
+                            Point p = e.GetPosition(mediaElement);
+
+                            // Check if the click is within the horizontal range of the visible video
+                            if (p.X >= offsetX && p.X <= offsetX + drawnWidth)
+                            {
+                                double relativeX = p.X - offsetX;
+                                if (relativeX < drawnWidth * 0.08) goPrevious = true;
+                                else if (relativeX > drawnWidth * 0.92) goNext = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Fallback for text or other content: use full window width
+                        Point p = e.GetPosition(GridFileContent);
+                        double w = GridFileContent.ActualWidth;
+                        if (w > 0)
+                        {
+                            if (p.X < w * 0.08) goPrevious = true;
+                            else if (p.X > w * 0.92) goNext = true;
+                        }
                     }
 
-                    int nextFileIndex = FilesListView.SelectedIndex + 1;
-                    int previousFileIndex = FilesListView.SelectedIndex - 1;
-
-                    if (mousePosition.X < previousItem)
+                    if (goPrevious)
                     {
                         FilesListView.SelectedIndex--;
                         Mouse.SetCursor(Cursors.None);
                         Mouse.OverrideCursor = null;
                         Mouse.UpdateCursor();
                     }
-
-                    if (mousePosition.X > nextItem)
+                    else if (goNext)
                     {
                         FilesListView.SelectedIndex++;
                         Mouse.SetCursor(Cursors.None);
@@ -316,12 +351,15 @@ namespace QuickViewFile
                         Mouse.UpdateCursor();
                     }
 
-                    if (FilesListView.SelectedIndex < 0)
-                        FilesListView.SelectedIndex = 0;
-                    if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
-                        FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+                    if (goPrevious || goNext)
+                    {
+                        if (FilesListView.SelectedIndex < 0)
+                            FilesListView.SelectedIndex = 0;
+                        if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
+                            FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
 
-                    FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                        FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                    }
                 }
             }
             catch (Exception)
@@ -329,6 +367,7 @@ namespace QuickViewFile
 
             }
         }
+
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
