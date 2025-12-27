@@ -22,8 +22,6 @@
                                         LoadedBehavior="Manual"
                                         RenderOptions.BitmapScalingMode="{Binding videoQuality}"
                                         UnloadedBehavior="Manual"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
                                         />
         </Grid>
 

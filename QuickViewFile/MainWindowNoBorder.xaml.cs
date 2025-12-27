@@ -299,14 +299,29 @@ namespace QuickViewFile
                             else if (p.X > w * 0.92 && p.X <= w) goNext = true;
                         }
                     }
-                    else if (vm.SelectedItem.FileContentModel.VideoMedia is not null && VideoMediaNoBorder.VideoElement != null)
+                    else if (vm.SelectedItem.FileContentModel.VideoMedia is not null && VideoMediaNoBorder.VideoElement is MediaElement mediaElement)
                     {
-                        Point p = e.GetPosition(VideoMediaNoBorder.VideoElement);
-                        double w = VideoMediaNoBorder.VideoElement.ActualWidth;
-                        if (w > 0)
+                        if (mediaElement.NaturalVideoWidth > 0 && mediaElement.NaturalVideoHeight > 0 && mediaElement.ActualWidth > 0 && mediaElement.ActualHeight > 0)
                         {
-                            if (p.X >= 0 && p.X < w * 0.08) goPrevious = true;
-                            else if (p.X > w * 0.92 && p.X <= w) goNext = true;
+                            // Calculate the actual size of the video displayed within the MediaElement (assuming Uniform stretch)
+                            double scaleX = mediaElement.ActualWidth / mediaElement.NaturalVideoWidth;
+                            double scaleY = mediaElement.ActualHeight / mediaElement.NaturalVideoHeight;
+                            double scale = Math.Min(scaleX, scaleY);
+
+                            double drawnWidth = mediaElement.NaturalVideoWidth * scale;
+                            double drawnHeight = mediaElement.NaturalVideoHeight * scale;
+
+                            double offsetX = (mediaElement.ActualWidth - drawnWidth) / 2;
+
+                            Point p = e.GetPosition(mediaElement);
+
+                            // Check if the click is within the horizontal range of the visible video
+                            if (p.X >= offsetX && p.X <= offsetX + drawnWidth)
+                            {
+                                double relativeX = p.X - offsetX;
+                                if (relativeX < drawnWidth * 0.08) goPrevious = true;
+                                else if (relativeX > drawnWidth * 0.92) goNext = true;
+                            }
                         }
                     }
                     else
@@ -367,6 +382,7 @@ namespace QuickViewFile
                     vm.Config.BitmapScalingMode = "Fant";
                     HQButton.FontWeight = FontWeights.Bold;
                 }
+                ConfigHelper.SaveConfig(vm.Config);
             }
         }
 
