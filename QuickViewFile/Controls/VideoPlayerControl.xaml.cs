@@ -199,6 +199,11 @@ namespace QuickViewFile.Controls
             HandleKey(e.Key);
         }
 
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Dispose();
+        }
+
         public void HandleKey(Key key)
         {
             if (key == Key.Space)
@@ -237,6 +242,7 @@ namespace QuickViewFile.Controls
                 {
                     _timer?.Stop();
                     videoInWindowPlayer.Stop();
+                    videoInWindowPlayer.Source = null;
                     mediaPlayerIsPlaying = false;
                     videoInWindowPlayer.Close();
                 }
