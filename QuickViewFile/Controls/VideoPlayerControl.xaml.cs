@@ -55,10 +55,18 @@ namespace QuickViewFile.Controls
 
         public void StartPlaying(string filePath)
         {
+            videoInWindowPlayer.MediaEnded -= VideoInWindowPlayer_MediaEnded;
+            videoInWindowPlayer.MediaFailed -= VideoInWindowPlayer_MediaFailed;
+
             videoInWindowPlayer.Source = new Uri(filePath);
+
+            videoInWindowPlayer.MediaEnded += VideoInWindowPlayer_MediaEnded;
+            videoInWindowPlayer.MediaFailed += VideoInWindowPlayer_MediaFailed;
+
             videoInWindowPlayer.Play();
             isVideoPaused = false;
             mediaPlayerIsPlaying = true;
+
             double initialVolume = ConfigHelper.GetVolume();
             if (initialVolume < 0 || initialVolume > 1)
             {
@@ -68,18 +76,9 @@ namespace QuickViewFile.Controls
             {
                 videoInWindowPlayer.Volume = initialVolume;
             }
-
         }
 
-        //private void timer_Tick(object sender, EventArgs e)
-        //{
-        //    if ((videoInWindowPlayer.Source != null) && (videoInWindowPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
-        //    {
-        //        sliProgress.Minimum = 0;
-        //        sliProgress.Maximum = videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-        //        sliProgress.Value = videoInWindowPlayer.Position.TotalSeconds;
-        //    }
-        //}
+
         private void timer_Tick(object sender, EventArgs e)
         {
             // Check if the media source is set and has a known duration or it's live stream
@@ -88,6 +87,7 @@ namespace QuickViewFile.Controls
                 (!userIsDraggingSlider))
             {
                 sliProgress.Visibility = Visibility.Visible;
+                StatusBarMediaElement.Visibility = Visibility.Visible;
                 sliProgress.Minimum = 0;
                 sliProgress.Maximum = videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
                 sliProgress.Value = videoInWindowPlayer.Position.TotalSeconds;
@@ -97,7 +97,8 @@ namespace QuickViewFile.Controls
             else if (videoInWindowPlayer.Source != null && !videoInWindowPlayer.NaturalDuration.HasTimeSpan)
             {
                 // Logic for stream
-                sliProgress.Visibility = Visibility.Collapsed;
+                StatusBarMediaElement.Visibility = Visibility.Collapsed;
+                //sliProgress.Visibility = Visibility.Collapsed;
                 fullTime.Text = "LIVE";
             }
         }
@@ -266,6 +267,37 @@ namespace QuickViewFile.Controls
                 // TODO: set large fields to null
                 disposedValue = true;
             }
+        }
+
+        private void VideoInWindowPlayer_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            // Stream się zakończył (np. serwer zerwał połączenie) - próbujemy połączyć ponownie
+            ReloadStream();
+        }
+
+        private void VideoInWindowPlayer_MediaFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            e.Handled = true;
+            ReloadStream();
+        }
+
+        private void ReloadStream()
+        {
+            // Check if user paused video manually
+            if (isVideoPaused || !mediaPlayerIsPlaying) return;
+
+            Dispatcher.Invoke(() =>
+            {
+                // This will force WPF to reconnect to the stream
+                var currentSource = videoInWindowPlayer.Source;
+
+                if (currentSource != null)
+                {
+                    videoInWindowPlayer.Source = null;
+                    videoInWindowPlayer.Source = currentSource;
+                    videoInWindowPlayer.Play();
+                }
+            });
         }
 
         public TimeSpan GetCurrentVideoPosition()

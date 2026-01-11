@@ -25,7 +25,7 @@
                                         />
         </Grid>
 
-        <StatusBar Grid.Row="1">
+        <StatusBar Grid.Row="1" x:Name="StatusBarMediaElement">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>
