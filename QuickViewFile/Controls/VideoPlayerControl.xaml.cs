@@ -269,9 +269,9 @@ namespace QuickViewFile.Controls
             }
         }
 
+        // Ta metoda wywoła się, gdy stream się "urwie" lub skończy
         private void VideoInWindowPlayer_MediaEnded(object sender, RoutedEventArgs e)
         {
-            // Stream się zakończył (np. serwer zerwał połączenie) - próbujemy połączyć ponownie
             ReloadStream();
         }
 
@@ -281,23 +281,18 @@ namespace QuickViewFile.Controls
             ReloadStream();
         }
 
-        private void ReloadStream()
+        private async void ReloadStream()
         {
-            // Check if user paused video manually
-            if (isVideoPaused || !mediaPlayerIsPlaying) return;
+            if (isVideoPaused) return;
 
-            Dispatcher.Invoke(() =>
-            {
-                // This will force WPF to reconnect to the stream
-                var currentSource = videoInWindowPlayer.Source;
+            await Task.Delay(1);
 
-                if (currentSource != null)
-                {
-                    videoInWindowPlayer.Source = null;
-                    videoInWindowPlayer.Source = currentSource;
-                    videoInWindowPlayer.Play();
-                }
-            });
+            if (isVideoPaused) return;
+
+            var currentTempSource = videoInWindowPlayer.Source;
+            videoInWindowPlayer.Source = null;
+            videoInWindowPlayer.Source = currentTempSource;
+            videoInWindowPlayer.Play();
         }
 
         public TimeSpan GetCurrentVideoPosition()

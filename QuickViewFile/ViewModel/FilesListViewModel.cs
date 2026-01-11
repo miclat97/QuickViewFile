@@ -249,7 +249,7 @@ namespace QuickViewFile.ViewModel
             {
                 try
                 {
-                    string streamUrl = File.ReadAllText(filePath).Trim();
+                    string streamUrl = FileContentReader.ExtractStreamUrlFromM3u(filePath);
                     SelectedItem.FileContentModel.VideoMedia = new Controls.VideoPlayerControl(streamUrl, Config.BitmapScalingMode);
                     SelectedItem.FileContentModel.TextContent = null;
                     SelectedItem.FileContentModel.ShowTextBox = false;
