@@ -40,6 +40,7 @@ namespace QuickViewFile.Helpers
                 key.SetValue(nameof(ConfigModel.ImageExtensions), config.ImageExtensions);
                 key.SetValue(nameof(ConfigModel.VideoExtensions), config.VideoExtensions);
                 key.SetValue(nameof(ConfigModel.MusicExtensions), config.MusicExtensions);
+                key.SetValue(nameof(ConfigModel.LiveStreamExtensions), config.LiveStreamExtensions);
                 key.SetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
                 key.SetValue(nameof(ConfigModel.EdgeMode), config.EdgeMode);
                 key.SetValue(nameof(ConfigModel.RenderMode), config.RenderMode);
@@ -89,6 +90,7 @@ namespace QuickViewFile.Helpers
                     config.ImageExtensions = (string)key.GetValue(nameof(ConfigModel.ImageExtensions).ToString(), config.ImageExtensions);
                     config.VideoExtensions = (string)key.GetValue(nameof(ConfigModel.VideoExtensions).ToString(), config.VideoExtensions);
                     config.MusicExtensions = (string)key.GetValue(nameof(ConfigModel.MusicExtensions).ToString(), config.MusicExtensions);
+                    config.MusicExtensions = (string)key.GetValue(nameof(ConfigModel.LiveStreamExtensions).ToString(), config.LiveStreamExtensions);
                     config.EdgeMode = (int)key.GetValue(nameof(ConfigModel.EdgeMode), config.EdgeMode);
                     config.RenderMode = (int)key.GetValue(nameof(ConfigModel.RenderMode), config.RenderMode);
                     config.ShadowEffect = (int)key.GetValue(nameof(ConfigModel.ShadowEffect), config.ShadowEffect);
@@ -143,7 +145,8 @@ namespace QuickViewFile.Helpers
             {
                 ImageExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.ImageExtensions),
                 VideoExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.VideoExtensions),
-                MusicExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.MusicExtensions)
+                MusicExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.MusicExtensions),
+                LiveStreamExtensionsParsed = GetStringsFromCommaSeparatedString(loadedConfig.LiveStreamExtensions)
             };
             return parsedConfig;
         }

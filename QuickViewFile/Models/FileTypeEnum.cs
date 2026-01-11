@@ -10,6 +10,7 @@ namespace QuickViewFile.Models
     {
         Text = 0,
         Image = 1,
-        Multimedia = 2
+        Multimedia = 2,
+        LiveStream = 3
     }
 }

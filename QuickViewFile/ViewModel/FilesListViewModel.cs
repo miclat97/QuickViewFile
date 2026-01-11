@@ -222,8 +222,13 @@ namespace QuickViewFile.ViewModel
             var imageExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.ImageExtensions);
             var musicExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.MusicExtensions);
             var videoExtension = ConfigHelper.GetStringsFromCommaSeparatedString(Config.VideoExtensions);
+            var liveStreamExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.LiveStreamExtensions);
             if (ext != null)
             {
+                if (liveStreamExtensions.Contains(ext))
+                {
+                    fileType = FileTypeEnum.LiveStream;
+                }
                 if (imageExtensions.Contains(ext))
                 {
                     fileType = FileTypeEnum.Image;
@@ -240,7 +245,27 @@ namespace QuickViewFile.ViewModel
             SelectedItem.FileContentModel?.Dispose();
             SelectedItem.FileContentModel = new FileContentModel();
 
-            if (fileType == FileTypeEnum.Image)
+            if (fileType == FileTypeEnum.LiveStream)
+            {
+                try
+                {
+                    string streamUrl = File.ReadAllText(filePath).Trim();
+                    SelectedItem.FileContentModel.VideoMedia = new Controls.VideoPlayerControl(streamUrl, Config.BitmapScalingMode);
+                    SelectedItem.FileContentModel.TextContent = null;
+                    SelectedItem.FileContentModel.ShowTextBox = false;
+                    SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.IsLoaded = true;
+                }
+                catch (Exception ex)
+                {
+                    SelectedItem.FileContentModel.TextContent = ex.Message;
+                    SelectedItem.FileContentModel.VideoMedia = null;
+                    SelectedItem.FileContentModel.ShowTextBox = true;
+                    SelectedItem.FileContentModel.ImageSource = null;
+                    SelectedItem.FileContentModel.IsLoaded = false;
+                }
+            }
+            else if (fileType == FileTypeEnum.Image)
             {
                 try
                 {

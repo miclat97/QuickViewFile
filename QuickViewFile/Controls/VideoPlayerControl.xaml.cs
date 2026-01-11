@@ -71,13 +71,34 @@ namespace QuickViewFile.Controls
 
         }
 
+        //private void timer_Tick(object sender, EventArgs e)
+        //{
+        //    if ((videoInWindowPlayer.Source != null) && (videoInWindowPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
+        //    {
+        //        sliProgress.Minimum = 0;
+        //        sliProgress.Maximum = videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+        //        sliProgress.Value = videoInWindowPlayer.Position.TotalSeconds;
+        //    }
+        //}
         private void timer_Tick(object sender, EventArgs e)
         {
-            if ((videoInWindowPlayer.Source != null) && (videoInWindowPlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
+            // Check if the media source is set and has a known duration or it's live stream
+            if ((videoInWindowPlayer.Source != null) &&
+                (videoInWindowPlayer.NaturalDuration.HasTimeSpan) &&
+                (!userIsDraggingSlider))
             {
+                sliProgress.Visibility = Visibility.Visible;
                 sliProgress.Minimum = 0;
                 sliProgress.Maximum = videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
                 sliProgress.Value = videoInWindowPlayer.Position.TotalSeconds;
+
+                fullTime.Text = videoInWindowPlayer.NaturalDuration.TimeSpan.ToString(@"hh\:mm\:ss");
+            }
+            else if (videoInWindowPlayer.Source != null && !videoInWindowPlayer.NaturalDuration.HasTimeSpan)
+            {
+                // Logic for stream
+                sliProgress.Visibility = Visibility.Collapsed;
+                fullTime.Text = "LIVE";
             }
         }
 
