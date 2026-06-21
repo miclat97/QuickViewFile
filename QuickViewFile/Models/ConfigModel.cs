@@ -55,5 +55,6 @@ namespace QuickViewFile.Models
         public double ShadowOpacity { get; set; } = 0;
         public double ShadowBlur { get; set; } = 0;
         public double Volume { get; set; } = 1;
+        public int TransparentBackgroundInFullScreenMode { get; set; } = 0;
     }
 }

@@ -12,7 +12,16 @@ namespace QuickViewFile.ViewModel
 {
     public class FilesListViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<ItemList> ActiveListItems { get; set; } = [];
+        private ObservableCollection<ItemList> _activeListItems = [];
+        public ObservableCollection<ItemList> ActiveListItems
+        {
+            get => _activeListItems;
+            set
+            {
+                _activeListItems = value;
+                OnPropertyChanged(nameof(ActiveListItems));
+            }
+        }
 
         public FilesListViewModel(string folderPath)
         {
@@ -34,6 +43,7 @@ namespace QuickViewFile.ViewModel
 
         private ItemList? _selectedItem;
         private string _folderPath;
+        public string FolderPath => _folderPath;
 
         public Visibility TextBoxVisibility { get; set; }
 
@@ -86,7 +96,7 @@ namespace QuickViewFile.ViewModel
 
         public event System.Action<ItemList?>? SelectedFileChanged;
 
-        private void RefreshFiles(string? fileToSelect = null)
+        public void RefreshFiles(string? fileToSelect = null)
         {
             try
             {
@@ -130,7 +140,7 @@ namespace QuickViewFile.ViewModel
                     });
                 }
 
-                foreach (DirectoryInfo folder in foldersInDirectory)
+                                foreach (DirectoryInfo folder in foldersInDirectory)
                 {
                     ActiveListItems.Add(new ItemList
                     {
@@ -138,18 +148,23 @@ namespace QuickViewFile.ViewModel
                         Size = "",
                         FullPath = folder.FullName,
                         IsDirectory = true,
+                        LastModified = folder.LastWriteTime,
+                        LastModifiedString = folder.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
                         FileContentModel = new FileContentModel()
                     });
                 }
 
-                foreach (FileInfo file in filesInDirectory)
+                                foreach (FileInfo file in filesInDirectory)
                 {
                     ActiveListItems.Add(new ItemList
                     {
                         Name = file.Name,
                         Size = Math.Round((file.Length / 1024.0), MidpointRounding.ToPositiveInfinity).ToString(),
+                        SizeBytes = file.Length,
                         FullPath = file.FullName,
                         IsDirectory = false,
+                        LastModified = file.LastWriteTime,
+                        LastModifiedString = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
                         FileContentModel = new FileContentModel()
                     });
                 }
@@ -193,13 +208,16 @@ namespace QuickViewFile.ViewModel
             {
                 await Application.Current.Dispatcher.BeginInvoke(async () =>
                 {
-                    SelectedItem?.FileContentModel = new FileContentModel
+                    if (SelectedItem != null)
+                    {
+                        SelectedItem.FileContentModel = new FileContentModel
                     {
                         TextContent = "Loading...",
                         ShowTextBox = false,
                         VideoMedia = null,
                         ImageSource = null
                     };
+                    }
                     await LazyLoadFile(true);
                 });
             }

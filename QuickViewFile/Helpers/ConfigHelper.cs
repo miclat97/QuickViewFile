@@ -51,6 +51,7 @@ namespace QuickViewFile.Helpers
                 key.SetValue(nameof(ConfigModel.ShadowOpacity), config.ShadowOpacity);
                 key.SetValue(nameof(ConfigModel.ShadowBlur), config.ShadowBlur);
                 key.SetValue(nameof(ConfigModel.Volume), config.Volume);
+                key.SetValue(nameof(ConfigModel.TransparentBackgroundInFullScreenMode), config.TransparentBackgroundInFullScreenMode);
             }
             catch (Exception ex)
             {
@@ -100,7 +101,8 @@ namespace QuickViewFile.Helpers
                     config.ShadowDepth = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowDepth).ToString(), config.ShadowDepth));
                     config.ShadowOpacity = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowOpacity).ToString(), config.ShadowOpacity));
                     config.ShadowBlur = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowBlur).ToString(), config.ShadowBlur));
-                    config.Volume = double.Parse((string)key.GetValue(nameof(ConfigModel.Volume).ToString(), config.Volume));
+                    config.Volume = double.Parse((string)key.GetValue(nameof(ConfigModel.Volume).ToString(), config.Volume.ToString()));
+                    config.TransparentBackgroundInFullScreenMode = (int)key.GetValue(nameof(ConfigModel.TransparentBackgroundInFullScreenMode), config.TransparentBackgroundInFullScreenMode);
                 }
                 catch (Exception ex)
                 {
