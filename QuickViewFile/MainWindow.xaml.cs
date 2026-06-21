@@ -152,6 +152,9 @@ namespace QuickViewFile
         }
 
 
+        // --- File Operations ---
+
+
         private void FullScreenButton_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FullPath is not null)
@@ -163,6 +166,20 @@ namespace QuickViewFile
                 }
                 fullScreen.Show();
                 this.Close();
+            }
+        }
+
+        private void RotateButton_Click(object sender, RoutedEventArgs e)
+        {
+            degreesRotation += 90;
+            if (degreesRotation < 360)
+            {
+                GridFileContent.LayoutTransform = new System.Windows.Media.RotateTransform(degreesRotation);
+            }
+            else
+            {
+                degreesRotation = 0;
+                GridFileContent.LayoutTransform = new System.Windows.Media.RotateTransform(0);
             }
         }
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -467,6 +484,7 @@ namespace QuickViewFile
                         {
                             FilesListView.SelectedItem = itemToSelect;
                             FilesListView.ScrollIntoView(itemToSelect);
+                            if (DataContext is FilesListViewModel viewm && FilesListView.SelectedItem is ItemList sel) viewm.SelectedItem = sel;
                         }
                         e.Handled = true;
                         return;
@@ -533,6 +551,7 @@ namespace QuickViewFile
         }
 
 
+
         private void FilesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is FilesListViewModel vm && FilesListView.SelectedItem is ItemList selected)
@@ -540,6 +559,7 @@ namespace QuickViewFile
                 vm.SelectedItem = selected;
             }
         }
+
         private void FilesListView_KeyDown(object sender, KeyEventArgs e)
         {
             // Navigation handled globally
@@ -582,6 +602,7 @@ namespace QuickViewFile
                         FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
 
                     FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                    if (DataContext is FilesListViewModel viewm && FilesListView.SelectedItem is ItemList sel) viewm.SelectedItem = sel;
                 }
             }
             catch (Exception)

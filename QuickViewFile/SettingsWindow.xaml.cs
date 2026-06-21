@@ -54,6 +54,13 @@ namespace QuickViewFile
             }
         }
 
+
+        private void RestoreDefault_Click(object sender, RoutedEventArgs e)
+        {
+            _config = new ConfigModel();
+            SettingsPanel.Children.Clear();
+            GenerateUI();
+        }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             ConfigHelper.SaveConfig(_config);
