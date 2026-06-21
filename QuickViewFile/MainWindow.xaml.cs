@@ -152,9 +152,6 @@ namespace QuickViewFile
         }
 
 
-        // --- File Operations ---
-
-
         private void FullScreenButton_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FullPath is not null)
