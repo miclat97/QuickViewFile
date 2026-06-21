@@ -171,7 +171,12 @@ namespace QuickViewFile.ViewModel
 
                 try
                 {
-                    ItemList? selectThisFile = ActiveListItems.LastOrDefault(x => x.FullPath.Equals(fileToSelect, StringComparison.OrdinalIgnoreCase));
+                    ItemList? selectThisFile = null;
+                    if (!string.IsNullOrWhiteSpace(fileToSelect))
+                    {
+                        string targetName = Path.GetFileName(fileToSelect);
+                        selectThisFile = ActiveListItems.FirstOrDefault(x => string.Equals(x.Name, targetName, StringComparison.OrdinalIgnoreCase) && !x.IsDirectory);
+                    }
                     if (selectThisFile is not null)
                         SelectedItem = selectThisFile;
                     else

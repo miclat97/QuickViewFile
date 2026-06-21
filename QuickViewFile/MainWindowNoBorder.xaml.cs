@@ -618,7 +618,16 @@ namespace QuickViewFile
                     bool goPrevious = false;
                     bool goNext = false;
 
-                    if (ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.Source != null)
+                    Point pApp = e.GetPosition(GridFileContent);
+                    double wApp = GridFileContent.ActualWidth;
+
+                    if (wApp > 0)
+                    {
+                        if (pApp.X < wApp * 0.15) goPrevious = true;
+                        else if (pApp.X > wApp * 0.85) goNext = true;
+                    }
+
+                    if (!goPrevious && !goNext && ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.Source != null)
                     {
                         var image = ZoomableImageElementNoBorder;
                         double imageWidth = image.Source.Width;
@@ -633,23 +642,13 @@ namespace QuickViewFile
                         double drawnWidth = imageWidth * scale;
                         double offsetX = (controlWidth - drawnWidth) / 2;
 
-                        Point p = e.GetPosition(image);
+                        Point pImg = e.GetPosition(image);
 
-                        if (p.X >= offsetX && p.X <= offsetX + drawnWidth)
+                        if (pImg.X >= offsetX && pImg.X <= offsetX + drawnWidth)
                         {
-                            double relativeX = p.X - offsetX;
+                            double relativeX = pImg.X - offsetX;
                             if (relativeX < drawnWidth * 0.15) goPrevious = true;
                             else if (relativeX > drawnWidth * 0.85) goNext = true;
-                        }
-                    }
-                    else
-                    {
-                        Point p = e.GetPosition(GridFileContent);
-                        double w = GridFileContent.ActualWidth;
-                        if (w > 0)
-                        {
-                            if (p.X < w * 0.15) goPrevious = true;
-                            else if (p.X > w * 0.85) goNext = true;
                         }
                     }
 
