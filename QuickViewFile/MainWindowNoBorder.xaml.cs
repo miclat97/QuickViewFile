@@ -56,6 +56,15 @@ namespace QuickViewFile
                 InitializeComponent();
                 FilesListView.Focus();
 
+                if (_config.TransparentBackgroundInFullScreenMode == 0)
+                {
+                    MainGrid.Background = new SolidColorBrush(Color.FromRgb(17, 17, 17));
+                }
+                else
+                {
+                    MainGrid.Background = Brushes.Transparent;
+                }
+
                 string[] args = Environment.GetCommandLineArgs();
 
                 if (!String.IsNullOrWhiteSpace(args.ElementAtOrDefault(1)))
@@ -120,6 +129,15 @@ namespace QuickViewFile
                 }
                 InitializeComponent();
                 FilesListView.Focus();
+
+                if (_config.TransparentBackgroundInFullScreenMode == 0)
+                {
+                    MainGrid.Background = new SolidColorBrush(Color.FromRgb(17, 17, 17));
+                }
+                else
+                {
+                    MainGrid.Background = Brushes.Transparent;
+                }
 
                 string fileToSelectFullPath = pathNoBorder;
 
@@ -308,7 +326,7 @@ namespace QuickViewFile
 
         private void ColumnHeader_Click(object sender, RoutedEventArgs e)
         {
-            var headerClicked = e.OriginalSource as GridViewColumnHeader;
+            var headerClicked = sender as GridViewColumnHeader;
             if (headerClicked != null && headerClicked.Tag != null)
             {
                 string propertyName = headerClicked.Tag.ToString();
@@ -566,29 +584,83 @@ namespace QuickViewFile
         }
 
 
+
+        public static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = System.Windows.Media.VisualTreeHelper.GetParent(child);
+
+            if (parentObject == null) return null;
+
+            T parent = parentObject as T;
+            if (parent != null)
+                return parent;
+            else
+                return FindVisualParent<T>(parentObject);
+        }
+
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.OriginalSource is DependencyObject depObj)
+            {
+                if (FindVisualParent<GridViewColumnHeader>(depObj) != null ||
+                    FindVisualParent<ListViewItem>(depObj) != null ||
+                    FindVisualParent<System.Windows.Controls.Primitives.ScrollBar>(depObj) != null ||
+                    FindVisualParent<Button>(depObj) != null ||
+                    FindVisualParent<TextBox>(depObj) != null)
+                {
+                    return;
+                }
+            }
             try
             {
                 if (DataContext is FilesListViewModel vm)
                 {
-                    Point mousePosition = e.GetPosition(GridFileContent);
+                    bool goPrevious = false;
+                    bool goNext = false;
 
-                    double previousItem = GridFileContent.ActualWidth * 0.08;
-                    double nextItem = GridFileContent.ActualWidth * 0.92;
+                    if (ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.Source != null)
+                    {
+                        var image = ZoomableImageElementNoBorder;
+                        double imageWidth = image.Source.Width;
+                        double imageHeight = image.Source.Height;
+                        double controlWidth = image.ActualWidth;
+                        double controlHeight = image.ActualHeight;
 
-                    int nextFileIndex = FilesListView.SelectedIndex + 1;
-                    int previousFileIndex = FilesListView.SelectedIndex - 1;
+                        double scaleX = controlWidth / imageWidth;
+                        double scaleY = controlHeight / imageHeight;
+                        double scale = Math.Min(scaleX, scaleY);
 
-                    if (mousePosition.X < previousItem)
+                        double drawnWidth = imageWidth * scale;
+                        double offsetX = (controlWidth - drawnWidth) / 2;
+
+                        Point p = e.GetPosition(image);
+
+                        if (p.X >= offsetX && p.X <= offsetX + drawnWidth)
+                        {
+                            double relativeX = p.X - offsetX;
+                            if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                            else if (relativeX > drawnWidth * 0.85) goNext = true;
+                        }
+                    }
+                    else
+                    {
+                        Point p = e.GetPosition(GridFileContent);
+                        double w = GridFileContent.ActualWidth;
+                        if (w > 0)
+                        {
+                            if (p.X < w * 0.15) goPrevious = true;
+                            else if (p.X > w * 0.85) goNext = true;
+                        }
+                    }
+
+                    if (goPrevious)
                     {
                         FilesListView.SelectedIndex--;
                         System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
                         System.Windows.Input.Mouse.OverrideCursor = null;
                         System.Windows.Input.Mouse.UpdateCursor();
                     }
-
-                    if (mousePosition.X > nextItem)
+                    else if (goNext)
                     {
                         FilesListView.SelectedIndex++;
                         System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);

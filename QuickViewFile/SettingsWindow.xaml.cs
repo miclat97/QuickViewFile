@@ -92,6 +92,7 @@ namespace QuickViewFile
             ConfigHelper.loadedConfig.ShadowOpacity = _config.ShadowOpacity;
             ConfigHelper.loadedConfig.ShadowBlur = _config.ShadowBlur;
             ConfigHelper.loadedConfig.Volume = _config.Volume;
+            ConfigHelper.loadedConfig.TransparentBackgroundInFullScreenMode = _config.TransparentBackgroundInFullScreenMode;
 
             DialogResult = true;
             Close();

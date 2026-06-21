@@ -308,7 +308,7 @@ namespace QuickViewFile
 
         private void ColumnHeader_Click(object sender, RoutedEventArgs e)
         {
-            var headerClicked = e.OriginalSource as GridViewColumnHeader;
+            var headerClicked = sender as GridViewColumnHeader;
             if (headerClicked != null && headerClicked.Tag != null)
             {
                 string propertyName = headerClicked.Tag.ToString();
@@ -566,8 +566,33 @@ namespace QuickViewFile
         }
 
 
+
+        public static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = System.Windows.Media.VisualTreeHelper.GetParent(child);
+
+            if (parentObject == null) return null;
+
+            T parent = parentObject as T;
+            if (parent != null)
+                return parent;
+            else
+                return FindVisualParent<T>(parentObject);
+        }
+
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.OriginalSource is DependencyObject depObj)
+            {
+                if (FindVisualParent<GridViewColumnHeader>(depObj) != null ||
+                    FindVisualParent<ListViewItem>(depObj) != null ||
+                    FindVisualParent<System.Windows.Controls.Primitives.ScrollBar>(depObj) != null ||
+                    FindVisualParent<Button>(depObj) != null ||
+                    FindVisualParent<TextBox>(depObj) != null)
+                {
+                    return;
+                }
+            }
             try
             {
                 if (DataContext is FilesListViewModel vm)
