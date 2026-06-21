@@ -7,5 +7,8 @@
         public string? FullPath { get; set; } // Full path of the file to preview
         public bool IsDirectory { get; set; } // Indicates if the item is a directory
         public FileContentModel FileContentModel { get; set; } = new FileContentModel(); // Lazy loaded file
+        public System.DateTime LastModified { get; set; }
+        public string LastModifiedString { get; set; }
+        public double SizeBytes { get; set; }
     }
 }

@@ -13,9 +13,9 @@
         Background="Transparent"
         AllowsTransparency="True"
         WindowStartupLocation="CenterScreen"
-        KeyDown="AppWindow_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         ResizeMode="CanResize"
+        KeyDown="AppWindow_KeyDown"
         Title="QuickViewFile" Height="720" Width="1280">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -49,16 +49,12 @@
               Margin="0,0,0,0"
               Padding="10,10,10,10"
               TextWrapping="NoWrap" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Exit Full Screen" Name="ExitFullScreenButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="ExitFullScreenButton_Click" ToolTip="TIP: F4 can do this"/>
+                <Button Content="Settings" Name="SettingsButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="SettingsButton_Click" ToolTip="Open Settings"/>
 
-            <Button
-              Grid.Column="1"
-              Content="Save"
-              Name="SaveButton"
-              Height="24"
-              Margin="0,8,10,8"
-              Padding="15,0"
-              Click="SaveButton_Click"
-              Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Button Content="Save" Name="SaveButton" Height="24" Margin="0,8,10,8" Padding="15,0" Click="SaveButton_Click" Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </StackPanel>
         </Grid>
 
         <Grid Grid.Row="1" Focusable="False">
@@ -67,16 +63,33 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <ListView Grid.Column="0"
+            <Grid Grid.Column="0" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,0,0,5" x:Name="FileOperationsPanel">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" x:Name="ColMove"/>
+                        <ColumnDefinition Width="*" x:Name="ColCopy"/>
+                        <ColumnDefinition Width="*" x:Name="ColDelete"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Content="Move" Click="MoveFiles_Click" Margin="0,0,2,0" Grid.Column="0" x:Name="MoveButton"/>
+                    <Button Content="Copy" Click="CopyFiles_Click" Margin="2,0,2,0" Grid.Column="1" x:Name="CopyButton"/>
+                    <Button Content="Delete" Click="DeleteFiles_Click" Margin="2,0,0,0" Grid.Column="2" x:Name="DeleteButton"/>
+                    <Button Content="Paste" Click="PasteFiles_Click" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PasteButton" Grid.Column="0" Grid.ColumnSpan="3"/>
+                </Grid>
+            <ListView Grid.Row="1"
                   x:Name="FilesListView"
-                  Focusable="False"
-                  IsTabStop="False"
-                  SelectionMode="Single"
+                  Focusable="True"
+                  IsTabStop="True"
+                  SelectionMode="Extended"
                   ItemsSource="{Binding ActiveListItems}"
                   SelectedItem="{Binding SelectedItem}"
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
-                  Margin="10"
+                  Margin="0"
                   KeyDown="FilesListView_KeyDown"
+                  SelectionChanged="FilesListView_SelectionChanged"
                   ClipToBounds="True"
                   Width="Auto"
                   FocusManager.IsFocusScope="False"
@@ -87,7 +100,10 @@
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" Width="Auto" FocusManager.IsFocusScope="False">
+                        <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Name" Tag="Name" Click="ColumnHeader_Click"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}"
@@ -98,7 +114,10 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Size (KB)" Width="80" FocusManager.IsFocusScope="False">
+                        <GridViewColumn Width="80" FocusManager.IsFocusScope="False">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Size (KB)" Tag="Size" Click="ColumnHeader_Click"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Size}"
@@ -109,9 +128,25 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
+
+                        <GridViewColumn Width="150" FocusManager.IsFocusScope="False">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Last modification date" Tag="LastModified" Click="ColumnHeader_Click"/>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding LastModifiedString}"
+                                               FontSize="13"
+                                               Focusable="False"
+                                               VerticalAlignment="Center"
+                                               FontWeight="Normal"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>
+            </Grid>
             <GridSplitter Grid.Column="1"
                       Width="1"
                       UseLayoutRounding="True"
@@ -135,7 +170,8 @@
                     <!-- File content: Image, Video or Text-->
                     <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  
                           Grid.Row="0"                         
-                          Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True">
+                          Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True"
+                          >
 
                         <ContentControl
                             x:Name="VideoMediaNoBorder"
