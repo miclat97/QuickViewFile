@@ -24,6 +24,13 @@
         <helpers:ScrollBarsVisibilityConverter x:Key="ScrollBarsVisibilityConverter"/>
         <Style TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="40"/>
+            <!-- Do not force IsSelected two way binding to the visual selection,
+                 because it ruins the ability to separate CheckBox selection from single Active SelectedItem -->
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <!-- This overrides the default blue background of the WPF ListView SelectedItem to something else or ensures the default is kept -->
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
     <Grid Name="MainGrid" Focusable="False">
@@ -102,6 +109,13 @@
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
                     <GridView>
+                        <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Focusable="False" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
                             <GridViewColumn.Header>
                                 <GridViewColumnHeader Content="Name" Tag="Name" Click="ColumnHeader_Click"/>

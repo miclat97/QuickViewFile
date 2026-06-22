@@ -37,7 +37,63 @@ namespace QuickViewFile
                 };
                 panel.Children.Add(label);
 
-                if (prop.PropertyType == typeof(int) || prop.PropertyType == typeof(double) || prop.PropertyType == typeof(string))
+                if (prop.Name == "ThemeMode")
+                {
+                    var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Auto", Tag = 0 });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Light", Tag = 1 });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Dark", Tag = 2 });
+                    comboBox.SelectedValuePath = "Tag";
+                    var binding = new Binding(prop.Name) { Source = _config, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
+                    comboBox.SetBinding(ComboBox.SelectedValueProperty, binding);
+                    panel.Children.Add(comboBox);
+                }
+                else if (prop.Name == "BitmapScalingMode")
+                {
+                    var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Unspecified", Tag = "Unspecified" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Linear", Tag = "Linear" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "LowQuality", Tag = "LowQuality" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Fant", Tag = "Fant" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "HighQuality", Tag = "HighQuality" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "NearestNeighbor", Tag = "NearestNeighbor" });
+                    comboBox.SelectedValuePath = "Tag";
+                    var binding = new Binding(prop.Name) { Source = _config, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
+                    comboBox.SetBinding(ComboBox.SelectedValueProperty, binding);
+                    panel.Children.Add(comboBox);
+                }
+                else if (prop.Name == "ShadowEffect" || prop.Name == "ShadowQuality" || prop.Name == "RenderMode" ||
+                         prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "TransparentBackgroundInFullScreenMode")
+                {
+                    var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
+
+                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "TransparentBackgroundInFullScreenMode" || prop.Name == "ShadowEffect")
+                    {
+                        comboBox.Items.Add(new ComboBoxItem { Content = "Disabled", Tag = 0 });
+                        comboBox.Items.Add(new ComboBoxItem { Content = "Enabled", Tag = 1 });
+                    }
+                    else if (prop.Name == "ShadowQuality")
+                    {
+                        comboBox.Items.Add(new ComboBoxItem { Content = "Performance", Tag = 0 });
+                        comboBox.Items.Add(new ComboBoxItem { Content = "Quality", Tag = 1 });
+                    }
+                    else if (prop.Name == "RenderMode")
+                    {
+                        comboBox.Items.Add(new ComboBoxItem { Content = "Default", Tag = 0 });
+                        comboBox.Items.Add(new ComboBoxItem { Content = "SoftwareOnly", Tag = 1 });
+                    }
+                    else if (prop.Name == "EdgeMode")
+                    {
+                        comboBox.Items.Add(new ComboBoxItem { Content = "Unspecified", Tag = 0 });
+                        comboBox.Items.Add(new ComboBoxItem { Content = "Aliased", Tag = 1 });
+                    }
+
+                    comboBox.SelectedValuePath = "Tag";
+                    var binding = new Binding(prop.Name) { Source = _config, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
+                    comboBox.SetBinding(ComboBox.SelectedValueProperty, binding);
+                    panel.Children.Add(comboBox);
+                }
+                else if (prop.PropertyType == typeof(int) || prop.PropertyType == typeof(double) || prop.PropertyType == typeof(string))
                 {
                     var textBox = new TextBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
                     var binding = new Binding(prop.Name)

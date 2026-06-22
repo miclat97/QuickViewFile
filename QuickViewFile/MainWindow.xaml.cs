@@ -210,12 +210,22 @@ namespace QuickViewFile
             UpdateClipboardFiles();
         }
 
+        private IEnumerable<ItemList> GetSelectedOrCheckedItems()
+        {
+            var checkedItems = FilesListView.Items.Cast<ItemList>().Where(i => i.IsChecked).ToList();
+            if (checkedItems.Count > 0) return checkedItems;
+
+            var selectedItems = FilesListView.SelectedItems.Cast<ItemList>().ToList();
+            return selectedItems;
+        }
+
         private void UpdateClipboardFiles()
         {
-            if (FilesListView.SelectedItems.Count > 0)
+            var itemsToProcess = GetSelectedOrCheckedItems();
+            if (itemsToProcess.Any())
             {
                 _clipboardFiles.Clear();
-                foreach (ItemList item in FilesListView.SelectedItems)
+                foreach (ItemList item in itemsToProcess)
                 {
                     if (!item.IsDirectory && item.Name != "..")
                     {
@@ -235,26 +245,30 @@ namespace QuickViewFile
 
         private void DeleteFiles_Click(object sender, RoutedEventArgs e)
         {
-            if (FilesListView.SelectedItems.Count > 0 && DataContext is FilesListViewModel vm)
+            if (DataContext is FilesListViewModel vm)
             {
-                var result = MessageBox.Show($"Are you sure you want to delete {FilesListView.SelectedItems.Count} items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (result == MessageBoxResult.Yes)
+                var itemsToDelete = GetSelectedOrCheckedItems().ToList();
+                if (itemsToDelete.Count > 0)
                 {
-                    foreach (ItemList item in FilesListView.SelectedItems.Cast<ItemList>().ToList())
+                    var result = MessageBox.Show($"Are you sure you want to delete {itemsToDelete.Count} items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.Yes)
                     {
-                        if (!item.IsDirectory && item.Name != "..")
+                        foreach (ItemList item in itemsToDelete)
                         {
-                            try
+                            if (!item.IsDirectory && item.Name != "..")
                             {
-                                File.Delete(item.FullPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
+                                try
+                                {
+                                    File.Delete(item.FullPath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
+                                }
                             }
                         }
+                        vm.RefreshFiles();
                     }
-                    vm.RefreshFiles();
                 }
             }
         }
@@ -464,6 +478,50 @@ namespace QuickViewFile
                         {
                             degreesRotation = 0;
                             GridFileContent.LayoutTransform = new RotateTransform(0);
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+
+                    if (e.Key == Key.Space)
+                    {
+                        var focusedElement = System.Windows.Input.Keyboard.FocusedElement as ListViewItem;
+                        if (focusedElement == null)
+                        {
+                            // Fallback to selected item if focus is lost but something is selected
+                            if (FilesListView.SelectedItem != null)
+                            {
+                                focusedElement = FilesListView.ItemContainerGenerator.ContainerFromItem(FilesListView.SelectedItem) as ListViewItem;
+                            }
+                        }
+
+                        if (focusedElement != null)
+                        {
+                            var itemData = FilesListView.ItemContainerGenerator.ItemFromContainer(focusedElement) as QuickViewFile.Models.ItemList;
+                            if (itemData != null)
+                            {
+                                itemData.IsChecked = !itemData.IsChecked;
+
+                                int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
+                                int nextIndex = currentIndex + 1;
+
+                                if (nextIndex < FilesListView.Items.Count && nextIndex >= 0)
+                                {
+                                    // Make sure it also gets focus so next spacebar works without changing the selected item blindly
+                                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                    {
+                                        var nextContainer = FilesListView.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ListViewItem;
+                                        if (nextContainer != null)
+                                        {
+                                            nextContainer.Focus();
+                                            // Optional: if the user explicitly wants selection to follow spacebar, do it here safely,
+                                            // but since checkbox defines multi-select, keep the real selection independent or manage it carefully.
+                                            FilesListView.SelectedIndex = nextIndex;
+                                            FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                                        }
+                                    }), System.Windows.Threading.DispatcherPriority.Background);
+                                }
+                            }
                         }
                         e.Handled = true;
                         return;
