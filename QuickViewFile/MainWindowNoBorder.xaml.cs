@@ -1,5 +1,5 @@
 using QuickViewFile;
-﻿using QuickViewFile.Controls;
+using QuickViewFile.Controls;
 using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using QuickViewFile.ViewModel;
@@ -56,14 +56,6 @@ namespace QuickViewFile
                 InitializeComponent();
                 FilesListView.Focus();
 
-                if (_config.TransparentBackgroundInFullScreenMode == 0)
-                {
-                    MainGrid.ClearValue(Grid.BackgroundProperty);
-                }
-                else
-                {
-                    MainGrid.Background = Brushes.Transparent;
-                }
 
                 string[] args = Environment.GetCommandLineArgs();
 
@@ -129,15 +121,6 @@ namespace QuickViewFile
                 }
                 InitializeComponent();
                 FilesListView.Focus();
-
-                if (_config.TransparentBackgroundInFullScreenMode == 0)
-                {
-                    MainGrid.ClearValue(Grid.BackgroundProperty);
-                }
-                else
-                {
-                    MainGrid.Background = Brushes.Transparent;
-                }
 
                 string fileToSelectFullPath = pathNoBorder;
 

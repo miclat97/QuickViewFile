@@ -375,41 +375,76 @@ namespace QuickViewFile.ViewModel
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 return string.Empty;
 
+            Encoding encoding;
+            if (Config.Utf8InsteadOfASCIITextPreview == 1)
+            {
+                encoding = Encoding.GetEncoding(
+                    "utf-8",
+                    new EncoderReplacementFallback(""),
+                    new DecoderReplacementFallback("")
+                );
+            }
+            else // Latin1
+            {
+                encoding = Encoding.GetEncoding(
+                    "iso-8859-1",
+                    new EncoderReplacementFallback(""),
+                    new DecoderReplacementFallback("")
+                );
+            }
+
+            using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+            using StreamReader reader = new StreamReader(fileStream, encoding);
+
+            // When we use ArrayPool, GC will not be invokated, so we can do it much faster
+            char[] buffer = System.Buffers.ArrayPool<char>.Shared.Rent((int)maxChars);
+
             try
             {
-                using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true); // Async file stream
+                int totalCharsRead = 0;
+                int charsRead;
+
+                // asyncrhonious read to buffer chars
+                while (totalCharsRead < maxChars &&
+                       (charsRead = await reader.ReadAsync(buffer, totalCharsRead, (int)maxChars - totalCharsRead)) > 0)
                 {
-                    StreamReader reader; // Add encoding and buffer size
-
-                    if (Config.Utf8InsteadOfASCIITextPreview == 1)
-                    {
-                        reader = new StreamReader(fileStream, Encoding.UTF8);
-                    }
-                    else // Latin1
-                    {
-                        reader = new StreamReader(fileStream, Encoding.Latin1);
-                    }
-
-                    StringBuilder result = new StringBuilder();
-                    char[] buffer = new char[4096];
-                    int charsRead;
-
-                    while ((charsRead = await reader.ReadAsync(buffer, 0, Math.Min(buffer.Length, (int)maxChars - result.Length))) > 0 && result.Length < maxChars)
-                    {
-                        result.Append(buffer, 0, charsRead);
-                    }
-
-                    if (result.Length == maxChars)
-                    {
-                        result.AppendLine("\n[File truncated - too large to display completely]");
-                    }
-
-                    return result.ToString();
+                    totalCharsRead += charsRead;
                 }
+
+                bool isTruncated = (totalCharsRead == maxChars);
+
+                // count how mant valid chars is to read (to alocate memory efficienty)
+                int validCount = 0;
+                for (int i = 0; i < totalCharsRead; i++)
+                {
+                    if (FileTextExtractor.IsPrintable(buffer[i])) validCount++;
+                }
+
+                // build text from buffer with only valid chars
+                string result = string.Create(validCount, (buffer, totalCharsRead), (span, state) =>
+                {
+                    int index = 0;
+                    for (int i = 0; i < state.totalCharsRead; i++)
+                    {
+                        char c = state.buffer[i];
+                        if (FileTextExtractor.IsPrintable(c))
+                        {
+                            span[index++] = c;
+                        }
+                    }
+                });
+
+                if (isTruncated)
+                {
+                    result += "\n\n[File truncated - too large to display completely]";
+                }
+
+                return result;
             }
-            catch (Exception ex)
+            finally
             {
-                return ex.Message;
+                // Zwracamy bufor do puli pamięci, dzięki czemu kolejne podglądy plików użyją tej samej pamięci
+                System.Buffers.ArrayPool<char>.Shared.Return(buffer);
             }
         }
 
