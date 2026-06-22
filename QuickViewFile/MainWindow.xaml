@@ -106,7 +106,10 @@
                   ScrollViewer.CanContentScroll="True" >
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" Width="Auto" FocusManager.IsFocusScope="False">
+                        <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Name" Tag="Name" Click="ColumnHeader_Click"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}"
@@ -117,7 +120,10 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Size (KB)" Width="80" FocusManager.IsFocusScope="False">
+                        <GridViewColumn Width="80" FocusManager.IsFocusScope="False">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Size (KB)" Tag="Size" Click="ColumnHeader_Click"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Size}"
