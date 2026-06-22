@@ -45,7 +45,7 @@ namespace QuickViewFile.Models
         public string MusicExtensions { get; set; } = ".mp3,.wav,.aac,.flac,.ogg,.wma,.m4a";
         public string LiveStreamExtensions { get; set; } = ".m3u8,.m3u";
         [AllowedValues(new object[] { 0, 1 })]
-        public int Utf8InsteadOfASCIITextPreview { get; set; } = 0;
+        public int Utf8InsteadOfASCIITextPreview { get; set; } = 1;
         public int ShadowEffect { get; set; } = 0; // 0 - Disabled, 1 - Enabled
         public int ShadowQuality { get; set; } = 0; // 0 - Performance, 1 - Quality
         public int RenderMode { get; set; } = 0; // 0 - Default, 1 - SoftwareOnly
@@ -55,6 +55,6 @@ namespace QuickViewFile.Models
         public double ShadowOpacity { get; set; } = 0;
         public double ShadowBlur { get; set; } = 0;
         public double Volume { get; set; } = 1;
-        public int TransparentBackgroundInFullScreenMode { get; set; } = 0;
+        public int TransparentBackgroundInFullScreenMode { get; set; } = 1;
     }
 }
