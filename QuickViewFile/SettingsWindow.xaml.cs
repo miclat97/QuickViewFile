@@ -48,6 +48,20 @@ namespace QuickViewFile
                     comboBox.SetBinding(ComboBox.SelectedValueProperty, binding);
                     panel.Children.Add(comboBox);
                 }
+                else if (prop.Name == "BitmapScalingMode")
+                {
+                    var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Unspecified", Tag = "Unspecified" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Linear", Tag = "Linear" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "LowQuality", Tag = "LowQuality" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "Fant", Tag = "Fant" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "HighQuality", Tag = "HighQuality" });
+                    comboBox.Items.Add(new ComboBoxItem { Content = "NearestNeighbor", Tag = "NearestNeighbor" });
+                    comboBox.SelectedValuePath = "Tag";
+                    var binding = new Binding(prop.Name) { Source = _config, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
+                    comboBox.SetBinding(ComboBox.SelectedValueProperty, binding);
+                    panel.Children.Add(comboBox);
+                }
                 else if (prop.Name == "ShadowEffect" || prop.Name == "ShadowQuality" || prop.Name == "RenderMode" ||
                          prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "TransparentBackgroundInFullScreenMode")
                 {

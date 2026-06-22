@@ -11,15 +11,15 @@ namespace QuickViewFile.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        private bool _isSelected;
-        public bool IsSelected
+        private bool _isChecked;
+        public bool IsChecked
         {
-            get => _isSelected;
+            get => _isChecked;
             set
             {
-                if (_isSelected != value)
+                if (_isChecked != value)
                 {
-                    _isSelected = value;
+                    _isChecked = value;
                     OnPropertyChanged();
                 }
             }

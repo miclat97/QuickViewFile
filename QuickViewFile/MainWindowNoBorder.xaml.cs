@@ -228,12 +228,22 @@ namespace QuickViewFile
             UpdateClipboardFiles();
         }
 
+        private IEnumerable<ItemList> GetSelectedOrCheckedItems()
+        {
+            var checkedItems = FilesListView.Items.Cast<ItemList>().Where(i => i.IsChecked).ToList();
+            if (checkedItems.Count > 0) return checkedItems;
+
+            var selectedItems = FilesListView.SelectedItems.Cast<ItemList>().ToList();
+            return selectedItems;
+        }
+
         private void UpdateClipboardFiles()
         {
-            if (FilesListView.SelectedItems.Count > 0)
+            var itemsToProcess = GetSelectedOrCheckedItems();
+            if (itemsToProcess.Any())
             {
                 _clipboardFiles.Clear();
-                foreach (ItemList item in FilesListView.SelectedItems)
+                foreach (ItemList item in itemsToProcess)
                 {
                     if (!item.IsDirectory && item.Name != "..")
                     {
@@ -253,26 +263,30 @@ namespace QuickViewFile
 
         private void DeleteFiles_Click(object sender, RoutedEventArgs e)
         {
-            if (FilesListView.SelectedItems.Count > 0 && DataContext is FilesListViewModel vm)
+            if (DataContext is FilesListViewModel vm)
             {
-                var result = MessageBox.Show($"Are you sure you want to delete {FilesListView.SelectedItems.Count} items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (result == MessageBoxResult.Yes)
+                var itemsToDelete = GetSelectedOrCheckedItems().ToList();
+                if (itemsToDelete.Count > 0)
                 {
-                    foreach (ItemList item in FilesListView.SelectedItems.Cast<ItemList>().ToList())
+                    var result = MessageBox.Show($"Are you sure you want to delete {itemsToDelete.Count} items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.Yes)
                     {
-                        if (!item.IsDirectory && item.Name != "..")
+                        foreach (ItemList item in itemsToDelete)
                         {
-                            try
+                            if (!item.IsDirectory && item.Name != "..")
                             {
-                                File.Delete(item.FullPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
+                                try
+                                {
+                                    File.Delete(item.FullPath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
+                                }
                             }
                         }
+                        vm.RefreshFiles();
                     }
-                    vm.RefreshFiles();
                 }
             }
         }
@@ -501,26 +515,30 @@ namespace QuickViewFile
 
                         if (focusedElement != null)
                         {
-                            // Toggle selection without clearing the rest
-                            focusedElement.IsSelected = !focusedElement.IsSelected;
-
-                            int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
-                            int nextIndex = currentIndex + 1;
-
-                            if (nextIndex < FilesListView.Items.Count)
+                            var itemData = FilesListView.ItemContainerGenerator.ItemFromContainer(focusedElement) as QuickViewFile.Models.ItemList;
+                            if (itemData != null)
                             {
-                                var nextItem = FilesListView.Items[nextIndex];
-                                FilesListView.ScrollIntoView(nextItem);
+                                itemData.IsChecked = !itemData.IsChecked;
 
-                                // Delay focus slightly to ensure the container is generated
-                                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
+                                int nextIndex = currentIndex + 1;
+
+                                if (nextIndex < FilesListView.Items.Count && nextIndex >= 0)
                                 {
-                                    var nextContainer = FilesListView.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ListViewItem;
-                                    if (nextContainer != null)
+                                    // Make sure it also gets focus so next spacebar works without changing the selected item blindly
+                                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                     {
-                                        nextContainer.Focus();
-                                    }
-                                }), System.Windows.Threading.DispatcherPriority.Background);
+                                        var nextContainer = FilesListView.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ListViewItem;
+                                        if (nextContainer != null)
+                                        {
+                                            nextContainer.Focus();
+                                            // Optional: if the user explicitly wants selection to follow spacebar, do it here safely,
+                                            // but since checkbox defines multi-select, keep the real selection independent or manage it carefully.
+                                            FilesListView.SelectedIndex = nextIndex;
+                                            FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                                        }
+                                    }), System.Windows.Threading.DispatcherPriority.Background);
+                                }
                             }
                         }
                         e.Handled = true;
