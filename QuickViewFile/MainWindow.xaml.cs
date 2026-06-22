@@ -469,6 +469,46 @@ namespace QuickViewFile
                         return;
                     }
 
+                    if (e.Key == Key.Space)
+                    {
+                        var focusedElement = System.Windows.Input.Keyboard.FocusedElement as ListViewItem;
+                        if (focusedElement == null)
+                        {
+                            // Fallback to selected item if focus is lost but something is selected
+                            if (FilesListView.SelectedItem != null)
+                            {
+                                focusedElement = FilesListView.ItemContainerGenerator.ContainerFromItem(FilesListView.SelectedItem) as ListViewItem;
+                            }
+                        }
+
+                        if (focusedElement != null)
+                        {
+                            // Toggle selection without clearing the rest
+                            focusedElement.IsSelected = !focusedElement.IsSelected;
+
+                            int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
+                            int nextIndex = currentIndex + 1;
+
+                            if (nextIndex < FilesListView.Items.Count)
+                            {
+                                var nextItem = FilesListView.Items[nextIndex];
+                                FilesListView.ScrollIntoView(nextItem);
+
+                                // Delay focus slightly to ensure the container is generated
+                                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                {
+                                    var nextContainer = FilesListView.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ListViewItem;
+                                    if (nextContainer != null)
+                                    {
+                                        nextContainer.Focus();
+                                    }
+                                }), System.Windows.Threading.DispatcherPriority.Background);
+                            }
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+
                     if (e.Key >= Key.A && e.Key <= Key.Z)
                     {
                         char ASCIINumberWhichUserWantToSelect = e.Key.ToString()[0];
