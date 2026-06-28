@@ -61,7 +61,7 @@ namespace QuickViewFile
                 if (!String.IsNullOrWhiteSpace(args.ElementAtOrDefault(1)))
                 {
                     string fileToSelectFullPath = args.ElementAt(1);
-                    if (File.Exists(args[1]))
+                    if (File.Exists(fileToSelectFullPath))
                     {
                         vm = new FilesListViewModel(fileToSelectFullPath);
                         DataContext = vm;
