@@ -61,7 +61,7 @@ namespace QuickViewFile
                 if (!String.IsNullOrWhiteSpace(args.ElementAtOrDefault(1)))
                 {
                     string fileToSelectFullPath = args.ElementAt(1);
-                    if (File.Exists(fileToSelectFullPath))
+                    if (File.Exists(args[1]))
                     {
                         vm = new FilesListViewModel(fileToSelectFullPath);
                         DataContext = vm;
@@ -341,7 +341,7 @@ namespace QuickViewFile
             }
         }
 
-        // --- Column Sorting ---
+        //  Sorting
         private GridViewColumnHeader _lastHeaderClicked = null;
         private System.ComponentModel.ListSortDirection _lastDirection = System.ComponentModel.ListSortDirection.Ascending;
 

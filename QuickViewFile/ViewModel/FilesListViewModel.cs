@@ -130,17 +130,21 @@ namespace QuickViewFile.ViewModel
 
                 if (dirInfo.Parent != null)
                 {
-                    ActiveListItems.Add(new ItemList
+                    var parentDir = new ItemList
                     {
                         Name = "..",
                         Size = "",
                         FullPath = dirInfo.Parent.FullName,
                         IsDirectory = true,
                         FileContentModel = new FileContentModel()
-                    });
+                    };
+
+                    parentDir.PropertyChanged += ParentDir_PropertyChanged;
+
+                    ActiveListItems.Add(parentDir);
                 }
 
-                                foreach (DirectoryInfo folder in foldersInDirectory)
+                foreach (DirectoryInfo folder in foldersInDirectory)
                 {
                     ActiveListItems.Add(new ItemList
                     {
@@ -154,7 +158,7 @@ namespace QuickViewFile.ViewModel
                     });
                 }
 
-                                foreach (FileInfo file in filesInDirectory)
+                foreach (FileInfo file in filesInDirectory)
                 {
                     ActiveListItems.Add(new ItemList
                     {
@@ -216,12 +220,12 @@ namespace QuickViewFile.ViewModel
                     if (SelectedItem != null)
                     {
                         SelectedItem.FileContentModel = new FileContentModel
-                    {
-                        TextContent = "Loading...",
-                        ShowTextBox = false,
-                        VideoMedia = null,
-                        ImageSource = null
-                    };
+                        {
+                            TextContent = "Loading...",
+                            ShowTextBox = false,
+                            VideoMedia = null,
+                            ImageSource = null
+                        };
                     }
                     await LazyLoadFile(true);
                 });
@@ -451,5 +455,24 @@ namespace QuickViewFile.ViewModel
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private void ParentDir_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // 1. Sprawdzamy, czy powiadomienie dotyczy konkretnie właściwości "IsChecked" 
+            // (żeby nie reagować np. na zmianę nazwy)
+            if (e.PropertyName == nameof(ItemList.IsChecked) && sender is ItemList parentDir)
+            {
+                // 2. Jeśli IsChecked się zmieniło, przelatujemy przez wszystkie pliki na liście
+                foreach (var item in ActiveListItems)
+                {
+                    // 3. Omijamy foldery oraz sam element ".."
+                    if (!item.IsDirectory && item.Name != "..")
+                    {
+                        // 4. Ustawiamy status pliku na dokładnie taki sam, jaki ma element ".."
+                        item.IsChecked = parentDir.IsChecked;
+                    }
+                }
+            }
+        }
     }
 }

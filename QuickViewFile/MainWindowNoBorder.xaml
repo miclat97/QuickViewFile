@@ -112,7 +112,10 @@
                             <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Focusable="False" VerticalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                                                  IsEnabled="{Binding IsCheckBoxEnabled}"
+                                                  Focusable="False" 
+                                                  VerticalAlignment="Center"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>

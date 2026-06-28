@@ -484,17 +484,15 @@ namespace QuickViewFile
                         return;
                     }
 
-                    if (vm.SelectedItem?.FileContentModel.TextContent is not null && isTextFileOpen)
+
+                    if (e.Key == Key.Escape)
                     {
-                        if (e.Key == Key.Escape)
-                        {
-                            SearchTextBox.Text = string.Empty;
-                            SearchResultsCount.Text = string.Empty;
-                            _searchResults.Clear();
-                            _currentSearchIndex = -1;
-                            e.Handled = true;
-                            return;
-                        }
+                        SearchTextBox.Text = string.Empty;
+                        SearchResultsCount.Text = string.Empty;
+                        _searchResults.Clear();
+                        _currentSearchIndex = -1;
+                        e.Handled = true;
+                        return;
                     }
 
                     // Proceed with Global File Navigation
@@ -742,26 +740,23 @@ namespace QuickViewFile
 
         private void FileContentGrid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ClickCount == 2)
+            try
             {
-                try
+                if (DataContext is FilesListViewModel vm)
                 {
-                    if (DataContext is FilesListViewModel vm)
+                    if (_filesListViewVisible)
                     {
-                        if (_filesListViewVisible)
-                        {
-                            HideUI();
-                        }
-                        else
-                        {
-                            ShowUI();
-                        }
+                        HideUI();
+                    }
+                    else
+                    {
+                        ShowUI();
                     }
                 }
-                catch
-                {
+            }
+            catch
+            {
 
-                }
             }
         }
 

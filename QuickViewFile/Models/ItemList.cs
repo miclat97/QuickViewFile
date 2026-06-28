@@ -32,5 +32,6 @@ namespace QuickViewFile.Models
         public System.DateTime LastModified { get; set; }
         public string LastModifiedString { get; set; }
         public double SizeBytes { get; set; }
+        public bool IsCheckBoxEnabled => !IsDirectory || Name == "..";
     }
 }
