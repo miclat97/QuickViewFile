@@ -183,6 +183,12 @@ namespace QuickViewFile
                 GridFileContent.LayoutTransform = new System.Windows.Media.RotateTransform(0);
             }
         }
+
+        private void HideUIButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideUI();
+        }
+
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             SettingsWindow settingsWindow = new SettingsWindow();
@@ -520,29 +526,14 @@ namespace QuickViewFile
                         if (focusedElement != null)
                         {
                             var itemData = FilesListView.ItemContainerGenerator.ItemFromContainer(focusedElement) as QuickViewFile.Models.ItemList;
+
+                            //if(itemData)
+
                             if (itemData != null)
                             {
                                 itemData.IsChecked = !itemData.IsChecked;
 
                                 int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
-                                int nextIndex = currentIndex + 1;
-
-                                if (nextIndex < FilesListView.Items.Count && nextIndex >= 0)
-                                {
-                                    // Make sure it also gets focus so next spacebar works without changing the selected item blindly
-                                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                                    {
-                                        var nextContainer = FilesListView.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ListViewItem;
-                                        if (nextContainer != null)
-                                        {
-                                            nextContainer.Focus();
-                                            // Optional: if the user explicitly wants selection to follow spacebar, do it here safely,
-                                            // but since checkbox defines multi-select, keep the real selection independent or manage it carefully.
-                                            FilesListView.SelectedIndex = nextIndex;
-                                            FilesListView.ScrollIntoView(FilesListView.SelectedItem);
-                                        }
-                                    }), System.Windows.Threading.DispatcherPriority.Background);
-                                }
                             }
                         }
                         e.Handled = true;

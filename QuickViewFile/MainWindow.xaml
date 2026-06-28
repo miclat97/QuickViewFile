@@ -55,6 +55,7 @@
               TextWrapping="NoWrap" />
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Hide UI (F11 to show)" Name="HideUIButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="HideUIButton_Click" ToolTip="Right mouse button or F11 can do it"/>
                 <Button Content="Rotate" Name="RotateButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="RotateButton_Click" ToolTip="TIP: * can do this"/>
                 <Button Content="Full Screen" Name="FullScreenButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="FullScreenButton_Click" ToolTip="TIP: F4 can do this"/>
                 <Button Content="Settings" Name="SettingsButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="SettingsButton_Click" ToolTip="Open Settings"/>

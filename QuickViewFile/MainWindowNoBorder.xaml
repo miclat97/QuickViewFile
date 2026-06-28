@@ -55,12 +55,13 @@
               Padding="10,10,10,10"
               TextWrapping="NoWrap" />
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Hide UI (F11 to show)" Name="HideUIButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="HideUIButton_Click" ToolTip="Right mouse button or F11 can do it"/>
                 <Button Content="Rotate" Name="RotateButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="RotateButton_Click" ToolTip="TIP: * can do this"/>
                 <Button Content="Exit Full Screen" Name="ExitFullScreenButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="ExitFullScreenButton_Click" ToolTip="TIP: F4 can do this"/>
                 <Button Content="Settings" Name="SettingsButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="SettingsButton_Click" ToolTip="Open Settings"/>
                 <Button Content="Slideshow" Name="SlideshowButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="SlideshowButton_Click" ToolTip="Start Slideshow"/>
 
-            <Button Content="Save" Name="SaveButton" Height="24" Margin="0,8,10,8" Padding="15,0" Click="SaveButton_Click" Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <Button Content="Save" Name="SaveButton" Height="24" Margin="0,8,10,8" Padding="15,0" Click="SaveButton_Click" Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
             </StackPanel>
         </Grid>
 
@@ -86,7 +87,7 @@
                     <Button Content="Delete" Click="DeleteFiles_Click" Margin="2,0,0,0" Grid.Column="2" x:Name="DeleteButton"/>
                     <Button Content="Paste" Click="PasteFiles_Click" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PasteButton" Grid.Column="0" Grid.ColumnSpan="3"/>
                 </Grid>
-            <ListView Grid.Row="1"
+                <ListView Grid.Row="1"
                   x:Name="FilesListView"
                   Focusable="False"
                   IsTabStop="False"
@@ -106,61 +107,61 @@
                   IsManipulationEnabled="True"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   ScrollViewer.CanContentScroll="True" >
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Focusable="False" VerticalAlignment="Center"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
-                            <GridViewColumn.Header>
-                                <GridViewColumnHeader Content="Name" Tag="Name" Click="ColumnHeader_Click"/>
-                            </GridViewColumn.Header>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Name}"
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Focusable="False" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="Auto" FocusManager.IsFocusScope="False">
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Name" Tag="Name" Click="ColumnHeader_Click"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"
                                                FontSize="13"
                                                Focusable="False"
                                                VerticalAlignment="Center"
                                                FontWeight="Normal"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Width="80" FocusManager.IsFocusScope="False">
-                            <GridViewColumn.Header>
-                                <GridViewColumnHeader Content="Size (KB)" Tag="Size" Click="ColumnHeader_Click"/>
-                            </GridViewColumn.Header>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Size}"
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="80" FocusManager.IsFocusScope="False">
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Size (KB)" Tag="Size" Click="ColumnHeader_Click"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Size}"
                                                FontSize="13"
                                                Focusable="False"
                                                VerticalAlignment="Center"
                                                FontWeight="Normal"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
 
-                        <GridViewColumn Width="150" FocusManager.IsFocusScope="False">
-                            <GridViewColumn.Header>
-                                <GridViewColumnHeader Content="Last modification date" Tag="LastModified" Click="ColumnHeader_Click"/>
-                            </GridViewColumn.Header>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding LastModifiedString}"
+                            <GridViewColumn Width="150" FocusManager.IsFocusScope="False">
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Last modification date" Tag="LastModified" Click="ColumnHeader_Click"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LastModifiedString}"
                                                FontSize="13"
                                                Focusable="False"
                                                VerticalAlignment="Center"
                                                FontWeight="Normal"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
             </Grid>
             <GridSplitter Grid.Column="1"
                       Width="1"

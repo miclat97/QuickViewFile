@@ -160,6 +160,7 @@ namespace QuickViewFile
                 if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
                 {
                     vm.SelectedItem.FileContentModel.VideoMedia.StopForce();
+                    vm.SelectedItem.FileContentModel.VideoMedia.Dispose();
                 }
                 fullScreen.Show();
                 this.Close();
@@ -179,6 +180,12 @@ namespace QuickViewFile
                 GridFileContent.LayoutTransform = new System.Windows.Media.RotateTransform(0);
             }
         }
+        
+        private void HideUIButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideUI();
+        }
+
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             SettingsWindow settingsWindow = new SettingsWindow();
@@ -501,12 +508,27 @@ namespace QuickViewFile
                     if (e.Key == Key.Space)
                     {
                         var focusedElement = System.Windows.Input.Keyboard.FocusedElement as ListViewItem;
-                        var itemData = FilesListView.ItemContainerGenerator.ItemFromContainer(focusedElement) as QuickViewFile.Models.ItemList;
-                        if (itemData != null)
+                        if (focusedElement == null)
                         {
-                            itemData.IsChecked = !itemData.IsChecked;
+                            // Fallback to selected item if focus is lost but something is selected
+                            if (FilesListView.SelectedItem != null)
+                            {
+                                focusedElement = FilesListView.ItemContainerGenerator.ContainerFromItem(FilesListView.SelectedItem) as ListViewItem;
+                            }
+                        }
 
-                            int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
+                        if (focusedElement != null)
+                        {
+                            var itemData = FilesListView.ItemContainerGenerator.ItemFromContainer(focusedElement) as QuickViewFile.Models.ItemList;
+
+                            //if(itemData)
+
+                            if (itemData != null)
+                            {
+                                itemData.IsChecked = !itemData.IsChecked;
+
+                                int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
+                            }
                         }
                         e.Handled = true;
                         return;
