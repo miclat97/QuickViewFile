@@ -194,6 +194,27 @@ namespace QuickViewFile
                 }
             }
         }
+        private SlideshowHelper? _slideshowHelper;
+        private void SlideshowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_slideshowHelper != null)
+            {
+                _slideshowHelper.Stop();
+                _slideshowHelper = null;
+                SlideshowButton.Content = "Slideshow";
+                return;
+            }
+
+            SlideshowSettingsWindow settingsWindow = new SlideshowSettingsWindow();
+            settingsWindow.Owner = this;
+            if (settingsWindow.ShowDialog() == true)
+            {
+                // start slideshow
+                _slideshowHelper = new SlideshowHelper(this, settingsWindow.SelectedMode, settingsWindow.SlideDuration, settingsWindow.AnimDuration, settingsWindow.FadeOpacity, settingsWindow.IsFastQuality);
+                _slideshowHelper.Start();
+                SlideshowButton.Content = "Stop Slideshow";
+            }
+        }
         private enum FileOperation { None, Copy, Move }
         private FileOperation _currentOperation = FileOperation.None;
         private List<string> _clipboardFiles = new List<string>();
