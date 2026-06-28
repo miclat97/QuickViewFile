@@ -20,6 +20,7 @@
                 <ComboBoxItem Content="None"/>
                 <ComboBoxItem Content="Slide (Right to Left)"/>
                 <ComboBoxItem Content="Center"/>
+                <ComboBoxItem Content="InOut"/>
             </ComboBox>
         </StackPanel>
 

@@ -119,7 +119,7 @@ namespace QuickViewFile
             string currentMode = _mode;
             if (currentMode == "Fade in/out and Random")
             {
-                string[] modes = { "Slide (Right to Left)", "Center" };
+                string[] modes = { "Slide (Right to Left)", "Center", "InOut" };
                 currentMode = modes[_random.Next(modes.Length)];
             }
 
@@ -169,8 +169,28 @@ namespace QuickViewFile
                 DoubleAnimation translateAnim = new DoubleAnimation(startX, 0, TimeSpan.FromSeconds(_animDuration));
 
                 // Ease if not fast
-                if (!_fastQuality) {
+                if (!_fastQuality)
+                {
                     translateAnim.EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                }
+
+                translateTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, translateAnim);
+
+                // clear scale
+                scaleTransform.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, null);
+                scaleTransform.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, null);
+                scaleTransform.ScaleX = 1;
+                scaleTransform.ScaleY = 1;
+            }
+            else if (currentMode == "InOut")
+            {
+                double startX = _window.ActualWidth;
+                DoubleAnimation translateAnim = new DoubleAnimation(startX, 0, TimeSpan.FromSeconds(_animDuration));
+
+                // Ease if not fast
+                if (!_fastQuality)
+                {
+                    translateAnim.EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut };
                 }
 
                 translateTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, translateAnim);
