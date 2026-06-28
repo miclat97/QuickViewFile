@@ -1,5 +1,5 @@
 using QuickViewFile;
-﻿using QuickViewFile.Controls;
+using QuickViewFile.Controls;
 using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using QuickViewFile.ViewModel;
@@ -150,9 +150,6 @@ namespace QuickViewFile
                 }
             }
         }
-
-
-        // --- File Operations ---
 
 
         private void FullScreenButton_Click(object sender, RoutedEventArgs e)
@@ -421,7 +418,7 @@ namespace QuickViewFile
                         MainWindow fullScreen = new MainWindow(vm.SelectedItem.FullPath);
                         if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
                         {
-                            vm.SelectedItem.FileContentModel.VideoMedia.StopForce();
+                            vm.SelectedItem.FileContentModel.VideoMedia.Dispose();
                         }
                         fullScreen.Show();
                         this.Close();
@@ -456,17 +453,14 @@ namespace QuickViewFile
                         return;
                     }
 
-                    if (vm.SelectedItem?.FileContentModel.TextContent is not null && isTextFileOpen)
+                    if (e.Key == Key.Escape)
                     {
-                        if (e.Key == Key.Escape)
-                        {
-                            SearchTextBox.Text = string.Empty;
-                            SearchResultsCount.Text = string.Empty;
-                            _searchResults.Clear();
-                            _currentSearchIndex = -1;
-                            e.Handled = true;
-                            return;
-                        }
+                        SearchTextBox.Text = string.Empty;
+                        SearchResultsCount.Text = string.Empty;
+                        _searchResults.Clear();
+                        _currentSearchIndex = -1;
+                        e.Handled = true;
+                        return;
                     }
 
                     // Proceed with Global File Navigation
@@ -486,42 +480,12 @@ namespace QuickViewFile
                     if (e.Key == Key.Space)
                     {
                         var focusedElement = System.Windows.Input.Keyboard.FocusedElement as ListViewItem;
-                        if (focusedElement == null)
+                        var itemData = FilesListView.ItemContainerGenerator.ItemFromContainer(focusedElement) as QuickViewFile.Models.ItemList;
+                        if (itemData != null)
                         {
-                            // Fallback to selected item if focus is lost but something is selected
-                            if (FilesListView.SelectedItem != null)
-                            {
-                                focusedElement = FilesListView.ItemContainerGenerator.ContainerFromItem(FilesListView.SelectedItem) as ListViewItem;
-                            }
-                        }
+                            itemData.IsChecked = !itemData.IsChecked;
 
-                        if (focusedElement != null)
-                        {
-                            var itemData = FilesListView.ItemContainerGenerator.ItemFromContainer(focusedElement) as QuickViewFile.Models.ItemList;
-                            if (itemData != null)
-                            {
-                                itemData.IsChecked = !itemData.IsChecked;
-
-                                int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
-                                int nextIndex = currentIndex + 1;
-
-                                if (nextIndex < FilesListView.Items.Count && nextIndex >= 0)
-                                {
-                                    // Make sure it also gets focus so next spacebar works without changing the selected item blindly
-                                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                                    {
-                                        var nextContainer = FilesListView.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ListViewItem;
-                                        if (nextContainer != null)
-                                        {
-                                            nextContainer.Focus();
-                                            // Optional: if the user explicitly wants selection to follow spacebar, do it here safely,
-                                            // but since checkbox defines multi-select, keep the real selection independent or manage it carefully.
-                                            FilesListView.SelectedIndex = nextIndex;
-                                            FilesListView.ScrollIntoView(FilesListView.SelectedItem);
-                                        }
-                                    }), System.Windows.Threading.DispatcherPriority.Background);
-                                }
-                            }
+                            int currentIndex = FilesListView.ItemContainerGenerator.IndexFromContainer(focusedElement);
                         }
                         e.Handled = true;
                         return;
@@ -701,28 +665,28 @@ namespace QuickViewFile
 
         private void FileContentGrid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ClickCount == 2)
+            //if (e.ClickCount == 2)
+            //{
+            try
             {
-                try
+                if (DataContext is FilesListViewModel vm)
                 {
-                    if (DataContext is FilesListViewModel vm)
+                    if (_filesListViewVisible)
                     {
-                        if (_filesListViewVisible)
-                        {
-                            HideUI();
-                        }
-                        else
-                        {
-                            ShowUI();
-                        }
+                        HideUI();
+                    }
+                    else
+                    {
+                        ShowUI();
                     }
                 }
-                catch
-                {
+            }
+            catch
+            {
 
-                }
             }
         }
+        //}
 
         private void HideUI()
         {
