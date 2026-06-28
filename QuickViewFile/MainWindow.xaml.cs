@@ -79,11 +79,6 @@ namespace QuickViewFile
                 FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                 DataContext = vm;
             }
-            finally
-            {
-                FilesListView.IsSynchronizedWithCurrentItem = true;
-                FilesListView.ScrollIntoView(FilesListView.SelectedItem);
-            }
         }
 
         public MainWindow(string pathNoBorder)
@@ -130,11 +125,6 @@ namespace QuickViewFile
             {
                 FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                 DataContext = vm;
-            }
-            finally
-            {
-                FilesListView.IsSynchronizedWithCurrentItem = true;
-                FilesListView.ScrollIntoView(FilesListView.SelectedItem);
             }
         }
         private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory or force load file (using double click)
