@@ -186,7 +186,8 @@ namespace QuickViewFile.ViewModel
                                 IsDirectory = false,
                                 LastModified = file.LastWriteTime,
                                 LastModifiedString = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
-                                FileContentModel = new FileContentModel()
+                                FileContentModel = new FileContentModel(),
+                                IsAlternativeDataStream = true
                             });
                         }
                     }
@@ -511,7 +512,7 @@ namespace QuickViewFile.ViewModel
                 foreach (var item in ActiveListItems)
                 {
                     // 3. Omijamy foldery oraz sam element ".."
-                    if (!item.IsDirectory && item.Name != "..")
+                    if (item.Name != "..")
                     {
                         // 4. Ustawiamy status pliku na dokładnie taki sam, jaki ma element ".."
                         item.IsChecked = parentDir.IsChecked;

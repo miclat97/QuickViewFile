@@ -170,7 +170,7 @@ namespace QuickViewFile
                 GridFileContent.LayoutTransform = new System.Windows.Media.RotateTransform(0);
             }
         }
-        
+
         private void HideUIButton_Click(object sender, RoutedEventArgs e)
         {
             HideUI();
@@ -234,6 +234,8 @@ namespace QuickViewFile
             return selectedItems;
         }
 
+        // Zamień metody UpdateClipboardFiles i PasteFiles_Click na:
+
         private void UpdateClipboardFiles()
         {
             var itemsToProcess = GetSelectedOrCheckedItems();
@@ -242,7 +244,8 @@ namespace QuickViewFile
                 _clipboardFiles.Clear();
                 foreach (ItemList item in itemsToProcess)
                 {
-                    if (!item.IsDirectory && item.Name != "..")
+                    // Dodaj zarówno foldery jak i pliki, ale wyklucz ".." i ADS
+                    if (item.Name != ".." && !item.IsAlternativeDataStream)
                     {
                         _clipboardFiles.Add(item.FullPath);
                     }
@@ -253,7 +256,36 @@ namespace QuickViewFile
                     CopyButton.Visibility = Visibility.Collapsed;
                     DeleteButton.Visibility = Visibility.Collapsed;
                     PasteButton.Visibility = Visibility.Visible;
-                    PasteButton.Content = $"Paste ({_clipboardFiles.Count} files)";
+
+                    // Policz pliki i foldery (bezpieczna iteracja bez wyjątków dla nieistniejących ścieżek)
+                    int fileCount = 0;
+                    int folderCount = 0;
+
+                    foreach (var path in _clipboardFiles)
+                    {
+                        try
+                        {
+                            if (Directory.Exists(path))
+                                folderCount++;
+                            else if (File.Exists(path))
+                                fileCount++;
+                        }
+                        catch
+                        {
+                            // Bezpiecznie ignoruj błędy dostępu
+                            fileCount++;
+                        }
+                    }
+
+                    string itemsLabel = "";
+                    if (fileCount > 0 && folderCount > 0)
+                        itemsLabel = $"Paste ({folderCount} folders, {fileCount} files)";
+                    else if (folderCount > 0)
+                        itemsLabel = $"Paste ({folderCount} folders)";
+                    else
+                        itemsLabel = $"Paste ({fileCount} files)";
+
+                    PasteButton.Content = itemsLabel;
                 }
             }
         }
@@ -265,21 +297,36 @@ namespace QuickViewFile
                 var itemsToDelete = GetSelectedOrCheckedItems().ToList();
                 if (itemsToDelete.Count > 0)
                 {
-                    var result = MessageBox.Show($"Are you sure you want to delete {itemsToDelete.Count} items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    // Filtruj - wyklucz ADS i ".."
+                    var validItems = itemsToDelete.Where(x => x.Name != ".." && !x.IsAlternativeDataStream).ToList();
+
+                    if (validItems.Count == 0)
+                        return;
+
+                    var result = MessageBox.Show(
+                        $"Are you sure you want to delete {validItems.Count} items?",
+                        "Confirm Delete",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
                     if (result == MessageBoxResult.Yes)
                     {
-                        foreach (ItemList item in itemsToDelete)
+                        foreach (ItemList item in validItems)
                         {
-                            if (!item.IsDirectory && item.Name != "..")
+                            try
                             {
-                                try
+                                if (item.IsDirectory)
+                                {
+                                    DirectoryOperationHelper.DeleteDirectoryRecursive(item.FullPath);
+                                }
+                                else
                                 {
                                     File.Delete(item.FullPath);
                                 }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
-                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
                             }
                         }
                         vm.RefreshFiles();
@@ -293,28 +340,87 @@ namespace QuickViewFile
             if (_clipboardFiles.Count > 0 && DataContext is FilesListViewModel vm)
             {
                 string targetDir = vm.FolderPath;
-                foreach (string file in _clipboardFiles)
+                int successCount = 0;
+                var failedItems = new List<string>();
+
+                foreach (string itemPath in _clipboardFiles)
                 {
                     try
                     {
-                        string fileName = Path.GetFileName(file);
-                        string destFile = Path.Combine(targetDir, fileName);
+                        // Sprawdzenie czy element istnieje
+                        if (!File.Exists(itemPath) && !Directory.Exists(itemPath))
+                        {
+                            failedItems.Add($"'{Path.GetFileName(itemPath)}' - source not found");
+                            continue;
+                        }
 
+                        bool isDirectory = Directory.Exists(itemPath);
+                        string itemName = Path.GetFileName(itemPath.TrimEnd(Path.DirectorySeparatorChar));
+                        string destPath = Path.Combine(targetDir, itemName);
+
+                        // Obsługuj konflikty - jeśli cel już istnieje
+                        if (File.Exists(destPath) || Directory.Exists(destPath))
+                        {
+                            var result = MessageBox.Show(
+                                $"'{itemName}' already exists. Overwrite?",
+                                "File Exists",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Question);
+
+                            if (result != MessageBoxResult.Yes)
+                                continue;
+
+                            // Usuń istniejący plik/folder
+                            try
+                            {
+                                if (File.Exists(destPath))
+                                    File.Delete(destPath);
+                                else if (Directory.Exists(destPath))
+                                    DirectoryOperationHelper.DeleteDirectoryRecursive(destPath);
+                            }
+                            catch (Exception ex)
+                            {
+                                failedItems.Add($"'{itemName}' - failed to remove existing: {ex.Message}");
+                                continue;
+                            }
+                        }
+
+                        // Wykonaj operację Copy/Move z zachowaniem struktury
                         if (_currentOperation == FileOperation.Copy)
                         {
-                            File.Copy(file, destFile, true);
+                            if (isDirectory)
+                            {
+                                // Kopiuj folder z całą strukturą (bez ADS)
+                                // destPath zawiera już pełną ścieżkę z nazwą folderu
+                                DirectoryOperationHelper.CopyDirectoryRecursive(itemPath, destPath, excludeAds: true);
+                            }
+                            else
+                            {
+                                // Kopiuj plik bezpiecznie (bez ADS)
+                                DirectoryOperationHelper.CopyFileSafe(itemPath, destPath);
+                            }
                         }
                         else if (_currentOperation == FileOperation.Move)
                         {
-                            if (file != destFile)
+                            if (isDirectory)
                             {
-                                File.Move(file, destFile);
+                                // Przenieś folder z całą strukturą (bez ADS)
+                                // destPath zawiera już pełną ścieżkę z nazwą folderu
+                                DirectoryOperationHelper.MoveDirectoryRecursive(itemPath, destPath, excludeAds: true);
+                            }
+                            else
+                            {
+                                // Przenieś plik bezpiecznie (bez ADS)
+                                if (itemPath != destPath)
+                                    DirectoryOperationHelper.MoveFile(itemPath, destPath);
                             }
                         }
+
+                        successCount++;
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Operation failed for {file}: {ex.Message}");
+                        failedItems.Add($"'{Path.GetFileName(itemPath)}' - {ex.Message}");
                     }
                 }
 
@@ -326,7 +432,22 @@ namespace QuickViewFile
                     MoveButton.Visibility = Visibility.Visible;
                     CopyButton.Visibility = Visibility.Visible;
                     DeleteButton.Visibility = Visibility.Visible;
+
+                    // Pokaż rezultat
+                    string message = $"Operation completed: {successCount} items processed";
+                    if (failedItems.Count > 0)
+                    {
+                        message += $", {failedItems.Count} failed:\n" + string.Join("\n", failedItems.Take(5));
+                        if (failedItems.Count > 5)
+                            message += $"\n... and {failedItems.Count - 5} more";
+                        MessageBox.Show(message, "Operation Result", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else if (successCount > 0)
+                    {
+                        MessageBox.Show(message, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                 }
+
                 vm.RefreshFiles();
             }
         }
@@ -436,6 +557,7 @@ namespace QuickViewFile
                         MainWindow fullScreen = new MainWindow(vm.SelectedItem.FullPath);
                         if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
                         {
+                            vm.SelectedItem.FileContentModel.VideoMedia.StopForce();
                             vm.SelectedItem.FileContentModel.VideoMedia.Dispose();
                         }
                         fullScreen.Show();
@@ -805,6 +927,13 @@ namespace QuickViewFile
             {
                 FindNext_Click(sender, null);
                 e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                SearchTextBox.Text = string.Empty;
+                SearchResultsCount.Text = string.Empty;
+                _searchResults.Clear();
+                _currentSearchIndex = -1;
             }
         }
 
