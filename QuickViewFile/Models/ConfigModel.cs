@@ -51,6 +51,7 @@ namespace QuickViewFile.Models
         public int RenderMode { get; set; } = 0; // 0 - Default, 1 - SoftwareOnly
         public int EdgeMode { get; set; } = 0; // 0 - Unspecified, 1 - Aliased
         public int ThemeMode { get; set; } = 0; // 0 - System, 1 - Light, 2 - Dark
+        public int ShowAlternateDataStreams { get; set; } = 1; // 0 - Disabled, 1 - Enabled
         public double ShadowDepth { get; set; } = 0;
         public double ShadowOpacity { get; set; } = 0;
         public double ShadowBlur { get; set; } = 0;

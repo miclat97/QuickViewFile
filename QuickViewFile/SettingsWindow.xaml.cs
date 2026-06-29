@@ -63,11 +63,11 @@ namespace QuickViewFile
                     panel.Children.Add(comboBox);
                 }
                 else if (prop.Name == "ShadowEffect" || prop.Name == "ShadowQuality" || prop.Name == "RenderMode" ||
-                         prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview")
+                         prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShowAlternateDataStreams")
                 {
                     var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
 
-                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShadowEffect")
+                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShadowEffect" || prop.Name == "ShowAlternateDataStreams")
                     {
                         comboBox.Items.Add(new ComboBoxItem { Content = "Disabled", Tag = 0 });
                         comboBox.Items.Add(new ComboBoxItem { Content = "Enabled", Tag = 1 });
@@ -144,6 +144,7 @@ namespace QuickViewFile
             ConfigHelper.loadedConfig.RenderMode = _config.RenderMode;
             ConfigHelper.loadedConfig.EdgeMode = _config.EdgeMode;
             ConfigHelper.loadedConfig.ThemeMode = _config.ThemeMode;
+            ConfigHelper.loadedConfig.ShowAlternateDataStreams = _config.ShowAlternateDataStreams;
             ConfigHelper.loadedConfig.ShadowDepth = _config.ShadowDepth;
             ConfigHelper.loadedConfig.ShadowOpacity = _config.ShadowOpacity;
             ConfigHelper.loadedConfig.ShadowBlur = _config.ShadowBlur;

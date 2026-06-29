@@ -171,6 +171,25 @@ namespace QuickViewFile.ViewModel
                         LastModifiedString = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
                         FileContentModel = new FileContentModel()
                     });
+
+                    if (Config.ShowAlternateDataStreams == 1)
+                    {
+                        var streams = AdsHelper.GetAlternateDataStreams(file.FullName);
+                        foreach (var stream in streams)
+                        {
+                            ActiveListItems.Add(new ItemList
+                            {
+                                Name = $"{file.Name}:{stream.Name}",
+                                Size = Math.Round((stream.Size / 1024.0), MidpointRounding.ToPositiveInfinity).ToString(),
+                                SizeBytes = stream.Size,
+                                FullPath = $"{file.FullName}:{stream.Name}",
+                                IsDirectory = false,
+                                LastModified = file.LastWriteTime,
+                                LastModifiedString = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
+                                FileContentModel = new FileContentModel()
+                            });
+                        }
+                    }
                 }
 
                 try
@@ -243,14 +262,28 @@ namespace QuickViewFile.ViewModel
                 return;
 
             string filePath = SelectedItem.FullPath;
-            string ext = Path.GetExtension(filePath).ToLowerInvariant();
+            string extensionPath = filePath;
+
+            string fileName = Path.GetFileName(filePath);
+            bool isAds = false;
+            if (fileName != null && fileName.Contains(':'))
+            {
+                int colonIndex = extensionPath.LastIndexOf(':');
+                if (colonIndex > 3) // More than drive letter like C:\
+                {
+                    extensionPath = extensionPath.Substring(0, colonIndex);
+                    isAds = true;
+                }
+            }
+
+            string ext = Path.GetExtension(extensionPath).ToLowerInvariant();
 
             FileTypeEnum fileType = FileTypeEnum.Text;
             var imageExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.ImageExtensions);
             var musicExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.MusicExtensions);
             var videoExtension = ConfigHelper.GetStringsFromCommaSeparatedString(Config.VideoExtensions);
             var liveStreamExtensions = ConfigHelper.GetStringsFromCommaSeparatedString(Config.LiveStreamExtensions);
-            if (ext != null)
+            if (ext != null && !isAds) // Default to Text for ADS because many video/image formats cannot be streamed directly from ADS
             {
                 if (liveStreamExtensions.Contains(ext))
                 {
