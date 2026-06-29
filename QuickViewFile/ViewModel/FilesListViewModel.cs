@@ -351,23 +351,35 @@ namespace QuickViewFile.ViewModel
             }
             else
             {
-                if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
+                try
                 {
-                    string loadedFileText = await _ReadTextFileAsync(filePath, Config.CharsToPreview);
-                    Application.Current.Dispatcher.Invoke(() =>
+                    if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
                     {
-                        SelectedItem.FileContentModel.TextContent = loadedFileText;
-                        SelectedItem.FileContentModel.ImageSource = null;
-                        SelectedItem.FileContentModel.IsLoaded = true;
+                        string loadedFileText = await _ReadTextFileAsync(filePath, Config.CharsToPreview);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            SelectedItem.FileContentModel.TextContent = loadedFileText;
+                            SelectedItem.FileContentModel.ImageSource = null;
+                            SelectedItem.FileContentModel.IsLoaded = true;
+                            SelectedItem.FileContentModel.ShowTextBox = true;
+                        });
+                    }
+                    else
+                    {
+                        SelectedItem.FileContentModel.TextContent = $"File size has more than {Config.MaxSizePreviewKB} KiB, press ENTER to force load it";
                         SelectedItem.FileContentModel.ShowTextBox = true;
-                    });
+                        SelectedItem.FileContentModel.ImageSource = null;
+                        SelectedItem.FileContentModel.VideoMedia = null;
+                        SelectedItem.FileContentModel.IsLoaded = false;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    SelectedItem.FileContentModel.TextContent = $"File size has more than {Config.MaxSizePreviewKB} KiB, press ENTER to force load it";
+
+                    SelectedItem.FileContentModel.TextContent = ex.Message;
+                    SelectedItem.FileContentModel.VideoMedia = null;
                     SelectedItem.FileContentModel.ShowTextBox = true;
                     SelectedItem.FileContentModel.ImageSource = null;
-                    SelectedItem.FileContentModel.VideoMedia = null;
                     SelectedItem.FileContentModel.IsLoaded = false;
                 }
             }
