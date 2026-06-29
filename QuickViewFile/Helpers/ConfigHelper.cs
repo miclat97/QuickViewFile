@@ -47,6 +47,7 @@ namespace QuickViewFile.Helpers
                 key.SetValue(nameof(ConfigModel.ShadowEffect), config.ShadowEffect);
                 key.SetValue(nameof(ConfigModel.ThemeMode), config.ThemeMode);
                 key.SetValue(nameof(ConfigModel.ShadowQuality), config.ShadowQuality);
+                key.SetValue(nameof(ConfigModel.ShowAlternateDataStreams), config.ShowAlternateDataStreams);
                 key.SetValue(nameof(ConfigModel.ShadowDepth), config.ShadowDepth);
                 key.SetValue(nameof(ConfigModel.ShadowOpacity), config.ShadowOpacity);
                 key.SetValue(nameof(ConfigModel.ShadowBlur), config.ShadowBlur);
@@ -96,6 +97,7 @@ namespace QuickViewFile.Helpers
                     config.ShadowEffect = (int)key.GetValue(nameof(ConfigModel.ShadowEffect), config.ShadowEffect);
                     config.ShadowQuality = (int)key.GetValue(nameof(ConfigModel.ShadowQuality), config.ShadowQuality);
                     config.ThemeMode = (int)key.GetValue(nameof(ConfigModel.ThemeMode), config.ThemeMode);
+                    config.ShowAlternateDataStreams = (int)key.GetValue(nameof(ConfigModel.ShowAlternateDataStreams), config.ShowAlternateDataStreams);
                     config.Utf8InsteadOfASCIITextPreview = (int)key.GetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
                     config.ShadowDepth = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowDepth).ToString(), config.ShadowDepth));
                     config.ShadowOpacity = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowOpacity).ToString(), config.ShadowOpacity));
