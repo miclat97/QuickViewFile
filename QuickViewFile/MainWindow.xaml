@@ -18,6 +18,8 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <helpers:BoolToColumnSpanConverter x:Key="BoolToColumnSpanConverter"/>
         <helpers:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
         <helpers:ScrollBarsVisibilityConverter x:Key="ScrollBarsVisibilityConverter"/>
         <Style TargetType="ListViewItem">
@@ -55,7 +57,7 @@
               Padding="10,10,10,10"
               TextWrapping="NoWrap" />
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding IsThumbnailMode, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                 <Button Content="Hide UI (F11 to show)" Name="HideUIButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="HideUIButton_Click" ToolTip="Right mouse button or F11 can do it"/>
                 <Button Content="Rotate" Name="RotateButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="RotateButton_Click" ToolTip="TIP: * can do this"/>
                 <Button Content="Full Screen" Name="FullScreenButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="FullScreenButton_Click" ToolTip="TIP: F4 can do this"/>
@@ -78,7 +80,9 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0" Margin="10">
+
+            <Grid Grid.Column="0" Margin="10"
+                  Grid.ColumnSpan="{Binding IsThumbnailMode, Converter={StaticResource BoolToColumnSpanConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -88,14 +92,19 @@
                         <ColumnDefinition Width="*" x:Name="ColMove"/>
                         <ColumnDefinition Width="*" x:Name="ColCopy"/>
                         <ColumnDefinition Width="*" x:Name="ColDelete"/>
+                        <ColumnDefinition Width="*" x:Name="ColThumbnails"/>
                     </Grid.ColumnDefinitions>
                     <Button Content="Move" Click="MoveFiles_Click" Margin="0,0,2,0" Grid.Column="0" x:Name="MoveButton"/>
                     <Button Content="Copy" Click="CopyFiles_Click" Margin="2,0,2,0" Grid.Column="1" x:Name="CopyButton"/>
                     <Button Content="Delete" Click="DeleteFiles_Click" Margin="2,0,0,0" Grid.Column="2" x:Name="DeleteButton"/>
                     <Button Content="Paste" Click="PasteFiles_Click" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PasteButton" Grid.Column="0" Grid.ColumnSpan="3"/>
+
+                    <Button Content="Thumbnails Mode" Click="ToggleThumbnailMode_Click" Margin="2,0,0,0" Visibility="{Binding IsThumbnailMode, Converter={StaticResource InverseBoolToVisibilityConverter}}" Grid.Column="3" x:Name="ThumbnailsModeButton"/>
+                    <Button Content="List Mode" Click="ToggleThumbnailMode_Click" Margin="2,0,0,0" Visibility="{Binding IsThumbnailMode, Converter={StaticResource BoolToVisibilityConverter}}" Grid.Column="3" x:Name="ListModeButton"/>
                 </Grid>
             <ListView Grid.Row="1"
                   x:Name="FilesListView"
+                  Visibility="{Binding IsThumbnailMode, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                   Focusable="False"
                   IsTabStop="False"
                   SelectionMode="Extended"
@@ -172,15 +181,88 @@
                     </GridView>
                 </ListView.View>
             </ListView>
+                <ListView Grid.Row="1"
+                      x:Name="ThumbnailsListView"
+                      Visibility="{Binding IsThumbnailMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                      Focusable="False"
+                      IsTabStop="False"
+                      SelectionMode="Extended"
+                      SelectionChanged="FilesListView_SelectionChanged"
+                      ItemsSource="{Binding ActiveListItems}"
+                      SelectedItem="{Binding SelectedItem}"
+                      MouseDoubleClick="FilesListView_MouseDoubleClick"
+                      Margin="0"
+                      KeyDown="FilesListView_KeyDown"
+                      ClipToBounds="True"
+                      Width="Auto"
+                      FocusManager.IsFocusScope="False"
+                      ScrollViewer.PanningMode="VerticalFirst"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" IsItemsHost="True" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Margin="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Image Source="{Binding ThumbnailImageSource}"
+                                           Stretch="Uniform"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                           Visibility="{Binding ThumbnailImageSource, Converter={StaticResource NullToCollapsedConverter}}"/>
+
+                                    <MediaElement Source="{Binding ThumbnailVideoSource}"
+                                                  LoadedBehavior="Pause"
+                                                  ScrubbingEnabled="True"
+                                                  Position="0"
+                                                  Stretch="Uniform"
+                                                  RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                  Visibility="{Binding IsVideoThumbnail, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                    <TextBlock Text="{Binding ThumbnailTextPreview}"
+                                               TextWrapping="Wrap"
+                                               Margin="5"
+                                               FontSize="{Binding DataContext.Config.FontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                               Visibility="{Binding ThumbnailTextPreview, Converter={StaticResource NullToCollapsedConverter}}"/>
+                                </Grid>
+
+                                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                          IsEnabled="{Binding IsCheckBoxEnabled}"
+                                          Focusable="False"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Top"
+                                          Margin="2"/>
+
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding Name}"
+                                           TextTrimming="CharacterEllipsis"
+                                           TextAlignment="Center"
+                                           FontSize="{Binding DataContext.ThumbnailFontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                           Margin="2,5,2,0"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
             <GridSplitter Grid.Column="1"
                       Width="1"
                       UseLayoutRounding="True"
                       Margin="5,5,5,5"
                       x:Name="MainWindowGridSplitter"
+                      Visibility="{Binding IsThumbnailMode, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                       Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                       HorizontalContentAlignment="Center" Focusable="False"/>
             <Border x:Name="ContentBorder"
+                    Visibility="{Binding IsThumbnailMode, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                     Grid.Column="2"
                     BorderThickness="0"
                     Margin="0"
@@ -230,7 +312,7 @@
                         </Grid>
 
 
-                        <Grid Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="GridSearchBox">
+                        <Grid Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="GridSearchBox" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>

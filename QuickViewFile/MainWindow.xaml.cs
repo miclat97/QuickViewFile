@@ -144,13 +144,14 @@ namespace QuickViewFile
 
         private void FullScreenButton_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FullPath is not null)
+            if (DataContext is FilesListViewModel dvm && dvm.IsThumbnailMode) return;
+            if (DataContext is FilesListViewModel vm2 && vm2.SelectedItem?.FullPath is not null)
             {
-                MainWindowNoBorder fullScreen = new MainWindowNoBorder(vm.SelectedItem.FullPath);
-                if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
+                MainWindowNoBorder fullScreen = new MainWindowNoBorder(vm2.SelectedItem.FullPath);
+                if (vm2.SelectedItem.FileContentModel.VideoMedia is not null)
                 {
-                    vm.SelectedItem.FileContentModel.VideoMedia.StopForce();
-                    vm.SelectedItem.FileContentModel.VideoMedia.Dispose();
+                    vm2.SelectedItem.FileContentModel.VideoMedia.StopForce();
+                    vm2.SelectedItem.FileContentModel.VideoMedia.Dispose();
                 }
                 fullScreen.Show();
                 this.Close();
@@ -212,6 +213,14 @@ namespace QuickViewFile
         private enum FileOperation { None, Copy, Move }
         private FileOperation _currentOperation = FileOperation.None;
         private List<string> _clipboardFiles = new List<string>();
+
+        private void ToggleThumbnailMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel viewmodel)
+            {
+                viewmodel.ToggleThumbnailMode();
+            }
+        }
 
         private void MoveFiles_Click(object sender, RoutedEventArgs e)
         {
@@ -542,18 +551,40 @@ namespace QuickViewFile
         {
             try
             {
-                if (e.Key == Key.F11)
-                {
-                    if (_filesListViewVisible) HideUI();
-                    else ShowUI();
-                    e.Handled = true;
-                    return;
-                }
-
                 if (DataContext is FilesListViewModel vm)
                 {
+                    if (vm.IsThumbnailMode && (e.Key == Key.Add || e.Key == Key.OemPlus))
+                    {
+                        vm.ThumbnailSize += 20;
+                        vm.ThumbnailFontSize += 2;
+                        if (vm.ThumbnailSize > 800) vm.ThumbnailSize = 800;
+                        if (vm.ThumbnailFontSize > 40) vm.ThumbnailFontSize = 40;
+                        e.Handled = true;
+                        return;
+                    }
+                    if (vm.IsThumbnailMode && (e.Key == Key.Subtract || e.Key == Key.OemMinus))
+                    {
+                        vm.ThumbnailSize -= 20;
+                        vm.ThumbnailFontSize -= 2;
+                        if (vm.ThumbnailSize < 50) vm.ThumbnailSize = 50;
+                        if (vm.ThumbnailFontSize < 8) vm.ThumbnailFontSize = 8;
+                        e.Handled = true;
+                        return;
+                    }
+
+                    if (e.Key == Key.F11)
+                    {
+                        if (vm.IsThumbnailMode) return;
+
+                        if (_filesListViewVisible) HideUI();
+                        else ShowUI();
+                        e.Handled = true;
+                        return;
+                    }
+
                     if (e.Key == Key.F4 && vm.SelectedItem?.FullPath is not null)
                     {
+                        if (vm.IsThumbnailMode) return;
                         MainWindowNoBorder fullScreen = new MainWindowNoBorder(vm.SelectedItem.FullPath);
                         if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
                         {
