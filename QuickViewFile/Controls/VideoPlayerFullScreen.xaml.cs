@@ -175,6 +175,7 @@ namespace QuickViewFile.Controls
             {
                 if (disposing)
                 {
+                    videoFullScreenPlayer.Source = null;
                     videoFullScreenPlayer.Stop();
                     mediaPlayerIsPlaying = false;
                     videoFullScreenPlayer.Close();
@@ -202,11 +203,7 @@ namespace QuickViewFile.Controls
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape)
-            {
-                Dispose();
-                Close();
-            }
+            
         }
     }
 }

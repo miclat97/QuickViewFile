@@ -11,7 +11,8 @@
         WindowState="Maximized"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown"
+        PreviewMouseLeftButtonUp="Window_PreviewMouseLeftButtonUp"
         ResizeMode="CanResize"
         KeyDown="AppWindow_KeyDown"
         Title="QuickViewFile" Height="720" Width="1280">
@@ -176,7 +177,8 @@
             <Border x:Name="ContentBorder"
                     Grid.Column="2"
                     BorderThickness="0"
-                    Margin="0">
+                    Margin="0"
+                    ClipToBounds="True">
                 <Grid
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
