@@ -132,7 +132,8 @@ namespace QuickViewFile.Controls
 
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            lastDragPoint = e.GetPosition(this);
+            var parent = VisualTreeHelper.GetParent(this) as UIElement;
+            lastDragPoint = e.GetPosition(parent ?? this);
             Mouse.SetCursor(Cursors.Hand);
             Mouse.OverrideCursor = Cursors.Hand;
             Mouse.UpdateCursor();
@@ -151,16 +152,9 @@ namespace QuickViewFile.Controls
         {
             if (lastDragPoint.HasValue && IsMouseCaptured)
             {
-                double multiplier;
-                if (currentScale > 4)
-                    multiplier = 4.0;
-                else if (currentScale > 1.0)
-                    multiplier = Math.Round(currentScale, 1);
-                else
-                    multiplier = 1.0;
-
-                Point currentPoint = e.GetPosition(this);
-                Vector delta = Point.Subtract(currentPoint, lastDragPoint.Value) * multiplier;
+                var parent = VisualTreeHelper.GetParent(this) as UIElement;
+                Point currentPoint = e.GetPosition(parent ?? this);
+                Vector delta = Point.Subtract(currentPoint, lastDragPoint.Value);
 
                 translateTransform.X += delta.X;
                 translateTransform.Y += delta.Y;
@@ -214,26 +208,27 @@ namespace QuickViewFile.Controls
             if (newScale < _config.MinScale) newScale = _config.MinScale;
             if (newScale > _config.MaxScale) newScale = _config.MaxScale;
 
-            if (Math.Abs(newScale - currentScale) < 0.001) return;
+            if (Math.Abs(newScale - currentScale) >= 0.001)
+            {
+                Point center = e.ManipulationOrigin;
 
-            Point center = e.ManipulationOrigin;
+                // Position relative to center of control
+                Point relativeCenter = new Point(
+                    center.X - (ActualWidth / 2),
+                    center.Y - (ActualHeight / 2));
 
-            // Position relative to center of control
-            Point relativeCenter = new Point(
-                center.X - (ActualWidth / 2),
-                center.Y - (ActualHeight / 2));
+                double oldTranslateX = translateTransform.X;
+                double oldTranslateY = translateTransform.Y;
+                double oldScale = currentScale;
 
-            double oldTranslateX = translateTransform.X;
-            double oldTranslateY = translateTransform.Y;
-            double oldScale = currentScale;
+                currentScale = newScale;
+                scaleTransform.ScaleX = newScale;
+                scaleTransform.ScaleY = newScale;
 
-            currentScale = newScale;
-            scaleTransform.ScaleX = newScale;
-            scaleTransform.ScaleY = newScale;
-
-            // Apply zoom...
-            translateTransform.X = relativeCenter.X - (relativeCenter.X - oldTranslateX) * (newScale / oldScale);
-            translateTransform.Y = relativeCenter.Y - (relativeCenter.Y - oldTranslateY) * (newScale / oldScale);
+                // Apply zoom...
+                translateTransform.X = relativeCenter.X - (relativeCenter.X - oldTranslateX) * (newScale / oldScale);
+                translateTransform.Y = relativeCenter.Y - (relativeCenter.Y - oldTranslateY) * (newScale / oldScale);
+            }
 
             // ...then add gesture translation
             translateTransform.X += e.DeltaManipulation.Translation.X;
