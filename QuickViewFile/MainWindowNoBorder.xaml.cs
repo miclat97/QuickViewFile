@@ -554,12 +554,14 @@ namespace QuickViewFile
                         bool handled = false;
                         if (e.Key == Key.Right || e.Key == Key.Down)
                         {
-                            FilesListView.SelectedIndex++;
+                            if (FilesListView.SelectedIndex < FilesListView.Items.Count - 1)
+                                FilesListView.SelectedIndex++;
                             handled = true;
                         }
                         else if (e.Key == Key.Left || e.Key == Key.Up)
                         {
-                            FilesListView.SelectedIndex--;
+                            if (FilesListView.SelectedIndex > 0)
+                                FilesListView.SelectedIndex--;
                             handled = true;
                         }
                         else if (e.Key == Key.PageDown)
@@ -585,9 +587,6 @@ namespace QuickViewFile
 
                         if (handled)
                         {
-                            if (FilesListView.SelectedIndex < 0) FilesListView.SelectedIndex = 0;
-                            if (FilesListView.SelectedIndex >= FilesListView.Items.Count) FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
-
                             FilesListView.SetCurrentValue(ListView.SelectedIndexProperty, FilesListView.SelectedIndex);
                             FilesListView.ScrollIntoView(FilesListView.SelectedItem);
                             e.Handled = true;
@@ -615,7 +614,7 @@ namespace QuickViewFile
 
         private void TriggerSwipeAnimation(bool isNext)
         {
-            double startX = isNext ? this.ActualWidth : -this.ActualWidth;
+            double startX = isNext ? GridFileContent.ActualWidth : -GridFileContent.ActualWidth;
             System.Windows.Media.Animation.DoubleAnimation translateAnim = new System.Windows.Media.Animation.DoubleAnimation(startX, 0, TimeSpan.FromSeconds(0.3));
             translateAnim.EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
 
@@ -706,7 +705,7 @@ namespace QuickViewFile
                         Point pApp = e.GetPosition(GridFileContent);
                         double wApp = GridFileContent.ActualWidth;
 
-                        if (wApp > 0)
+                        if (wApp > 0 && pApp.X >= 0 && pApp.X <= wApp && pApp.Y >= 0 && pApp.Y <= GridFileContent.ActualHeight)
                         {
                             if (pApp.X < wApp * 0.15) goPrevious = true;
                             else if (pApp.X > wApp * 0.85) goNext = true;
@@ -765,25 +764,20 @@ namespace QuickViewFile
                             }
                         }
 
-                        if (goPrevious)
+                        if (goPrevious && FilesListView.SelectedIndex > 0)
                         {
                             FilesListView.SelectedIndex--;
                             System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
                             System.Windows.Input.Mouse.OverrideCursor = null;
                             System.Windows.Input.Mouse.UpdateCursor();
                         }
-                        else if (goNext)
+                        else if (goNext && FilesListView.SelectedIndex < FilesListView.Items.Count - 1)
                         {
                             FilesListView.SelectedIndex++;
                             System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
                             System.Windows.Input.Mouse.OverrideCursor = null;
                             System.Windows.Input.Mouse.UpdateCursor();
                         }
-
-                        if (FilesListView.SelectedIndex < 0)
-                            FilesListView.SelectedIndex = 0;
-                        if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
-                            FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
 
                         FilesListView.ScrollIntoView(FilesListView.SelectedItem);
                         if (DataContext is FilesListViewModel viewm && FilesListView.SelectedItem is ItemList sel) viewm.SelectedItem = sel;
@@ -816,17 +810,14 @@ namespace QuickViewFile
                 double totalX = e.TotalManipulation.Translation.X;
                 if (Math.Abs(totalX) > 100) // swipe threshold
                 {
-                    if (totalX > 0)
+                    if (totalX > 0 && FilesListView.SelectedIndex > 0)
                     {
                         FilesListView.SelectedIndex--; // swipe right = previous
                     }
-                    else
+                    else if (totalX <= 0 && FilesListView.SelectedIndex < FilesListView.Items.Count - 1)
                     {
                         FilesListView.SelectedIndex++; // swipe left = next
                     }
-
-                    if (FilesListView.SelectedIndex < 0) FilesListView.SelectedIndex = 0;
-                    if (FilesListView.SelectedIndex >= FilesListView.Items.Count) FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
 
                     FilesListView.ScrollIntoView(FilesListView.SelectedItem);
                     if (FilesListView.SelectedItem is ItemList sel) vm.SelectedItem = sel;
