@@ -11,7 +11,8 @@
         WindowState="Maximized"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown"
+        PreviewMouseLeftButtonUp="Window_PreviewMouseLeftButtonUp"
         ResizeMode="CanResize"
         KeyDown="AppWindow_KeyDown"
         Title="QuickViewFile" Height="720" Width="1280">

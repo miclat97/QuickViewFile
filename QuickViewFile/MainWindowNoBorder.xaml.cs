@@ -611,11 +611,35 @@ namespace QuickViewFile
 
 
 
+        private int _previousSelectedIndex = -1;
+
+        private void TriggerSwipeAnimation(bool isNext)
+        {
+            double startX = isNext ? this.ActualWidth : -this.ActualWidth;
+            System.Windows.Media.Animation.DoubleAnimation translateAnim = new System.Windows.Media.Animation.DoubleAnimation(startX, 0, TimeSpan.FromSeconds(0.3));
+            translateAnim.EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+
+            FileContentTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, translateAnim);
+        }
+
         private void FilesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is FilesListViewModel vm && FilesListView.SelectedItem is ItemList selected)
             {
                 vm.SelectedItem = selected;
+
+                int newIndex = FilesListView.SelectedIndex;
+                if (_config.AlwaysSwipeAnimation == 1 && _previousSelectedIndex != -1 && newIndex != _previousSelectedIndex)
+                {
+                    bool isNext = newIndex > _previousSelectedIndex;
+
+                    // Handle edge cases (looping from end to start or start to end)
+                    if (_previousSelectedIndex == FilesListView.Items.Count - 1 && newIndex == 0) isNext = true;
+                    if (_previousSelectedIndex == 0 && newIndex == FilesListView.Items.Count - 1) isNext = false;
+
+                    TriggerSwipeAnimation(isNext);
+                }
+                _previousSelectedIndex = newIndex;
             }
         }
 
@@ -639,7 +663,10 @@ namespace QuickViewFile
                 return FindVisualParent<T>(parentObject);
         }
 
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private Point? _mouseDownPosition;
+        private DateTime _mouseDownTime;
+
+        private void Window_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource is DependencyObject depObj)
             {
@@ -652,102 +679,120 @@ namespace QuickViewFile
                     return;
                 }
             }
-            try
+
+            _mouseDownPosition = e.GetPosition(this);
+            _mouseDownTime = DateTime.Now;
+        }
+
+        private void Window_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_mouseDownPosition == null) return;
+
+            Point mouseUpPosition = e.GetPosition(this);
+            double distance = Math.Sqrt(Math.Pow(mouseUpPosition.X - _mouseDownPosition.Value.X, 2) + Math.Pow(mouseUpPosition.Y - _mouseDownPosition.Value.Y, 2));
+            TimeSpan elapsed = DateTime.Now - _mouseDownTime;
+
+            _mouseDownPosition = null;
+
+            if (distance < 10 && elapsed.TotalMilliseconds < 500)
             {
-                if (DataContext is FilesListViewModel vm)
+                try
                 {
-                    bool goPrevious = false;
-                    bool goNext = false;
-
-                    Point pApp = e.GetPosition(GridFileContent);
-                    double wApp = GridFileContent.ActualWidth;
-
-                    if (wApp > 0)
+                    if (DataContext is FilesListViewModel vm)
                     {
-                        if (pApp.X < wApp * 0.15) goPrevious = true;
-                        else if (pApp.X > wApp * 0.85) goNext = true;
-                    }
+                        bool goPrevious = false;
+                        bool goNext = false;
 
-                    if (!goPrevious && !goNext && ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.Source != null)
-                    {
-                        var image = ZoomableImageElementNoBorder;
-                        double imageWidth = image.Source.Width;
-                        double imageHeight = image.Source.Height;
-                        double controlWidth = image.ActualWidth;
-                        double controlHeight = image.ActualHeight;
+                        Point pApp = e.GetPosition(GridFileContent);
+                        double wApp = GridFileContent.ActualWidth;
 
-                        double scaleX = controlWidth / imageWidth;
-                        double scaleY = controlHeight / imageHeight;
-                        double scale = Math.Min(scaleX, scaleY);
-
-                        double drawnWidth = imageWidth * scale;
-                        double offsetX = (controlWidth - drawnWidth) / 2;
-
-                        Point pImg = e.GetPosition(image);
-
-                        if (pImg.X >= offsetX && pImg.X <= offsetX + drawnWidth)
+                        if (wApp > 0)
                         {
-                            double relativeX = pImg.X - offsetX;
-                            if (relativeX < drawnWidth * 0.15) goPrevious = true;
-                            else if (relativeX > drawnWidth * 0.85) goNext = true;
+                            if (pApp.X < wApp * 0.15) goPrevious = true;
+                            else if (pApp.X > wApp * 0.85) goNext = true;
                         }
-                    }
 
-                    // ContentControl cast check for video element handling
-                    if (!goPrevious && !goNext && VideoMediaNoBorder.Visibility == Visibility.Visible)
-                    {
-                        if (VideoMediaNoBorder.Content is Controls.VideoPlayerControl videoControl && videoControl.videoInWindowPlayer.NaturalVideoWidth > 0)
+                        if (!goPrevious && !goNext && ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.Source != null)
                         {
-                            double videoWidth = videoControl.videoInWindowPlayer.NaturalVideoWidth;
-                            double videoHeight = videoControl.videoInWindowPlayer.NaturalVideoHeight;
-                            double controlWidth = videoControl.videoInWindowPlayer.ActualWidth;
-                            double controlHeight = videoControl.videoInWindowPlayer.ActualHeight;
+                            var image = ZoomableImageElementNoBorder;
+                            double imageWidth = image.Source.Width;
+                            double imageHeight = image.Source.Height;
+                            double controlWidth = image.ActualWidth;
+                            double controlHeight = image.ActualHeight;
 
-                            double scaleX = controlWidth / videoWidth;
-                            double scaleY = controlHeight / videoHeight;
+                            double scaleX = controlWidth / imageWidth;
+                            double scaleY = controlHeight / imageHeight;
                             double scale = Math.Min(scaleX, scaleY);
 
-                            double drawnWidth = videoWidth * scale;
+                            double drawnWidth = imageWidth * scale;
                             double offsetX = (controlWidth - drawnWidth) / 2;
 
-                            Point pVid = e.GetPosition(videoControl.videoInWindowPlayer);
+                            Point pImg = e.GetPosition(image);
 
-                            if (pVid.X >= offsetX && pVid.X <= offsetX + drawnWidth)
+                            if (pImg.X >= offsetX && pImg.X <= offsetX + drawnWidth)
                             {
-                                double relativeX = pVid.X - offsetX;
+                                double relativeX = pImg.X - offsetX;
                                 if (relativeX < drawnWidth * 0.15) goPrevious = true;
                                 else if (relativeX > drawnWidth * 0.85) goNext = true;
                             }
                         }
-                    }
 
-                    if (goPrevious)
-                    {
-                        FilesListView.SelectedIndex--;
-                        System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
-                        System.Windows.Input.Mouse.OverrideCursor = null;
-                        System.Windows.Input.Mouse.UpdateCursor();
-                    }
-                    else if (goNext)
-                    {
-                        FilesListView.SelectedIndex++;
-                        System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
-                        System.Windows.Input.Mouse.OverrideCursor = null;
-                        System.Windows.Input.Mouse.UpdateCursor();
-                    }
+                        // ContentControl cast check for video element handling
+                        if (!goPrevious && !goNext && VideoMediaNoBorder.Visibility == Visibility.Visible)
+                        {
+                            if (VideoMediaNoBorder.Content is Controls.VideoPlayerControl videoControl && videoControl.videoInWindowPlayer.NaturalVideoWidth > 0)
+                            {
+                                double videoWidth = videoControl.videoInWindowPlayer.NaturalVideoWidth;
+                                double videoHeight = videoControl.videoInWindowPlayer.NaturalVideoHeight;
+                                double controlWidth = videoControl.videoInWindowPlayer.ActualWidth;
+                                double controlHeight = videoControl.videoInWindowPlayer.ActualHeight;
 
-                    if (FilesListView.SelectedIndex < 0)
-                        FilesListView.SelectedIndex = 0;
-                    if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
-                        FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+                                double scaleX = controlWidth / videoWidth;
+                                double scaleY = controlHeight / videoHeight;
+                                double scale = Math.Min(scaleX, scaleY);
 
-                    FilesListView.ScrollIntoView(FilesListView.SelectedItem);
-                    if (DataContext is FilesListViewModel viewm && FilesListView.SelectedItem is ItemList sel) viewm.SelectedItem = sel;
+                                double drawnWidth = videoWidth * scale;
+                                double offsetX = (controlWidth - drawnWidth) / 2;
+
+                                Point pVid = e.GetPosition(videoControl.videoInWindowPlayer);
+
+                                if (pVid.X >= offsetX && pVid.X <= offsetX + drawnWidth)
+                                {
+                                    double relativeX = pVid.X - offsetX;
+                                    if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                                    else if (relativeX > drawnWidth * 0.85) goNext = true;
+                                }
+                            }
+                        }
+
+                        if (goPrevious)
+                        {
+                            FilesListView.SelectedIndex--;
+                            System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
+                            System.Windows.Input.Mouse.OverrideCursor = null;
+                            System.Windows.Input.Mouse.UpdateCursor();
+                        }
+                        else if (goNext)
+                        {
+                            FilesListView.SelectedIndex++;
+                            System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
+                            System.Windows.Input.Mouse.OverrideCursor = null;
+                            System.Windows.Input.Mouse.UpdateCursor();
+                        }
+
+                        if (FilesListView.SelectedIndex < 0)
+                            FilesListView.SelectedIndex = 0;
+                        if (FilesListView.SelectedIndex >= FilesListView.Items.Count)
+                            FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+
+                        FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                        if (DataContext is FilesListViewModel viewm && FilesListView.SelectedItem is ItemList sel) viewm.SelectedItem = sel;
+                    }
                 }
-            }
-            catch (Exception)
-            {
+                catch (Exception)
+                {
 
+                }
             }
         }
 

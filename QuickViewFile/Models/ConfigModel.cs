@@ -46,6 +46,8 @@ namespace QuickViewFile.Models
         public string LiveStreamExtensions { get; set; } = ".m3u8,.m3u";
         [AllowedValues(new object[] { 0, 1 })]
         public int Utf8InsteadOfASCIITextPreview { get; set; } = 1;
+        [AllowedValues(new object[] { 0, 1 })]
+        public int AlwaysSwipeAnimation { get; set; } = 1; // 0 - Disabled, 1 - Enabled
         public int ShadowEffect { get; set; } = 0; // 0 - Disabled, 1 - Enabled
         public int ShadowQuality { get; set; } = 0; // 0 - Performance, 1 - Quality
         public int RenderMode { get; set; } = 0; // 0 - Default, 1 - SoftwareOnly
