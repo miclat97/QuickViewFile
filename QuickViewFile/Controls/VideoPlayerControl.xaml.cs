@@ -223,11 +223,7 @@ namespace QuickViewFile.Controls
 
         public void HandleKey(Key key)
         {
-            if (key == Key.Space)
-            {
-                PlayOrPauseMedia();
-            }
-            else if (key == Key.Add)
+            if (key == Key.Add)
             {
                 videoInWindowPlayer.Volume += 0.1;
                 ConfigHelper.SetVolume(videoInWindowPlayer.Volume);
@@ -258,7 +254,7 @@ namespace QuickViewFile.Controls
                 if (disposing)
                 {
                     _timer?.Stop();
-                    videoInWindowPlayer.Stop();
+                    videoInWindowPlayer.Source = null;
                     mediaPlayerIsPlaying = false;
                     videoInWindowPlayer.Close();
                 }

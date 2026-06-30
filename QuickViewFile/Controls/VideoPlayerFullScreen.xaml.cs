@@ -175,6 +175,7 @@ namespace QuickViewFile.Controls
             {
                 if (disposing)
                 {
+                    videoFullScreenPlayer.Source = null;
                     videoFullScreenPlayer.Stop();
                     mediaPlayerIsPlaying = false;
                     videoFullScreenPlayer.Close();
