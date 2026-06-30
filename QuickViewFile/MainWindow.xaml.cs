@@ -554,7 +554,7 @@ namespace QuickViewFile
                 {
                     if (e.Key == Key.F4 && vm.SelectedItem?.FullPath is not null)
                     {
-                        MainWindow fullScreen = new MainWindow(vm.SelectedItem.FullPath);
+                        MainWindowNoBorder fullScreen = new MainWindowNoBorder(vm.SelectedItem.FullPath);
                         if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
                         {
                             vm.SelectedItem.FileContentModel.VideoMedia.StopForce();
@@ -734,6 +734,42 @@ namespace QuickViewFile
             if (DataContext is FilesListViewModel vm && FilesListView.SelectedItem is ItemList selected)
             {
                 vm.SelectedItem = selected;
+
+                if (ConfigHelper.loadedConfig.SwipeAlwaysAnimation == 1)
+                {
+                    double startX = 0;
+                    if (e.RemovedItems.Count > 0 && e.AddedItems.Count > 0)
+                    {
+                        var removed = e.RemovedItems[0] as ItemList;
+                        var added = e.AddedItems[0] as ItemList;
+
+                        if (removed != null && added != null && vm.ActiveListItems != null)
+                        {
+                            int oldIndex = vm.ActiveListItems.IndexOf(removed);
+                            int newIndex = vm.ActiveListItems.IndexOf(added);
+                            if (newIndex > oldIndex)
+                            {
+                                startX = this.ActualWidth;
+                            }
+                            else if (newIndex < oldIndex)
+                            {
+                                startX = -this.ActualWidth;
+                            }
+                        }
+                    }
+
+                    if (startX != 0)
+                    {
+                        System.Windows.Media.Animation.DoubleAnimation translateAnim = new System.Windows.Media.Animation.DoubleAnimation(startX, 0, TimeSpan.FromSeconds(0.4));
+                        translateAnim.EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                        FileContentTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, translateAnim);
+
+                        FileContentScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, null);
+                        FileContentScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, null);
+                        FileContentScale.ScaleX = 1;
+                        FileContentScale.ScaleY = 1;
+                    }
+                }
             }
         }
 
@@ -774,23 +810,75 @@ namespace QuickViewFile
             {
                 if (DataContext is FilesListViewModel vm)
                 {
-                    Point mousePosition = e.GetPosition(GridFileContent);
+                    bool goPrevious = false;
+                    bool goNext = false;
 
-                    double previousItem = GridFileContent.ActualWidth * 0.08;
-                    double nextItem = GridFileContent.ActualWidth * 0.92;
+                    Point pApp = e.GetPosition(GridFileContent);
+                    double wApp = GridFileContent.ActualWidth;
 
-                    int nextFileIndex = FilesListView.SelectedIndex + 1;
-                    int previousFileIndex = FilesListView.SelectedIndex - 1;
+                    if (wApp > 0)
+                    {
+                        if (pApp.X < wApp * 0.15) goPrevious = true;
+                        else if (pApp.X > wApp * 0.85) goNext = true;
+                    }
 
-                    if (mousePosition.X < previousItem)
+                    if (!goPrevious && !goNext && ZoomableImageElement.Visibility == Visibility.Visible && ZoomableImageElement.Source != null)
+                    {
+                        var image = ZoomableImageElement;
+                        double imageWidth = image.Source.Width;
+                        double imageHeight = image.Source.Height;
+                        double controlWidth = image.ActualWidth;
+                        double controlHeight = image.ActualHeight;
+
+                        double scaleX = controlWidth / imageWidth;
+                        double scaleY = controlHeight / imageHeight;
+                        double scale = Math.Min(scaleX, scaleY);
+
+                        double drawnWidth = imageWidth * scale;
+                        double offsetX = (controlWidth - drawnWidth) / 2;
+
+                        Point pImg = e.GetPosition(image);
+
+                        if (pImg.X >= offsetX && pImg.X <= offsetX + drawnWidth)
+                        {
+                            double relativeX = pImg.X - offsetX;
+                            if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                            else if (relativeX > drawnWidth * 0.85) goNext = true;
+                        }
+                    }
+
+                    if (!goPrevious && !goNext && VideoMedia.Visibility == Visibility.Visible && VideoMedia.videoInWindowPlayer.NaturalVideoWidth > 0)
+                    {
+                        double videoWidth = VideoMedia.videoInWindowPlayer.NaturalVideoWidth;
+                        double videoHeight = VideoMedia.videoInWindowPlayer.NaturalVideoHeight;
+                        double controlWidth = VideoMedia.videoInWindowPlayer.ActualWidth;
+                        double controlHeight = VideoMedia.videoInWindowPlayer.ActualHeight;
+
+                        double scaleX = controlWidth / videoWidth;
+                        double scaleY = controlHeight / videoHeight;
+                        double scale = Math.Min(scaleX, scaleY);
+
+                        double drawnWidth = videoWidth * scale;
+                        double offsetX = (controlWidth - drawnWidth) / 2;
+
+                        Point pVid = e.GetPosition(VideoMedia.videoInWindowPlayer);
+
+                        if (pVid.X >= offsetX && pVid.X <= offsetX + drawnWidth)
+                        {
+                            double relativeX = pVid.X - offsetX;
+                            if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                            else if (relativeX > drawnWidth * 0.85) goNext = true;
+                        }
+                    }
+
+                    if (goPrevious)
                     {
                         FilesListView.SelectedIndex--;
                         System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
                         System.Windows.Input.Mouse.OverrideCursor = null;
                         System.Windows.Input.Mouse.UpdateCursor();
                     }
-
-                    if (mousePosition.X > nextItem)
+                    else if (goNext)
                     {
                         FilesListView.SelectedIndex++;
                         System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.None);
@@ -810,6 +898,117 @@ namespace QuickViewFile
             catch (Exception)
             {
 
+            }
+        }
+
+        private void GridFileContent_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm)
+            {
+                // Only act if user is not currently zoomed in
+                if (ZoomableImageElement.Visibility == Visibility.Visible && ZoomableImageElement.RenderTransform is TransformGroup group)
+                {
+                    var scaleTransform = group.Children.OfType<ScaleTransform>().FirstOrDefault();
+                    if (scaleTransform != null && scaleTransform.ScaleX > 1.05) return;
+                }
+
+                if (VideoMedia.Visibility == Visibility.Visible && VideoMedia.videoInWindowPlayer.RenderTransform is TransformGroup vGroup)
+                {
+                    var scaleTransform = vGroup.Children.OfType<ScaleTransform>().FirstOrDefault();
+                    if (scaleTransform != null && scaleTransform.ScaleX > 1.05) return;
+                }
+
+                double totalX = e.TotalManipulation.Translation.X;
+                if (Math.Abs(totalX) > 100) // swipe threshold
+                {
+                    if (totalX > 0)
+                    {
+                        FilesListView.SelectedIndex--; // swipe right = previous
+                    }
+                    else
+                    {
+                        FilesListView.SelectedIndex++; // swipe left = next
+                    }
+
+                    if (FilesListView.SelectedIndex < 0) FilesListView.SelectedIndex = 0;
+                    if (FilesListView.SelectedIndex >= FilesListView.Items.Count) FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+
+                    FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                    if (FilesListView.SelectedItem is ItemList sel) vm.SelectedItem = sel;
+                    e.Handled = true;
+                }
+                else if (Math.Abs(totalX) < 10) // tap threshold
+                {
+                    bool goPrevious = false;
+                    bool goNext = false;
+
+                    Point pApp = e.ManipulationOrigin;
+                    double wApp = GridFileContent.ActualWidth;
+
+                    if (wApp > 0)
+                    {
+                        if (pApp.X < wApp * 0.15) goPrevious = true;
+                        else if (pApp.X > wApp * 0.85) goNext = true;
+                    }
+
+                    if (!goPrevious && !goNext && ZoomableImageElement.Visibility == Visibility.Visible && ZoomableImageElement.Source != null)
+                    {
+                        var image = ZoomableImageElement;
+                        double imageWidth = image.Source.Width;
+                        double imageHeight = image.Source.Height;
+                        double controlWidth = image.ActualWidth;
+                        double controlHeight = image.ActualHeight;
+
+                        double scaleX = controlWidth / imageWidth;
+                        double scaleY = controlHeight / imageHeight;
+                        double scale = Math.Min(scaleX, scaleY);
+
+                        double drawnWidth = imageWidth * scale;
+                        double offsetX = (controlWidth - drawnWidth) / 2;
+
+                        if (pApp.X >= offsetX && pApp.X <= offsetX + drawnWidth)
+                        {
+                            double relativeX = pApp.X - offsetX;
+                            if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                            else if (relativeX > drawnWidth * 0.85) goNext = true;
+                        }
+                    }
+
+                    if (!goPrevious && !goNext && VideoMedia.Visibility == Visibility.Visible && VideoMedia.videoInWindowPlayer.NaturalVideoWidth > 0)
+                    {
+                        double videoWidth = VideoMedia.videoInWindowPlayer.NaturalVideoWidth;
+                        double videoHeight = VideoMedia.videoInWindowPlayer.NaturalVideoHeight;
+                        double controlWidth = VideoMedia.videoInWindowPlayer.ActualWidth;
+                        double controlHeight = VideoMedia.videoInWindowPlayer.ActualHeight;
+
+                        double scaleX = controlWidth / videoWidth;
+                        double scaleY = controlHeight / videoHeight;
+                        double scale = Math.Min(scaleX, scaleY);
+
+                        double drawnWidth = videoWidth * scale;
+                        double offsetX = (controlWidth - drawnWidth) / 2;
+
+                        if (pApp.X >= offsetX && pApp.X <= offsetX + drawnWidth)
+                        {
+                            double relativeX = pApp.X - offsetX;
+                            if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                            else if (relativeX > drawnWidth * 0.85) goNext = true;
+                        }
+                    }
+
+                    if (goPrevious || goNext)
+                    {
+                        if (goPrevious) FilesListView.SelectedIndex--;
+                        else if (goNext) FilesListView.SelectedIndex++;
+
+                        if (FilesListView.SelectedIndex < 0) FilesListView.SelectedIndex = 0;
+                        if (FilesListView.SelectedIndex >= FilesListView.Items.Count) FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+
+                        FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                        if (FilesListView.SelectedItem is ItemList sel) vm.SelectedItem = sel;
+                        e.Handled = true;
+                    }
+                }
             }
         }
 

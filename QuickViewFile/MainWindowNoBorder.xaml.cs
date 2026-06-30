@@ -616,6 +616,42 @@ namespace QuickViewFile
             if (DataContext is FilesListViewModel vm && FilesListView.SelectedItem is ItemList selected)
             {
                 vm.SelectedItem = selected;
+
+                if (ConfigHelper.loadedConfig.SwipeAlwaysAnimation == 1)
+                {
+                    double startX = 0;
+                    if (e.RemovedItems.Count > 0 && e.AddedItems.Count > 0)
+                    {
+                        var removed = e.RemovedItems[0] as ItemList;
+                        var added = e.AddedItems[0] as ItemList;
+
+                        if (removed != null && added != null && vm.ActiveListItems != null)
+                        {
+                            int oldIndex = vm.ActiveListItems.IndexOf(removed);
+                            int newIndex = vm.ActiveListItems.IndexOf(added);
+                            if (newIndex > oldIndex)
+                            {
+                                startX = this.ActualWidth;
+                            }
+                            else if (newIndex < oldIndex)
+                            {
+                                startX = -this.ActualWidth;
+                            }
+                        }
+                    }
+
+                    if (startX != 0)
+                    {
+                        System.Windows.Media.Animation.DoubleAnimation translateAnim = new System.Windows.Media.Animation.DoubleAnimation(startX, 0, TimeSpan.FromSeconds(0.4));
+                        translateAnim.EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                        FileContentTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, translateAnim);
+
+                        FileContentScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, null);
+                        FileContentScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, null);
+                        FileContentScale.ScaleX = 1;
+                        FileContentScale.ScaleY = 1;
+                    }
+                }
             }
         }
 
@@ -693,6 +729,34 @@ namespace QuickViewFile
                         }
                     }
 
+                    // ContentControl cast check for video element handling
+                    if (!goPrevious && !goNext && VideoMediaNoBorder.Visibility == Visibility.Visible)
+                    {
+                        if (VideoMediaNoBorder.Content is Controls.VideoPlayerControl touchVideoControl && touchVideoControl.videoInWindowPlayer.NaturalVideoWidth > 0)
+                        {
+                            double videoWidth = touchVideoControl.videoInWindowPlayer.NaturalVideoWidth;
+                            double videoHeight = touchVideoControl.videoInWindowPlayer.NaturalVideoHeight;
+                            double controlWidth = touchVideoControl.videoInWindowPlayer.ActualWidth;
+                            double controlHeight = touchVideoControl.videoInWindowPlayer.ActualHeight;
+
+                            double scaleX = controlWidth / videoWidth;
+                            double scaleY = controlHeight / videoHeight;
+                            double scale = Math.Min(scaleX, scaleY);
+
+                            double drawnWidth = videoWidth * scale;
+                            double offsetX = (controlWidth - drawnWidth) / 2;
+
+                            Point pVid = e.GetPosition(touchVideoControl.videoInWindowPlayer);
+
+                            if (pVid.X >= offsetX && pVid.X <= offsetX + drawnWidth)
+                            {
+                                double relativeX = pVid.X - offsetX;
+                                if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                                else if (relativeX > drawnWidth * 0.85) goNext = true;
+                            }
+                        }
+                    }
+
                     if (goPrevious)
                     {
                         FilesListView.SelectedIndex--;
@@ -720,6 +784,121 @@ namespace QuickViewFile
             catch (Exception)
             {
 
+            }
+        }
+
+        private void GridFileContent_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm)
+            {
+                // Only act if user is not currently zoomed in
+                if (ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.RenderTransform is TransformGroup group)
+                {
+                    var scaleTransform = group.Children.OfType<ScaleTransform>().FirstOrDefault();
+                    if (scaleTransform != null && scaleTransform.ScaleX > 1.05) return;
+                }
+
+                if (VideoMediaNoBorder.Visibility == Visibility.Visible && VideoMediaNoBorder.Content is Controls.VideoPlayerControl videoControl && videoControl.videoInWindowPlayer.RenderTransform is TransformGroup vGroup)
+                {
+                    var scaleTransform = vGroup.Children.OfType<ScaleTransform>().FirstOrDefault();
+                    if (scaleTransform != null && scaleTransform.ScaleX > 1.05) return;
+                }
+
+                double totalX = e.TotalManipulation.Translation.X;
+                if (Math.Abs(totalX) > 100) // swipe threshold
+                {
+                    if (totalX > 0)
+                    {
+                        FilesListView.SelectedIndex--; // swipe right = previous
+                    }
+                    else
+                    {
+                        FilesListView.SelectedIndex++; // swipe left = next
+                    }
+
+                    if (FilesListView.SelectedIndex < 0) FilesListView.SelectedIndex = 0;
+                    if (FilesListView.SelectedIndex >= FilesListView.Items.Count) FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+
+                    FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                    if (FilesListView.SelectedItem is ItemList sel) vm.SelectedItem = sel;
+                    e.Handled = true;
+                }
+                else if (Math.Abs(totalX) < 10) // tap threshold
+                {
+                    bool goPrevious = false;
+                    bool goNext = false;
+
+                    Point pApp = e.ManipulationOrigin;
+                    double wApp = GridFileContent.ActualWidth;
+
+                    if (wApp > 0)
+                    {
+                        if (pApp.X < wApp * 0.15) goPrevious = true;
+                        else if (pApp.X > wApp * 0.85) goNext = true;
+                    }
+
+                    if (!goPrevious && !goNext && ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.Source != null)
+                    {
+                        var image = ZoomableImageElementNoBorder;
+                        double imageWidth = image.Source.Width;
+                        double imageHeight = image.Source.Height;
+                        double controlWidth = image.ActualWidth;
+                        double controlHeight = image.ActualHeight;
+
+                        double scaleX = controlWidth / imageWidth;
+                        double scaleY = controlHeight / imageHeight;
+                        double scale = Math.Min(scaleX, scaleY);
+
+                        double drawnWidth = imageWidth * scale;
+                        double offsetX = (controlWidth - drawnWidth) / 2;
+
+                        if (pApp.X >= offsetX && pApp.X <= offsetX + drawnWidth)
+                        {
+                            double relativeX = pApp.X - offsetX;
+                            if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                            else if (relativeX > drawnWidth * 0.85) goNext = true;
+                        }
+                    }
+
+                    // ContentControl cast check for video element handling
+                    if (!goPrevious && !goNext && VideoMediaNoBorder.Visibility == Visibility.Visible)
+                    {
+                        if (VideoMediaNoBorder.Content is Controls.VideoPlayerControl tapVideoControl && tapVideoControl.videoInWindowPlayer.NaturalVideoWidth > 0)
+                        {
+                            double videoWidth = tapVideoControl.videoInWindowPlayer.NaturalVideoWidth;
+                            double videoHeight = tapVideoControl.videoInWindowPlayer.NaturalVideoHeight;
+                            double controlWidth = tapVideoControl.videoInWindowPlayer.ActualWidth;
+                            double controlHeight = tapVideoControl.videoInWindowPlayer.ActualHeight;
+
+                            double scaleX = controlWidth / videoWidth;
+                            double scaleY = controlHeight / videoHeight;
+                            double scale = Math.Min(scaleX, scaleY);
+
+                            double drawnWidth = videoWidth * scale;
+                            double offsetX = (controlWidth - drawnWidth) / 2;
+
+                            if (pApp.X >= offsetX && pApp.X <= offsetX + drawnWidth)
+                            {
+                                double relativeX = pApp.X - offsetX;
+                                if (relativeX < drawnWidth * 0.15) goPrevious = true;
+                                else if (relativeX > drawnWidth * 0.85) goNext = true;
+                            }
+                        }
+                    }
+
+                    if (goPrevious || goNext)
+                    {
+                        if (goPrevious) FilesListView.SelectedIndex--;
+                        else if (goNext) FilesListView.SelectedIndex++;
+
+                        if (FilesListView.SelectedIndex < 0) FilesListView.SelectedIndex = 0;
+                        if (FilesListView.SelectedIndex >= FilesListView.Items.Count) FilesListView.SelectedIndex = FilesListView.Items.Count - 1;
+
+                        FilesListView.ScrollIntoView(FilesListView.SelectedItem);
+                        if (FilesListView.SelectedItem is ItemList sel) vm.SelectedItem = sel;
+                        e.Handled = true;
+                    }
+                }
             }
         }
 

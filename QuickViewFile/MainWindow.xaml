@@ -181,8 +181,8 @@
                       HorizontalContentAlignment="Center" Focusable="False"/>
             <Border x:Name="ContentBorder"
                     Grid.Column="2"
-                    BorderThickness="1"
-                    Margin="1">
+                    BorderThickness="0"
+                    Margin="0">
                 <Grid
                   MouseRightButtonDown="Grid_MouseRightButtonDown"
                   Height="Auto"
@@ -194,6 +194,7 @@
 
                     <!-- File content: Image, Video or Text-->
                     <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  
+                          ManipulationCompleted="GridFileContent_ManipulationCompleted"
                           Grid.Row="0"                         
                           Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True"
                           RenderTransformOrigin="0.5,0.5">

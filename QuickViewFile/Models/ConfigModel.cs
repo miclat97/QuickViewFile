@@ -56,5 +56,6 @@ namespace QuickViewFile.Models
         public double ShadowOpacity { get; set; } = 0;
         public double ShadowBlur { get; set; } = 0;
         public double Volume { get; set; } = 1;
+        public int SwipeAlwaysAnimation { get; set; } = 1; // 0 - Disabled, 1 - Enabled
     }
 }
