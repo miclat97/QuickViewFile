@@ -10,6 +10,7 @@
         mc:Ignorable="d"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
         ResizeMode="CanResize"
         KeyDown="AppWindow_KeyDown"
         Title="QuickViewFile" Height="720" Width="1280">
@@ -193,7 +194,6 @@
 
                     <!-- File content: Image, Video or Text-->
                     <Grid MouseRightButtonDown="FileContentGrid_MouseRightButtonDown"  
-                          MouseLeftButtonDown="Window_MouseLeftButtonDown"
                           ManipulationCompleted="GridFileContent_ManipulationCompleted"
                           Grid.Row="0"                         
                           Name="GridFileContent" ClipToBounds="True" Grid.IsSharedSizeScope="True" IsManipulationEnabled="True" SnapsToDevicePixels="True"

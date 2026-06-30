@@ -231,8 +231,8 @@ namespace QuickViewFile.Controls
             }
 
             // ...then add gesture translation
-            translateTransform.X += e.DeltaManipulation.Translation.X * currentScale;
-            translateTransform.Y += e.DeltaManipulation.Translation.Y * currentScale;
+            translateTransform.X += e.DeltaManipulation.Translation.X;
+            translateTransform.Y += e.DeltaManipulation.Translation.Y;
 
             ClampTranslation();
             e.Handled = true;
