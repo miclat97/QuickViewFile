@@ -149,6 +149,10 @@ namespace QuickViewFile.ViewModel
                     parentDir.PropertyChanged += ParentDir_PropertyChanged;
 
                     ActiveListItems.Add(parentDir);
+                    if(fileToSelect == null)
+                    {
+                        SelectedItem = parentDir;
+                    }
                 }
 
                 foreach (DirectoryInfo folder in foldersInDirectory)

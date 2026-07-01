@@ -68,17 +68,13 @@ namespace QuickViewFile
             if (e.Key == Key.Add || e.Key == Key.OemPlus)
             {
                 vm.ThumbnailSize += 20;
-                vm.ThumbnailFontSize += 2;
                 if (vm.ThumbnailSize > 800) vm.ThumbnailSize = 800;
-                if (vm.ThumbnailFontSize > 40) vm.ThumbnailFontSize = 40;
                 e.Handled = true;
             }
             else if (e.Key == Key.Subtract || e.Key == Key.OemMinus)
             {
                 vm.ThumbnailSize -= 20;
-                vm.ThumbnailFontSize -= 2;
                 if (vm.ThumbnailSize < 50) vm.ThumbnailSize = 50;
-                if (vm.ThumbnailFontSize < 8) vm.ThumbnailFontSize = 8;
                 e.Handled = true;
             }
             else if (e.Key == Key.Escape)
