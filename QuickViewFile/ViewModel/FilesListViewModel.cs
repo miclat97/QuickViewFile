@@ -199,25 +199,30 @@ namespace QuickViewFile.ViewModel
                         }
                     }
                 }
-
-                try
+                if (fileToSelect == null)
                 {
-                    ItemList? selectThisFile = null;
-                    if (!string.IsNullOrWhiteSpace(fileToSelect))
+                    SelectedItem = ActiveListItems.FirstOrDefault();
+                }
+                else
+                {
+                    try
                     {
-                        string targetName = Path.GetFileName(fileToSelect);
-                        selectThisFile = ActiveListItems.FirstOrDefault(x => string.Equals(x.Name, targetName, StringComparison.OrdinalIgnoreCase) && !x.IsDirectory);
+                        ItemList? selectThisFile = null;
+                        if (!string.IsNullOrWhiteSpace(fileToSelect))
+                        {
+                            string targetName = Path.GetFileName(fileToSelect);
+                            selectThisFile = ActiveListItems.FirstOrDefault(x => string.Equals(x.Name, targetName, StringComparison.OrdinalIgnoreCase) && !x.IsDirectory);
+                        }
+                        if (selectThisFile is not null)
+                            SelectedItem = selectThisFile;
+                        else
+                            SelectedItem = ActiveListItems.FirstOrDefault();
                     }
-                    if (selectThisFile is not null)
-                        SelectedItem = selectThisFile;
-                    else
-                        SelectedItem = ActiveListItems.FirstOrDefault();
-                }
-                catch
-                {
+                    catch
+                    {
 
+                    }
                 }
-
                 if (IsThumbnailMode)
                 {
                     _ = LoadThumbnailsAsync();

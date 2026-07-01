@@ -37,7 +37,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <Grid Focusable="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -60,7 +60,10 @@
 
         <ListView Grid.Row="1"
                   x:Name="ThumbnailsListView"
-                  Focusable="True"
+                  Focusable="False"
+                  FocusManager.IsFocusScope="True"
+                  IsTabStop="False"
+                  Panel.ZIndex="0"
                   SelectionMode="Extended"
                   SelectionChanged="FilesListView_SelectionChanged"
                   ItemsSource="{Binding ActiveListItems}"
@@ -68,6 +71,7 @@
                   MouseDoubleClick="FilesListView_MouseDoubleClick"
                   Margin="10"
                   KeyDown="FilesListView_KeyDown"
+                  
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListView.ItemsPanel>
