@@ -126,6 +126,13 @@ namespace QuickViewFile.ViewModel
 
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
+                foreach (var item in ActiveListItems)
+                {
+                    item.ThumbnailImageSource = null;
+                    item.IsVideoThumbnail = false;
+                    item.ThumbnailTextPreview = null;
+                }
+
                 ActiveListItems.Clear();
 
                 if (dirInfo.Parent != null)
@@ -209,6 +216,11 @@ namespace QuickViewFile.ViewModel
                 catch
                 {
 
+                }
+
+                if (IsThumbnailMode)
+                {
+                    _ = LoadThumbnailsAsync();
                 }
             });
         }
@@ -501,6 +513,100 @@ namespace QuickViewFile.ViewModel
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private bool _isThumbnailMode = false;
+        public bool IsThumbnailMode
+        {
+            get => _isThumbnailMode;
+            set
+            {
+                _isThumbnailMode = value;
+                OnPropertyChanged(nameof(IsThumbnailMode));
+            }
+        }
+
+        private double _thumbnailSize = 200;
+        public double ThumbnailSize
+        {
+            get => _thumbnailSize;
+            set
+            {
+                _thumbnailSize = value;
+                OnPropertyChanged(nameof(ThumbnailSize));
+            }
+        }
+
+        private double _thumbnailFontSize = 13;
+        public double ThumbnailFontSize
+        {
+            get => _thumbnailFontSize;
+            set
+            {
+                _thumbnailFontSize = value;
+                OnPropertyChanged(nameof(ThumbnailFontSize));
+            }
+        }
+
+        private System.Threading.CancellationTokenSource? _thumbnailCancellationTokenSource;
+
+        public void CancelThumbnails()
+        {
+            _thumbnailCancellationTokenSource?.Cancel();
+        }
+
+        public async System.Threading.Tasks.Task LoadThumbnailsAsync()
+        {
+            _thumbnailCancellationTokenSource?.Cancel();
+            _thumbnailCancellationTokenSource = new System.Threading.CancellationTokenSource();
+            var token = _thumbnailCancellationTokenSource.Token;
+
+            var config = ConfigHelper.loadedConfig;
+            var itemsToLoad = ActiveListItems.ToList();
+
+            // Limit concurrency based on CPU cores
+            int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 4);
+            using var semaphore = new System.Threading.SemaphoreSlim(maxConcurrency);
+
+            var tasks = itemsToLoad.Select(async item =>
+            {
+                if (token.IsCancellationRequested) return;
+
+                bool lockAcquired = false;
+                try
+                {
+                    await semaphore.WaitAsync(token);
+                    lockAcquired = true;
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        await item.LoadThumbnailAsync(config, token);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore cancellation
+                }
+                catch (Exception)
+                {
+                    // Catch any other exceptions that might occur during rapid cancellation
+                }
+                finally
+                {
+                    if (lockAcquired)
+                    {
+                        semaphore.Release();
+                    }
+                }
+            });
+
+            try
+            {
+                await System.Threading.Tasks.Task.WhenAll(tasks);
+            }
+            catch (Exception)
+            {
+            }
+        }
 
         private void ParentDir_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

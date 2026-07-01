@@ -1,0 +1,126 @@
+<Window x:Class="QuickViewFile.MainWindowThumbnails"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuickViewFile.Controls"
+        xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
+        xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
+        d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
+        mc:Ignorable="d"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        KeyDown="AppWindow_KeyDown"
+        Title="QuickViewFile - Thumbnails" Height="720" Width="1280">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
+        <Style TargetType="ListViewItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Focusable="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="10,10,10,5" x:Name="FileOperationsPanel">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" x:Name="ColMove"/>
+                <ColumnDefinition Width="*" x:Name="ColCopy"/>
+                <ColumnDefinition Width="*" x:Name="ColDelete"/>
+                <ColumnDefinition Width="*" x:Name="ColPaste"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Move" Click="MoveFiles_Click" Margin="0,0,2,0" Grid.Column="0" x:Name="MoveButton"/>
+            <Button Content="Copy" Click="CopyFiles_Click" Margin="2,0,2,0" Grid.Column="1" x:Name="CopyButton"/>
+            <Button Content="Delete" Click="DeleteFiles_Click" Margin="2,0,2,0" Grid.Column="2" x:Name="DeleteButton"/>
+            <Button Content="Paste" Click="PasteFiles_Click" Margin="2,0,2,0" Visibility="Collapsed" x:Name="PasteButton" Grid.Column="3"/>
+            <Button Content="Back to List Mode" Click="ListModeButton_Click" Margin="2,0,0,0" Grid.Column="4"/>
+        </Grid>
+
+        <ListView Grid.Row="1"
+                  x:Name="ThumbnailsListView"
+                  Focusable="True"
+                  IsTabStop="False"
+                  SelectionMode="Extended"
+                  SelectionChanged="FilesListView_SelectionChanged"
+                  ItemsSource="{Binding ActiveListItems}"
+                  SelectedItem="{Binding SelectedItem}"
+                  MouseDoubleClick="FilesListView_MouseDoubleClick"
+                  Margin="10"
+                  KeyDown="FilesListView_KeyDown"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" IsItemsHost="True" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                          Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                          Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Image Source="{Binding ThumbnailImageSource}"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                   Visibility="{Binding ThumbnailImageSource, Converter={StaticResource NullToCollapsedConverter}}"/>
+
+                            <Image Source="pack://application:,,,/Controls/Resources/play.png"
+                                   Stretch="None"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IsVideoThumbnail, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <TextBlock Text="{Binding ThumbnailTextPreview}"
+                                       TextWrapping="Wrap"
+                                       Margin="5"
+                                       FontSize="{Binding DataContext.Config.FontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                       Visibility="{Binding ThumbnailTextPreview, Converter={StaticResource NullToCollapsedConverter}}"/>
+                        </Grid>
+
+                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                  IsEnabled="{Binding IsCheckBoxEnabled}"
+                                  Focusable="False"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Top"
+                                  Margin="2"/>
+
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding Name}"
+                                   TextTrimming="CharacterEllipsis"
+                                   TextAlignment="Center"
+                                   FontSize="{Binding DataContext.ThumbnailFontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="2,5,2,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Window>

@@ -213,6 +213,16 @@ namespace QuickViewFile
         private FileOperation _currentOperation = FileOperation.None;
         private List<string> _clipboardFiles = new List<string>();
 
+        private void ThumbnailsModeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm)
+            {
+                MainWindowThumbnails thumbnailsWindow = new MainWindowThumbnails(vm);
+                thumbnailsWindow.Show();
+                this.Close();
+            }
+        }
+
         private void MoveFiles_Click(object sender, RoutedEventArgs e)
         {
             _currentOperation = FileOperation.Move;
