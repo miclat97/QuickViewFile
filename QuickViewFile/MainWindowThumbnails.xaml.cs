@@ -102,20 +102,86 @@ namespace QuickViewFile
                         itemData.IsChecked = !itemData.IsChecked;
                     }
                 }
+                else if (ThumbnailsListView.SelectedItem is ItemList selItem)
+                {
+                    selItem.IsChecked = !selItem.IsChecked;
+                }
                 e.Handled = true;
                 return;
             }
+
+            if (e.Key >= Key.A && e.Key <= Key.Z)
+            {
+                char ASCIINumberWhichUserWantToSelect = e.Key.ToString()[0];
+                var itemToSelect = ThumbnailsListView.Items.Cast<ItemList>().Skip(ThumbnailsListView.SelectedIndex + 1)
+                    .FirstOrDefault(item => !string.IsNullOrEmpty(item.Name) && char.ToUpper(item.Name[0]) == ASCIINumberWhichUserWantToSelect);
+
+                if (itemToSelect is null)
+                {
+                    itemToSelect = ThumbnailsListView.Items.Cast<ItemList>()
+                        .FirstOrDefault(item => !string.IsNullOrEmpty(item.Name) && char.ToUpper(item.Name[0]) == ASCIINumberWhichUserWantToSelect);
+                }
+                if (itemToSelect is not null)
+                {
+                    ThumbnailsListView.SelectedItem = itemToSelect;
+                    ThumbnailsListView.ScrollIntoView(itemToSelect);
+                    if (DataContext is FilesListViewModel viewm && ThumbnailsListView.SelectedItem is ItemList sel) viewm.SelectedItem = sel;
+                }
+                e.Handled = true;
+                return;
+            }
+
+            try
+            {
+                bool handled = false;
+                if (e.Key == Key.Right || e.Key == Key.Down)
+                {
+                    if (ThumbnailsListView.SelectedIndex < ThumbnailsListView.Items.Count - 1)
+                        ThumbnailsListView.SelectedIndex++;
+                    handled = true;
+                }
+                else if (e.Key == Key.Left || e.Key == Key.Up)
+                {
+                    if (ThumbnailsListView.SelectedIndex > 0)
+                        ThumbnailsListView.SelectedIndex--;
+                    handled = true;
+                }
+                else if (e.Key == Key.PageDown)
+                {
+                    ThumbnailsListView.SelectedIndex = Math.Min(ThumbnailsListView.Items.Count - 1, ThumbnailsListView.SelectedIndex + 10);
+                    handled = true;
+                }
+                else if (e.Key == Key.PageUp)
+                {
+                    ThumbnailsListView.SelectedIndex = Math.Max(0, ThumbnailsListView.SelectedIndex - 10);
+                    handled = true;
+                }
+                else if (e.Key == Key.Home)
+                {
+                    ThumbnailsListView.SelectedIndex = 0;
+                    handled = true;
+                }
+                else if (e.Key == Key.End)
+                {
+                    ThumbnailsListView.SelectedIndex = ThumbnailsListView.Items.Count - 1;
+                    handled = true;
+                }
+
+                if (handled)
+                {
+                    ThumbnailsListView.SetCurrentValue(ListView.SelectedIndexProperty, ThumbnailsListView.SelectedIndex);
+                    ThumbnailsListView.ScrollIntoView(ThumbnailsListView.SelectedItem);
+                    e.Handled = true;
+                    return;
+                }
+            }
+            catch { }
 
             if (e.Key == Key.Enter)
             {
                 Application.Current.Dispatcher.BeginInvoke(async () =>
                 {
                     await vm.OnFileDoubleClick(vm.SelectedItem);
-                    // Refresh thumbnails if we entered a directory
-                    if (vm.SelectedItem?.IsDirectory == true || vm.SelectedItem?.Name == "..")
-                    {
-                         _ = vm.LoadThumbnailsAsync();
-                    }
                 });
                 e.Handled = true;
             }
@@ -128,11 +194,6 @@ namespace QuickViewFile
                 Application.Current.Dispatcher.BeginInvoke(async () =>
                 {
                     await vm.OnFileDoubleClick(file);
-                    // Refresh thumbnails if we entered a directory
-                    if (file.IsDirectory || file.Name == "..")
-                    {
-                         _ = vm.LoadThumbnailsAsync();
-                    }
                 });
             }
         }

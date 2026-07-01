@@ -126,6 +126,13 @@ namespace QuickViewFile.ViewModel
 
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
+                foreach (var item in ActiveListItems)
+                {
+                    item.ThumbnailImageSource = null;
+                    item.ThumbnailVideoSource = null;
+                    item.ThumbnailTextPreview = null;
+                }
+
                 ActiveListItems.Clear();
 
                 if (dirInfo.Parent != null)
@@ -209,6 +216,11 @@ namespace QuickViewFile.ViewModel
                 catch
                 {
 
+                }
+
+                if (IsThumbnailMode)
+                {
+                    _ = LoadThumbnailsAsync();
                 }
             });
         }
@@ -535,20 +547,33 @@ namespace QuickViewFile.ViewModel
             }
         }
 
+        private System.Threading.CancellationTokenSource? _thumbnailCancellationTokenSource;
+
         public async System.Threading.Tasks.Task LoadThumbnailsAsync()
         {
+            _thumbnailCancellationTokenSource?.Cancel();
+            _thumbnailCancellationTokenSource = new System.Threading.CancellationTokenSource();
+            var token = _thumbnailCancellationTokenSource.Token;
+
             var config = ConfigHelper.loadedConfig;
             var itemsToLoad = ActiveListItems.ToList();
 
-            // Limit concurrency to avoid thread pool starvation and memory exhaustion on large folders
-            using var semaphore = new System.Threading.SemaphoreSlim(4);
+            // Limit concurrency based on CPU cores
+            int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 4);
+            using var semaphore = new System.Threading.SemaphoreSlim(maxConcurrency);
 
             var tasks = itemsToLoad.Select(async item =>
             {
-                await semaphore.WaitAsync();
+                if (token.IsCancellationRequested) return;
+
+                await semaphore.WaitAsync(token);
                 try
                 {
-                    await item.LoadThumbnailAsync(config);
+                    await item.LoadThumbnailAsync(config, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore cancellation
                 }
                 finally
                 {
@@ -556,7 +581,13 @@ namespace QuickViewFile.ViewModel
                 }
             });
 
-            await System.Threading.Tasks.Task.WhenAll(tasks);
+            try
+            {
+                await System.Threading.Tasks.Task.WhenAll(tasks);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         private void ParentDir_PropertyChanged(object? sender, PropertyChangedEventArgs e)
