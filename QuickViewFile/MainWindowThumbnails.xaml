@@ -91,12 +91,11 @@
                                    RenderOptions.BitmapScalingMode="NearestNeighbor"
                                    Visibility="{Binding ThumbnailImageSource, Converter={StaticResource NullToCollapsedConverter}}"/>
 
-                            <MediaElement Source="{Binding ThumbnailVideoSource}"
-                                          LoadedBehavior="Pause"
-                                          ScrubbingEnabled="True"
-                                          Stretch="Uniform"
-                                          RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                          Visibility="{Binding IsVideoThumbnail, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <Image Source="pack://application:,,,/Controls/Resources/play.png"
+                                   Stretch="None"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IsVideoThumbnail, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                             <TextBlock Text="{Binding ThumbnailTextPreview}"
                                        TextWrapping="Wrap"

@@ -47,6 +47,14 @@ namespace QuickViewFile
         private void ListModeButton_Click(object sender, RoutedEventArgs e)
         {
             vm.IsThumbnailMode = false;
+            vm.CancelThumbnails();
+
+            foreach (var item in vm.ActiveListItems)
+            {
+                item.ThumbnailImageSource = null;
+                item.IsVideoThumbnail = false;
+                item.ThumbnailTextPreview = null;
+            }
 
             string path = vm.SelectedItem?.FullPath ?? vm.ActiveListItems.FirstOrDefault()?.FullPath ?? Directory.GetCurrentDirectory();
 
