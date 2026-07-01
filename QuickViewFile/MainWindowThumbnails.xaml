@@ -37,7 +37,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
