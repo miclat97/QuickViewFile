@@ -39,81 +39,84 @@ namespace QuickViewFile.Models
         public System.Windows.Media.ImageSource? ThumbnailImageSource
         {
             get => _thumbnailImageSource;
-            set { _thumbnailImageSource = value; OnPropertyChanged(); }
-        }
-
-        private System.Uri? _thumbnailVideoSource;
-        public System.Uri? ThumbnailVideoSource
-        {
-            get => _thumbnailVideoSource;
-            set { _thumbnailVideoSource = value; OnPropertyChanged(); }
+            set
+            {
+                _thumbnailImageSource = value;
+                OnPropertyChanged(nameof(ThumbnailImageSource));
+            }
         }
 
         private string? _thumbnailTextPreview;
         public string? ThumbnailTextPreview
         {
             get => _thumbnailTextPreview;
-            set { _thumbnailTextPreview = value; OnPropertyChanged(); }
+            set
+            {
+                _thumbnailTextPreview = value;
+                OnPropertyChanged(nameof(ThumbnailTextPreview));
+            }
         }
 
-        private bool _isVideoThumbnail;
-        public bool IsVideoThumbnail
+        private Uri? _thumbnailVideoSource;
+        public Uri? ThumbnailVideoSource
         {
-            get => _isVideoThumbnail;
-            set { _isVideoThumbnail = value; OnPropertyChanged(); }
+            get => _thumbnailVideoSource;
+            set
+            {
+                _thumbnailVideoSource = value;
+                OnPropertyChanged(nameof(ThumbnailVideoSource));
+                OnPropertyChanged(nameof(IsVideoThumbnail));
+            }
         }
+
+        public bool IsVideoThumbnail => ThumbnailVideoSource != null;
 
         public async System.Threading.Tasks.Task LoadThumbnailAsync(ConfigModel config)
         {
-            if (IsDirectory || string.IsNullOrEmpty(FullPath)) return;
+            if (IsDirectory || Name == "..") return;
 
-            string ext = System.IO.Path.GetExtension(FullPath)?.ToLowerInvariant() ?? "";
-
-            var imageExtensions = Helpers.ConfigHelper.GetStringsFromCommaSeparatedString(config.ImageExtensions);
-            var videoExtension = Helpers.ConfigHelper.GetStringsFromCommaSeparatedString(config.VideoExtensions);
-
-            if (videoExtension.Contains(ext))
+            string filePath = FullPath;
+            string extensionPath = filePath;
+            int colonIndex = extensionPath.LastIndexOf(':');
+            if (colonIndex > 3)
             {
-                IsVideoThumbnail = true;
-                ThumbnailVideoSource = new System.Uri(FullPath);
+                extensionPath = extensionPath.Substring(0, colonIndex);
             }
-            else if (imageExtensions.Contains(ext))
+
+            string ext = System.IO.Path.GetExtension(extensionPath).ToLowerInvariant();
+
+            var imageExtensions = QuickViewFile.Helpers.ConfigHelper.GetStringsFromCommaSeparatedString(config.ImageExtensions);
+            var musicExtensions = QuickViewFile.Helpers.ConfigHelper.GetStringsFromCommaSeparatedString(config.MusicExtensions);
+            var videoExtension = QuickViewFile.Helpers.ConfigHelper.GetStringsFromCommaSeparatedString(config.VideoExtensions);
+
+            if (imageExtensions.Contains(ext))
             {
                 try
                 {
-                    await System.Threading.Tasks.Task.Run(() =>
-                    {
-                        var bitmap = Helpers.LoadImageWithOrientationHelper.LoadImageWithOrientation(FullPath);
-                        if (bitmap != null)
-                        {
-                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                ThumbnailImageSource = bitmap;
-                            });
-                        }
-                    });
+                    ThumbnailImageSource = await System.Threading.Tasks.Task.Run(() => QuickViewFile.Helpers.LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath));
                 }
                 catch { }
             }
-            else
+            else if (videoExtension.Contains(ext))
             {
-                // Text or binary
-                if (SizeBytes <= config.MaxSizePreviewKB * 1024)
+                ThumbnailVideoSource = new Uri(filePath);
+            }
+            else if (!musicExtensions.Contains(ext))
+            {
+                try
                 {
-                    try
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(filePath);
+                    if (fileInfo.Length < config.MaxSizePreviewKB * 1024)
                     {
-                        string text = await System.Threading.Tasks.Task.Run(() => FileTextExtractor.GetCleanTextFast(FullPath));
-                        ThumbnailTextPreview = text;
+                        ThumbnailTextPreview = await System.IO.File.ReadAllTextAsync(filePath);
+                        if (ThumbnailTextPreview.Length > 200) ThumbnailTextPreview = ThumbnailTextPreview.Substring(0, 200) + "...";
                     }
-                    catch
+                    else
                     {
-                        ThumbnailTextPreview = "Cannot read file";
+                        ThumbnailTextPreview = $"File is larger than {config.MaxSizePreviewKB} KB";
                     }
                 }
-                else
-                {
-                    ThumbnailTextPreview = $"File is larger than {config.MaxSizePreviewKB} KB";
-                }
+                catch { }
             }
         }
     }

@@ -49,72 +49,6 @@ namespace QuickViewFile.ViewModel
 
         public ConfigModel Config { get; set; } = ConfigHelper.loadedConfig;
 
-        private bool _isThumbnailMode;
-        public bool IsThumbnailMode
-        {
-            get => _isThumbnailMode;
-            set
-            {
-                _isThumbnailMode = value;
-                OnPropertyChanged(nameof(IsThumbnailMode));
-            }
-        }
-
-        private double _thumbnailSize = 200;
-        public double ThumbnailSize
-        {
-            get => _thumbnailSize;
-            set
-            {
-                _thumbnailSize = value;
-                OnPropertyChanged(nameof(ThumbnailSize));
-            }
-        }
-
-        private double _thumbnailFontSize = 13;
-        public double ThumbnailFontSize
-        {
-            get => _thumbnailFontSize;
-            set
-            {
-                _thumbnailFontSize = value;
-                OnPropertyChanged(nameof(ThumbnailFontSize));
-            }
-        }
-
-        public async void ToggleThumbnailMode()
-        {
-            IsThumbnailMode = !IsThumbnailMode;
-            if (IsThumbnailMode)
-            {
-                await LoadThumbnailsAsync();
-            }
-        }
-
-        private async System.Threading.Tasks.Task LoadThumbnailsAsync()
-        {
-            var config = ConfigHelper.loadedConfig;
-            var itemsToLoad = ActiveListItems.ToList();
-
-            // Limit concurrency to avoid thread pool starvation and memory exhaustion on large folders
-            using var semaphore = new System.Threading.SemaphoreSlim(4);
-
-            var tasks = itemsToLoad.Select(async item =>
-            {
-                await semaphore.WaitAsync();
-                try
-                {
-                    await item.LoadThumbnailAsync(config);
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
-
-            await System.Threading.Tasks.Task.WhenAll(tasks);
-        }
-
         private double _previewHeight;
         public double PreviewHeight
         {
@@ -275,11 +209,6 @@ namespace QuickViewFile.ViewModel
                 catch
                 {
 
-                }
-
-                if (IsThumbnailMode)
-                {
-                    System.Threading.Tasks.Task.Run(() => LoadThumbnailsAsync());
                 }
             });
         }
@@ -572,6 +501,63 @@ namespace QuickViewFile.ViewModel
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private bool _isThumbnailMode = false;
+        public bool IsThumbnailMode
+        {
+            get => _isThumbnailMode;
+            set
+            {
+                _isThumbnailMode = value;
+                OnPropertyChanged(nameof(IsThumbnailMode));
+            }
+        }
+
+        private double _thumbnailSize = 200;
+        public double ThumbnailSize
+        {
+            get => _thumbnailSize;
+            set
+            {
+                _thumbnailSize = value;
+                OnPropertyChanged(nameof(ThumbnailSize));
+            }
+        }
+
+        private double _thumbnailFontSize = 13;
+        public double ThumbnailFontSize
+        {
+            get => _thumbnailFontSize;
+            set
+            {
+                _thumbnailFontSize = value;
+                OnPropertyChanged(nameof(ThumbnailFontSize));
+            }
+        }
+
+        public async System.Threading.Tasks.Task LoadThumbnailsAsync()
+        {
+            var config = ConfigHelper.loadedConfig;
+            var itemsToLoad = ActiveListItems.ToList();
+
+            // Limit concurrency to avoid thread pool starvation and memory exhaustion on large folders
+            using var semaphore = new System.Threading.SemaphoreSlim(4);
+
+            var tasks = itemsToLoad.Select(async item =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    await item.LoadThumbnailAsync(config);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+        }
 
         private void ParentDir_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
