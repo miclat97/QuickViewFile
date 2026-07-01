@@ -71,7 +71,7 @@ namespace QuickViewFile.Models
 
         public bool IsVideoThumbnail => ThumbnailVideoSource != null;
 
-        public async System.Threading.Tasks.Task LoadThumbnailAsync(ConfigModel config)
+        public async System.Threading.Tasks.Task LoadThumbnailAsync(ConfigModel config, System.Threading.CancellationToken cancellationToken)
         {
             if (IsDirectory || Name == "..") return;
 
@@ -89,17 +89,20 @@ namespace QuickViewFile.Models
             var musicExtensions = QuickViewFile.Helpers.ConfigHelper.GetStringsFromCommaSeparatedString(config.MusicExtensions);
             var videoExtension = QuickViewFile.Helpers.ConfigHelper.GetStringsFromCommaSeparatedString(config.VideoExtensions);
 
+            if (cancellationToken.IsCancellationRequested) return;
+
             if (imageExtensions.Contains(ext))
             {
                 try
                 {
-                    ThumbnailImageSource = await System.Threading.Tasks.Task.Run(() => QuickViewFile.Helpers.LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath));
+                    var source = await System.Threading.Tasks.Task.Run(() => QuickViewFile.Helpers.LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath), cancellationToken);
+                    if (!cancellationToken.IsCancellationRequested) ThumbnailImageSource = source;
                 }
                 catch { }
             }
             else if (videoExtension.Contains(ext))
             {
-                ThumbnailVideoSource = new Uri(filePath);
+                if (!cancellationToken.IsCancellationRequested) ThumbnailVideoSource = new Uri(filePath);
             }
             else if (!musicExtensions.Contains(ext))
             {
@@ -108,12 +111,13 @@ namespace QuickViewFile.Models
                     System.IO.FileInfo fileInfo = new System.IO.FileInfo(filePath);
                     if (fileInfo.Length < config.MaxSizePreviewKB * 1024)
                     {
-                        ThumbnailTextPreview = await System.IO.File.ReadAllTextAsync(filePath);
-                        if (ThumbnailTextPreview.Length > 200) ThumbnailTextPreview = ThumbnailTextPreview.Substring(0, 200) + "...";
+                        var text = await System.IO.File.ReadAllTextAsync(filePath, cancellationToken);
+                        if (text.Length > 200) text = text.Substring(0, 200) + "...";
+                        if (!cancellationToken.IsCancellationRequested) ThumbnailTextPreview = text;
                     }
                     else
                     {
-                        ThumbnailTextPreview = $"File is larger than {config.MaxSizePreviewKB} KB";
+                        if (!cancellationToken.IsCancellationRequested) ThumbnailTextPreview = $"File is larger than {config.MaxSizePreviewKB} KB";
                     }
                 }
                 catch { }
