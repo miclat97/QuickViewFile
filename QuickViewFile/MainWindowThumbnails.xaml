@@ -37,7 +37,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <Grid Focusable="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -61,6 +61,7 @@
         <ListView Grid.Row="1"
                   x:Name="ThumbnailsListView"
                   Focusable="True"
+                  IsTabStop="False"
                   SelectionMode="Extended"
                   SelectionChanged="FilesListView_SelectionChanged"
                   ItemsSource="{Binding ActiveListItems}"
