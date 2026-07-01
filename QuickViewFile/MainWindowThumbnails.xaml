@@ -37,7 +37,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Focusable="False">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -63,7 +63,6 @@
                   Focusable="False"
                   FocusManager.IsFocusScope="True"
                   IsTabStop="False"
-                  Panel.ZIndex="0"
                   SelectionMode="Extended"
                   SelectionChanged="FilesListView_SelectionChanged"
                   ItemsSource="{Binding ActiveListItems}"
