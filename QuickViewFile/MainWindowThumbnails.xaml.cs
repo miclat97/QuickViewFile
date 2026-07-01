@@ -68,13 +68,17 @@ namespace QuickViewFile
             if (e.Key == Key.Add || e.Key == Key.OemPlus)
             {
                 vm.ThumbnailSize += 20;
+                vm.ThumbnailFontSize += 2;
                 if (vm.ThumbnailSize > 800) vm.ThumbnailSize = 800;
+                if (vm.ThumbnailFontSize > 40) vm.ThumbnailFontSize = 40;
                 e.Handled = true;
             }
             else if (e.Key == Key.Subtract || e.Key == Key.OemMinus)
             {
                 vm.ThumbnailSize -= 20;
+                vm.ThumbnailFontSize -= 2;
                 if (vm.ThumbnailSize < 50) vm.ThumbnailSize = 50;
+                if (vm.ThumbnailFontSize < 8) vm.ThumbnailFontSize = 8;
                 e.Handled = true;
             }
             else if (e.Key == Key.Escape)
@@ -130,6 +134,14 @@ namespace QuickViewFile
                     ThumbnailsListView.SelectedItem = itemToSelect;
                     ThumbnailsListView.ScrollIntoView(itemToSelect);
                     if (DataContext is FilesListViewModel viewm && ThumbnailsListView.SelectedItem is ItemList sel) viewm.SelectedItem = sel;
+
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (ThumbnailsListView.ItemContainerGenerator.ContainerFromItem(ThumbnailsListView.SelectedItem) is ListViewItem item)
+                        {
+                            item.Focus();
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.Loaded);
                 }
                 e.Handled = true;
                 return;
@@ -138,26 +150,47 @@ namespace QuickViewFile
             try
             {
                 bool handled = false;
-                if (e.Key == Key.Right || e.Key == Key.Down)
+
+                // Calculate items per row based on ActualWidth and ThumbnailSize (plus margin logic approx)
+                double itemTotalWidth = vm.ThumbnailSize + 10; // 5 margin on each side
+                int itemsPerRow = Math.Max(1, (int)(ThumbnailsListView.ActualWidth / itemTotalWidth));
+
+                if (e.Key == Key.Right)
                 {
                     if (ThumbnailsListView.SelectedIndex < ThumbnailsListView.Items.Count - 1)
                         ThumbnailsListView.SelectedIndex++;
                     handled = true;
                 }
-                else if (e.Key == Key.Left || e.Key == Key.Up)
+                else if (e.Key == Key.Left)
                 {
                     if (ThumbnailsListView.SelectedIndex > 0)
                         ThumbnailsListView.SelectedIndex--;
                     handled = true;
                 }
+                else if (e.Key == Key.Down)
+                {
+                    if (ThumbnailsListView.SelectedIndex + itemsPerRow < ThumbnailsListView.Items.Count)
+                        ThumbnailsListView.SelectedIndex += itemsPerRow;
+                    else
+                        ThumbnailsListView.SelectedIndex = ThumbnailsListView.Items.Count - 1;
+                    handled = true;
+                }
+                else if (e.Key == Key.Up)
+                {
+                    if (ThumbnailsListView.SelectedIndex - itemsPerRow >= 0)
+                        ThumbnailsListView.SelectedIndex -= itemsPerRow;
+                    else
+                        ThumbnailsListView.SelectedIndex = 0;
+                    handled = true;
+                }
                 else if (e.Key == Key.PageDown)
                 {
-                    ThumbnailsListView.SelectedIndex = Math.Min(ThumbnailsListView.Items.Count - 1, ThumbnailsListView.SelectedIndex + 10);
+                    ThumbnailsListView.SelectedIndex = Math.Min(ThumbnailsListView.Items.Count - 1, ThumbnailsListView.SelectedIndex + (itemsPerRow * 3));
                     handled = true;
                 }
                 else if (e.Key == Key.PageUp)
                 {
-                    ThumbnailsListView.SelectedIndex = Math.Max(0, ThumbnailsListView.SelectedIndex - 10);
+                    ThumbnailsListView.SelectedIndex = Math.Max(0, ThumbnailsListView.SelectedIndex - (itemsPerRow * 3));
                     handled = true;
                 }
                 else if (e.Key == Key.Home)
@@ -175,6 +208,15 @@ namespace QuickViewFile
                 {
                     ThumbnailsListView.SetCurrentValue(ListView.SelectedIndexProperty, ThumbnailsListView.SelectedIndex);
                     ThumbnailsListView.ScrollIntoView(ThumbnailsListView.SelectedItem);
+
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (ThumbnailsListView.ItemContainerGenerator.ContainerFromItem(ThumbnailsListView.SelectedItem) is ListViewItem item)
+                        {
+                            item.Focus();
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.Loaded);
+
                     e.Handled = true;
                     return;
                 }
@@ -293,12 +335,9 @@ namespace QuickViewFile
                 MessageBox.Show($"Error pasting files: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            if (_currentOperation == FileOperation.Move)
-            {
-                _clipboardFiles.Clear();
-                PasteButton.Visibility = Visibility.Collapsed;
-                _currentOperation = FileOperation.None;
-            }
+            _clipboardFiles.Clear();
+            PasteButton.Visibility = Visibility.Collapsed;
+            _currentOperation = FileOperation.None;
 
             vm.RefreshFiles();
             _ = vm.LoadThumbnailsAsync();

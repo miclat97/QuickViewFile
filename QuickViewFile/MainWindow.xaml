@@ -110,7 +110,7 @@
 
                   ClipToBounds="True"
                   Width="Auto"
-                  FocusManager.IsFocusScope="True"
+                  FocusManager.IsFocusScope="False"
                   ScrollViewer.PanningMode="VerticalFirst"
                   SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                   IsManipulationEnabled="True"

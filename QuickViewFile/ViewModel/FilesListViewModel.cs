@@ -149,10 +149,6 @@ namespace QuickViewFile.ViewModel
                     parentDir.PropertyChanged += ParentDir_PropertyChanged;
 
                     ActiveListItems.Add(parentDir);
-                    if(fileToSelect == null)
-                    {
-                        SelectedItem = parentDir;
-                    }
                 }
 
                 foreach (DirectoryInfo folder in foldersInDirectory)
@@ -203,30 +199,25 @@ namespace QuickViewFile.ViewModel
                         }
                     }
                 }
-                if (fileToSelect == null)
-                {
-                    SelectedItem = ActiveListItems.FirstOrDefault();
-                }
-                else
-                {
-                    try
-                    {
-                        ItemList? selectThisFile = null;
-                        if (!string.IsNullOrWhiteSpace(fileToSelect))
-                        {
-                            string targetName = Path.GetFileName(fileToSelect);
-                            selectThisFile = ActiveListItems.FirstOrDefault(x => string.Equals(x.Name, targetName, StringComparison.OrdinalIgnoreCase) && !x.IsDirectory);
-                        }
-                        if (selectThisFile is not null)
-                            SelectedItem = selectThisFile;
-                        else
-                            SelectedItem = ActiveListItems.FirstOrDefault();
-                    }
-                    catch
-                    {
 
+                try
+                {
+                    ItemList? selectThisFile = null;
+                    if (!string.IsNullOrWhiteSpace(fileToSelect))
+                    {
+                        string targetName = Path.GetFileName(fileToSelect);
+                        selectThisFile = ActiveListItems.FirstOrDefault(x => string.Equals(x.Name, targetName, StringComparison.OrdinalIgnoreCase) && !x.IsDirectory);
                     }
+                    if (selectThisFile is not null)
+                        SelectedItem = selectThisFile;
+                    else
+                        SelectedItem = ActiveListItems.FirstOrDefault();
                 }
+                catch
+                {
+
+                }
+
                 if (IsThumbnailMode)
                 {
                     _ = LoadThumbnailsAsync();
