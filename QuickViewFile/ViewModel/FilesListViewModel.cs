@@ -586,6 +586,10 @@ namespace QuickViewFile.ViewModel
                 {
                     // Ignore cancellation
                 }
+                catch (Exception)
+                {
+                    // Catch any other exceptions that might occur during rapid cancellation
+                }
                 finally
                 {
                     if (lockAcquired)
@@ -599,7 +603,7 @@ namespace QuickViewFile.ViewModel
             {
                 await System.Threading.Tasks.Task.WhenAll(tasks);
             }
-            catch (OperationCanceledException)
+            catch (Exception)
             {
             }
         }
