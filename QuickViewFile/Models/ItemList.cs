@@ -57,19 +57,16 @@ namespace QuickViewFile.Models
             }
         }
 
-        private Uri? _thumbnailVideoSource;
-        public Uri? ThumbnailVideoSource
+        private bool _isVideoThumbnail;
+        public bool IsVideoThumbnail
         {
-            get => _thumbnailVideoSource;
+            get => _isVideoThumbnail;
             set
             {
-                _thumbnailVideoSource = value;
-                OnPropertyChanged(nameof(ThumbnailVideoSource));
+                _isVideoThumbnail = value;
                 OnPropertyChanged(nameof(IsVideoThumbnail));
             }
         }
-
-        public bool IsVideoThumbnail => ThumbnailVideoSource != null;
 
         public async System.Threading.Tasks.Task LoadThumbnailAsync(ConfigModel config, System.Threading.CancellationToken cancellationToken)
         {
@@ -102,7 +99,7 @@ namespace QuickViewFile.Models
             }
             else if (videoExtension.Contains(ext))
             {
-                if (!cancellationToken.IsCancellationRequested) ThumbnailVideoSource = new Uri(filePath);
+                if (!cancellationToken.IsCancellationRequested) IsVideoThumbnail = true;
             }
             else if (!musicExtensions.Contains(ext))
             {

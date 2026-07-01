@@ -129,7 +129,7 @@ namespace QuickViewFile.ViewModel
                 foreach (var item in ActiveListItems)
                 {
                     item.ThumbnailImageSource = null;
-                    item.ThumbnailVideoSource = null;
+                    item.IsVideoThumbnail = false;
                     item.ThumbnailTextPreview = null;
                 }
 
@@ -554,6 +554,11 @@ namespace QuickViewFile.ViewModel
 
         private System.Threading.CancellationTokenSource? _thumbnailCancellationTokenSource;
 
+        public void CancelThumbnails()
+        {
+            _thumbnailCancellationTokenSource?.Cancel();
+        }
+
         public async System.Threading.Tasks.Task LoadThumbnailsAsync()
         {
             _thumbnailCancellationTokenSource?.Cancel();
@@ -571,10 +576,16 @@ namespace QuickViewFile.ViewModel
             {
                 if (token.IsCancellationRequested) return;
 
-                await semaphore.WaitAsync(token);
+                bool lockAcquired = false;
                 try
                 {
-                    await item.LoadThumbnailAsync(config, token);
+                    await semaphore.WaitAsync(token);
+                    lockAcquired = true;
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        await item.LoadThumbnailAsync(config, token);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -582,7 +593,10 @@ namespace QuickViewFile.ViewModel
                 }
                 finally
                 {
-                    semaphore.Release();
+                    if (lockAcquired)
+                    {
+                        semaphore.Release();
+                    }
                 }
             });
 
