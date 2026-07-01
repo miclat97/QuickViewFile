@@ -259,7 +259,7 @@ namespace QuickViewFile
         {
             if (_clipboardFiles.Count == 0 || _currentOperation == FileOperation.None) return;
 
-            string targetDirectory = Directory.GetCurrentDirectory(); // Gets current folder
+            string targetDirectory = vm.FolderPath;
 
             try
             {

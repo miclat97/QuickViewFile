@@ -95,7 +95,7 @@ namespace QuickViewFile.Models
             {
                 try
                 {
-                    var source = await System.Threading.Tasks.Task.Run(() => QuickViewFile.Helpers.LoadImageWithOrientationHelper.LoadImageWithOrientation(filePath), cancellationToken);
+                    var source = await System.Threading.Tasks.Task.Run(() => QuickViewFile.Helpers.LoadImageWithOrientationHelper.LoadThumbnailWithOrientation(filePath, 300), cancellationToken);
                     if (!cancellationToken.IsCancellationRequested) ThumbnailImageSource = source;
                 }
                 catch { }
