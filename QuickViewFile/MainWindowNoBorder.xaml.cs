@@ -245,7 +245,8 @@ namespace QuickViewFile
                 _clipboardFiles.Clear();
                 foreach (ItemList item in itemsToProcess)
                 {
-                    if (!item.IsDirectory && item.Name != "..")
+                    // Dodaj zarówno foldery jak i pliki, ale wyklucz ".." i ADS
+                    if (item.Name != ".." && !item.IsAlternativeDataStream)
                     {
                         _clipboardFiles.Add(item.FullPath);
                     }
@@ -258,7 +259,36 @@ namespace QuickViewFile
                     NewFolderButton.Visibility = Visibility.Collapsed;
                     PasteButton.Visibility = Visibility.Visible;
                     CancelPasteButton.Visibility = Visibility.Visible;
-                    PasteButton.Content = $"Paste ({_clipboardFiles.Count} files)";
+
+                    // Policz pliki i foldery (bezpieczna iteracja bez wyjątków dla nieistniejących ścieżek)
+                    int fileCount = 0;
+                    int folderCount = 0;
+
+                    foreach (var path in _clipboardFiles)
+                    {
+                        try
+                        {
+                            if (Directory.Exists(path))
+                                folderCount++;
+                            else if (File.Exists(path))
+                                fileCount++;
+                        }
+                        catch
+                        {
+                            // Bezpiecznie ignoruj błędy dostępu
+                            fileCount++;
+                        }
+                    }
+
+                    string itemsLabel = "";
+                    if (fileCount > 0 && folderCount > 0)
+                        itemsLabel = $"Paste ({folderCount} folders, {fileCount} files)";
+                    else if (folderCount > 0)
+                        itemsLabel = $"Paste ({folderCount} folders)";
+                    else
+                        itemsLabel = $"Paste ({fileCount} files)";
+
+                    PasteButton.Content = itemsLabel;
                 }
             }
         }
@@ -270,21 +300,36 @@ namespace QuickViewFile
                 var itemsToDelete = GetSelectedOrCheckedItems().ToList();
                 if (itemsToDelete.Count > 0)
                 {
-                    var result = MessageBox.Show($"Are you sure you want to delete {itemsToDelete.Count} items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    // Filtruj - wyklucz ADS i ".."
+                    var validItems = itemsToDelete.Where(x => x.Name != ".." && !x.IsAlternativeDataStream).ToList();
+
+                    if (validItems.Count == 0)
+                        return;
+
+                    var result = MessageBox.Show(
+                        $"Are you sure you want to delete {validItems.Count} items?",
+                        "Confirm Delete",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
                     if (result == MessageBoxResult.Yes)
                     {
-                        foreach (ItemList item in itemsToDelete)
+                        foreach (ItemList item in validItems)
                         {
-                            if (!item.IsDirectory && item.Name != "..")
+                            try
                             {
-                                try
+                                if (item.IsDirectory)
+                                {
+                                    DirectoryOperationHelper.DeleteDirectoryRecursive(item.FullPath);
+                                }
+                                else
                                 {
                                     File.Delete(item.FullPath);
                                 }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
-                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Failed to delete {item.Name}: {ex.Message}");
                             }
                         }
                         vm.RefreshFiles();
@@ -293,46 +338,44 @@ namespace QuickViewFile
             }
         }
 
-        private void PasteFiles_Click(object sender, RoutedEventArgs e)
+        private async void PasteFiles_Click(object sender, RoutedEventArgs e)
         {
-            if (_clipboardFiles.Count > 0 && DataContext is FilesListViewModel vm)
+            if (_clipboardFiles.Count > 0 && DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
             {
+                var clipboardCopy = new System.Collections.Generic.List<string>(_clipboardFiles);
                 string targetDir = vm.FolderPath;
-                foreach (string file in _clipboardFiles)
-                {
-                    try
-                    {
-                        string fileName = Path.GetFileName(file);
-                        string destFile = Path.Combine(targetDir, fileName);
+                int currentOp = _currentOperation == FileOperation.Copy ? 1 : (_currentOperation == FileOperation.Move ? 2 : 0);
 
-                        if (_currentOperation == FileOperation.Copy)
-                        {
-                            File.Copy(file, destFile, true);
-                        }
-                        else if (_currentOperation == FileOperation.Move)
-                        {
-                            if (file != destFile)
-                            {
-                                File.Move(file, destFile);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Operation failed for {file}: {ex.Message}");
-                    }
-                }
+                FileOperationsPanel.Visibility = Visibility.Collapsed;
+                ProgressPanel.Visibility = Visibility.Visible;
+                FilesListView.IsEnabled = false;
+                OperationProgressBar.Value = 0;
+                OperationStatusText.Text = "Preparing...";
 
-                if (_currentOperation == FileOperation.Move || _currentOperation == FileOperation.Copy)
+                _pasteCts = new System.Threading.CancellationTokenSource();
+
+                await PasteLogic.PerformPasteAsync(clipboardCopy, targetDir, currentOp, this, OperationProgressBar, OperationStatusText, _pasteCts, () =>
                 {
-                    _clipboardFiles.Clear();
-                    _currentOperation = FileOperation.None;
-                    PasteButton.Visibility = Visibility.Collapsed;
-                    MoveButton.Visibility = Visibility.Visible;
-                    CopyButton.Visibility = Visibility.Visible;
-                    DeleteButton.Visibility = Visibility.Visible;
-                }
-                vm.RefreshFiles();
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        FileOperationsPanel.Visibility = Visibility.Visible;
+                        ProgressPanel.Visibility = Visibility.Collapsed;
+                        FilesListView.IsEnabled = true;
+
+                        _clipboardFiles.Clear();
+                        _currentOperation = FileOperation.None;
+                        PasteButton.Visibility = Visibility.Collapsed;
+                        CancelPasteButton.Visibility = Visibility.Collapsed;
+                        MoveButton.Visibility = Visibility.Visible;
+                        CopyButton.Visibility = Visibility.Visible;
+                        DeleteButton.Visibility = Visibility.Visible;
+                        NewFolderButton.Visibility = Visibility.Visible;
+                        vm.RefreshFiles();
+
+                        _pasteCts?.Dispose();
+                        _pasteCts = null;
+                    });
+                });
             }
         }
 
