@@ -265,7 +265,9 @@ namespace QuickViewFile
                     MoveButton.Visibility = Visibility.Collapsed;
                     CopyButton.Visibility = Visibility.Collapsed;
                     DeleteButton.Visibility = Visibility.Collapsed;
+                    NewFolderButton.Visibility = Visibility.Collapsed;
                     PasteButton.Visibility = Visibility.Visible;
+                    CancelPasteButton.Visibility = Visibility.Visible;
 
                     // Policz pliki i foldery (bezpieczna iteracja bez wyjątków dla nieistniejących ścieżek)
                     int fileCount = 0;

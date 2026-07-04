@@ -255,7 +255,9 @@ namespace QuickViewFile
                     MoveButton.Visibility = Visibility.Collapsed;
                     CopyButton.Visibility = Visibility.Collapsed;
                     DeleteButton.Visibility = Visibility.Collapsed;
+                    NewFolderButton.Visibility = Visibility.Collapsed;
                     PasteButton.Visibility = Visibility.Visible;
+                    CancelPasteButton.Visibility = Visibility.Visible;
                     PasteButton.Content = $"Paste ({_clipboardFiles.Count} files)";
                 }
             }

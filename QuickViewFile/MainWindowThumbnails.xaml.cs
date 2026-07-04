@@ -321,7 +321,12 @@ namespace QuickViewFile
 
                 if (_clipboardFiles.Count > 0)
                 {
+                    MoveButton.Visibility = Visibility.Collapsed;
+                    CopyButton.Visibility = Visibility.Collapsed;
+                    DeleteButton.Visibility = Visibility.Collapsed;
+                    NewFolderButton.Visibility = Visibility.Collapsed;
                     PasteButton.Visibility = Visibility.Visible;
+                    CancelPasteButton.Visibility = Visibility.Visible;
                     int folderCount = _clipboardFiles.Count(f => Directory.Exists(f));
                     int fileCount = _clipboardFiles.Count - folderCount;
 
