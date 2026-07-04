@@ -63,7 +63,10 @@ namespace QuickViewFile
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     var overwriteDialog = new OverwriteDialog($"'{itemName}' already exists. What do you want to do?");
-                                    overwriteDialog.Owner = ownerWindow;
+                                    if (ownerWindow != null && ownerWindow.IsVisible)
+                                    {
+                                        overwriteDialog.Owner = ownerWindow;
+                                    }
                                     overwriteDialog.ShowDialog();
                                     action = overwriteDialog.SelectedAction;
                                     doForAll = overwriteDialog.DoForAll;
