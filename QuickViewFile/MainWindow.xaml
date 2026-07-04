@@ -46,7 +46,7 @@
 
                         <TextBox
               Grid.Column="0"
-              Text="{Binding SelectedItem.FullPath, Mode=OneWay}"
+              Text="{Binding FolderPath, Mode=OneWay}"
               FontWeight="Bold"
               Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
               Name="FileFullPathTextBox"
@@ -118,6 +118,7 @@
                 </Grid>
             <ListView Grid.Row="1"
                   x:Name="FilesListView"
+                  PreviewMouseLeftButtonDown="FilesListView_PreviewMouseLeftButtonDown"
                   Focusable="False"
                   IsTabStop="False"
                   SelectionMode="Extended"

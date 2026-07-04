@@ -46,7 +46,7 @@
 
         <Grid Grid.Row="0" x:Name="TopInfoPanel">
             <TextBox
-              Text="{Binding SelectedItem.FullPath, Mode=OneWay}"
+              Text="{Binding FolderPath, Mode=OneWay}"
               FontWeight="Bold"
               Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
               Name="FileFullPathTextBox"
@@ -93,6 +93,7 @@
 
         <ListView Grid.Row="2"
                   x:Name="ThumbnailsListView"
+                  PreviewMouseLeftButtonDown="ThumbnailsListView_PreviewMouseLeftButtonDown"
                   Focusable="True"
                   IsTabStop="False"
                   SelectionMode="Extended"

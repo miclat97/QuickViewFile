@@ -474,5 +474,51 @@ namespace QuickViewFile
             if (_pasteCts != null)
                 _pasteCts.Cancel();
         }
+
+        private int _lastCheckedIndex = -1;
+
+        private void ThumbnailsListView_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var dependencyObject = e.OriginalSource as System.Windows.DependencyObject;
+            var listViewItem = FindVisualParent<System.Windows.Controls.ListViewItem>(dependencyObject);
+
+            if (listViewItem != null && DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
+            {
+                var clickedData = listViewItem.DataContext as QuickViewFile.Models.ItemList;
+                if (clickedData == null) return;
+
+                int currentIndex = vm.ActiveListItems.IndexOf(clickedData);
+                if (currentIndex == -1) return;
+
+                if (System.Windows.Input.Keyboard.Modifiers.HasFlag(System.Windows.Input.ModifierKeys.Shift) && _lastCheckedIndex != -1)
+                {
+                    int start = Math.Min(_lastCheckedIndex, currentIndex);
+                    int end = Math.Max(_lastCheckedIndex, currentIndex);
+
+                    for (int i = start; i <= end; i++)
+                    {
+                        vm.ActiveListItems[i].IsChecked = true;
+                    }
+                    e.Handled = true;
+                }
+                else
+                {
+                    _lastCheckedIndex = currentIndex;
+                }
+            }
+        }
+
+        public static T FindVisualParent<T>(System.Windows.DependencyObject child) where T : System.Windows.DependencyObject
+        {
+            System.Windows.DependencyObject parentObject = System.Windows.Media.VisualTreeHelper.GetParent(child);
+
+            if (parentObject == null) return null;
+
+            T parent = parentObject as T;
+            if (parent != null)
+                return parent;
+            else
+                return FindVisualParent<T>(parentObject);
+        }
 }
 }

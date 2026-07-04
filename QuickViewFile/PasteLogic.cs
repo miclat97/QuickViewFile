@@ -49,7 +49,7 @@ namespace QuickViewFile
                         string itemName = Path.GetFileName(itemPath.TrimEnd(Path.DirectorySeparatorChar));
                         string destPath = Path.Combine(targetDir, itemName);
 
-                        Application.Current.Dispatcher.Invoke(() => statusText.Text = $"Processing: {itemName}");
+                        Application.Current.Dispatcher.InvokeAsync(() => statusText.Text = $"Processing: {itemName}");
 
                         if (File.Exists(destPath) || Directory.Exists(destPath))
                         {
@@ -78,11 +78,7 @@ namespace QuickViewFile
                                 else
                                     copiedBytes += new FileInfo(itemPath).Length;
 
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    if (totalBytes > 0)
-                                        progressBar.Value = (double)copiedBytes / totalBytes * 100;
-                                });
+                                Application.Current.Dispatcher.InvokeAsync(() => { if (totalBytes > 0) progressBar.Value = (double)copiedBytes / totalBytes * 100; });
                                 continue;
                             }
                             else if (action == OverwriteAction.Replace)
@@ -96,15 +92,28 @@ namespace QuickViewFile
                             }
                         }
 
+
+                        int lastProgressPercentage = -1;
+                        DateTime lastUpdateTime = DateTime.Now;
+
                         Action<long> progressCallback = (bytes) =>
                         {
                             copiedBytes += bytes;
-                            Application.Current.Dispatcher.Invoke(() =>
+                            if (totalBytes > 0)
                             {
-                                if (totalBytes > 0)
-                                    progressBar.Value = (double)copiedBytes / totalBytes * 100;
-                            });
+                                int percentage = (int)((double)copiedBytes / totalBytes * 100);
+                                if (percentage > lastProgressPercentage || (DateTime.Now - lastUpdateTime).TotalMilliseconds > 100)
+                                {
+                                    lastProgressPercentage = percentage;
+                                    lastUpdateTime = DateTime.Now;
+                                    Application.Current.Dispatcher.InvokeAsync(() =>
+                                    {
+                                        progressBar.Value = percentage;
+                                    });
+                                }
+                            }
                         };
+
 
                         if (currentOperation == 1) // Copy
                         {

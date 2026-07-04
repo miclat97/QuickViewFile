@@ -39,6 +39,7 @@ namespace QuickViewFile.ViewModel
             }
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version!.ToString();
             StatusBarText = $"QuickViewFile v {appVersion}";
+            OnPropertyChanged(nameof(FolderPath));
         }
 
         private ItemList? _selectedItem;
