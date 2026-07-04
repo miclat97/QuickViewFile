@@ -564,7 +564,7 @@ namespace QuickViewFile.ViewModel
             var itemsToLoad = ActiveListItems.ToList();
 
             // Limit concurrency based on CPU cores
-            int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 4);
+            int maxConcurrency = Math.Max(1, ConfigHelper.loadedConfig.MaxThumbnailThreads);
             using var semaphore = new System.Threading.SemaphoreSlim(maxConcurrency);
 
             var tasks = itemsToLoad.Select(async item =>
