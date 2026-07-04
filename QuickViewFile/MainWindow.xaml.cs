@@ -347,120 +347,44 @@ namespace QuickViewFile
             }
         }
 
-        private void PasteFiles_Click(object sender, RoutedEventArgs e)
+        private async void PasteFiles_Click(object sender, RoutedEventArgs e)
         {
-            if (_clipboardFiles.Count > 0 && DataContext is FilesListViewModel vm)
+            if (_clipboardFiles.Count > 0 && DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
             {
+                var clipboardCopy = new System.Collections.Generic.List<string>(_clipboardFiles);
                 string targetDir = vm.FolderPath;
-                int successCount = 0;
-                var failedItems = new List<string>();
+                int currentOp = _currentOperation == FileOperation.Copy ? 1 : (_currentOperation == FileOperation.Move ? 2 : 0);
 
-                foreach (string itemPath in _clipboardFiles)
+                FileOperationsPanel.Visibility = Visibility.Collapsed;
+                ProgressPanel.Visibility = Visibility.Visible;
+                FilesListView.IsEnabled = false;
+                OperationProgressBar.Value = 0;
+                OperationStatusText.Text = "Preparing...";
+
+                _pasteCts = new System.Threading.CancellationTokenSource();
+
+                await PasteLogic.PerformPasteAsync(clipboardCopy, targetDir, currentOp, this, OperationProgressBar, OperationStatusText, _pasteCts, () =>
                 {
-                    try
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        // Sprawdzenie czy element istnieje
-                        if (!File.Exists(itemPath) && !Directory.Exists(itemPath))
-                        {
-                            failedItems.Add($"'{Path.GetFileName(itemPath)}' - source not found");
-                            continue;
-                        }
+                        FileOperationsPanel.Visibility = Visibility.Visible;
+                        ProgressPanel.Visibility = Visibility.Collapsed;
+                        FilesListView.IsEnabled = true;
 
-                        bool isDirectory = Directory.Exists(itemPath);
-                        string itemName = Path.GetFileName(itemPath.TrimEnd(Path.DirectorySeparatorChar));
-                        string destPath = Path.Combine(targetDir, itemName);
+                        _clipboardFiles.Clear();
+                        _currentOperation = FileOperation.None;
+                        PasteButton.Visibility = Visibility.Collapsed;
+                        CancelPasteButton.Visibility = Visibility.Collapsed;
+                        MoveButton.Visibility = Visibility.Visible;
+                        CopyButton.Visibility = Visibility.Visible;
+                        DeleteButton.Visibility = Visibility.Visible;
+                        NewFolderButton.Visibility = Visibility.Visible;
+                        vm.RefreshFiles();
 
-                        // Obsługuj konflikty - jeśli cel już istnieje
-                        if (File.Exists(destPath) || Directory.Exists(destPath))
-                        {
-                            var result = MessageBox.Show(
-                                $"'{itemName}' already exists. Overwrite?",
-                                "File Exists",
-                                MessageBoxButton.YesNo,
-                                MessageBoxImage.Question);
-
-                            if (result != MessageBoxResult.Yes)
-                                continue;
-
-                            // Usuń istniejący plik/folder
-                            try
-                            {
-                                if (File.Exists(destPath))
-                                    File.Delete(destPath);
-                                else if (Directory.Exists(destPath))
-                                    DirectoryOperationHelper.DeleteDirectoryRecursive(destPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                failedItems.Add($"'{itemName}' - failed to remove existing: {ex.Message}");
-                                continue;
-                            }
-                        }
-
-                        // Wykonaj operację Copy/Move z zachowaniem struktury
-                        if (_currentOperation == FileOperation.Copy)
-                        {
-                            if (isDirectory)
-                            {
-                                // Kopiuj folder z całą strukturą (bez ADS)
-                                // destPath zawiera już pełną ścieżkę z nazwą folderu
-                                DirectoryOperationHelper.CopyDirectoryRecursive(itemPath, destPath, excludeAds: true);
-                            }
-                            else
-                            {
-                                // Kopiuj plik bezpiecznie (bez ADS)
-                                DirectoryOperationHelper.CopyFileSafe(itemPath, destPath);
-                            }
-                        }
-                        else if (_currentOperation == FileOperation.Move)
-                        {
-                            if (isDirectory)
-                            {
-                                // Przenieś folder z całą strukturą (bez ADS)
-                                // destPath zawiera już pełną ścieżkę z nazwą folderu
-                                DirectoryOperationHelper.MoveDirectoryRecursive(itemPath, destPath, excludeAds: true);
-                            }
-                            else
-                            {
-                                // Przenieś plik bezpiecznie (bez ADS)
-                                if (itemPath != destPath)
-                                    DirectoryOperationHelper.MoveFile(itemPath, destPath);
-                            }
-                        }
-
-                        successCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        failedItems.Add($"'{Path.GetFileName(itemPath)}' - {ex.Message}");
-                    }
-                }
-
-                if (_currentOperation == FileOperation.Move || _currentOperation == FileOperation.Copy)
-                {
-                    _clipboardFiles.Clear();
-                    _currentOperation = FileOperation.None;
-                    PasteButton.Visibility = Visibility.Collapsed;
-                    MoveButton.Visibility = Visibility.Visible;
-                    CopyButton.Visibility = Visibility.Visible;
-                    DeleteButton.Visibility = Visibility.Visible;
-
-                    // Pokaż rezultat
-                    string message = $"Operation completed: {successCount} items processed";
-                    if (failedItems.Count > 0)
-                    {
-                        message += $", {failedItems.Count} failed:\n" + string.Join("\n", failedItems.Take(5));
-                        if (failedItems.Count > 5)
-                            message += $"\n... and {failedItems.Count - 5} more";
-                        MessageBox.Show(message, "Operation Result", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                    else if (successCount > 0)
-                    {
-                        MessageBox.Show(message, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                }
-
-                vm.RefreshFiles();
+                        _pasteCts?.Dispose();
+                        _pasteCts = null;
+                    });
+                });
             }
         }
 
