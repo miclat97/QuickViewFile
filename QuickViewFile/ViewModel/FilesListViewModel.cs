@@ -99,6 +99,12 @@ namespace QuickViewFile.ViewModel
 
         public void RefreshFiles(string? fileToSelect = null)
         {
+            if (fileToSelect != null && Directory.Exists(fileToSelect))
+            {
+                _folderPath = fileToSelect;
+                fileToSelect = null; // Don't try to select a directory like a file
+            }
+
             try
             {
                 DirectoryInfo check = new DirectoryInfo(_folderPath);
@@ -127,6 +133,7 @@ namespace QuickViewFile.ViewModel
 
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
+                OnPropertyChanged(nameof(FolderPath));
                 foreach (var item in ActiveListItems)
                 {
                     item.ThumbnailImageSource = null;
