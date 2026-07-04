@@ -99,7 +99,7 @@ namespace QuickViewFile.ViewModel
 
         public void RefreshFiles(string? fileToSelect = null)
         {
-            if (fileToSelect != null && Directory.Exists(fileToSelect))
+            if (fileToSelect != null && System.IO.Directory.Exists(fileToSelect))
             {
                 _folderPath = fileToSelect;
                 fileToSelect = null; // Don't try to select a directory like a file
@@ -107,7 +107,7 @@ namespace QuickViewFile.ViewModel
 
             try
             {
-                DirectoryInfo check = new DirectoryInfo(_folderPath);
+                System.IO.DirectoryInfo check = new System.IO.DirectoryInfo(_folderPath);
             }
             catch
             {
