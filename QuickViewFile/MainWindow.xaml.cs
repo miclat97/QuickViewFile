@@ -551,6 +551,11 @@ namespace QuickViewFile
 
         private void AppWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            if (System.Windows.Input.Keyboard.FocusedElement is System.Windows.Controls.TextBox)
+            {
+                return;
+            }
+
             if (e.Key == System.Windows.Input.Key.F5)
             {
                 if (DataContext is QuickViewFile.ViewModel.FilesListViewModel vm1)
