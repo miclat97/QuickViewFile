@@ -45,16 +45,20 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock
+                        <TextBox
               Grid.Column="0"
-              Text="{Binding SelectedItem.FullPath}"
+              Text="{Binding FolderPath, Mode=OneWay}"
               FontWeight="Bold"
               Foreground="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
-              Name="FileFullPathTextBlock"
+              Name="FileFullPathTextBox"
               FontSize="13"
-              Margin="0,0,0,0"
-              Padding="10,10,10,10"
-              TextWrapping="NoWrap" />
+              Margin="10,10,10,10"
+              Padding="5"
+              TextWrapping="NoWrap"
+              VerticalAlignment="Center"
+              BorderThickness="1"
+              Background="Transparent"
+              KeyDown="FileFullPathTextBox_KeyDown" />
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Hide UI (F11 to show)" Name="HideUIButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="HideUIButton_Click" ToolTip="Right mouse button or F11 can do it"/>
                 <Button Content="Rotate" Name="RotateButton" Height="24" Margin="0,8,10,8" Padding="10,0" Click="RotateButton_Click" ToolTip="TIP: * can do this"/>
@@ -77,19 +81,36 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Grid Grid.Row="0" Margin="0,0,0,5" x:Name="FileOperationsPanel">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" x:Name="ColMove"/>
-                        <ColumnDefinition Width="*" x:Name="ColCopy"/>
-                        <ColumnDefinition Width="*" x:Name="ColDelete"/>
-                    </Grid.ColumnDefinitions>
-                    <Button Content="Move" Click="MoveFiles_Click" Margin="0,0,2,0" Grid.Column="0" x:Name="MoveButton"/>
-                    <Button Content="Copy" Click="CopyFiles_Click" Margin="2,0,2,0" Grid.Column="1" x:Name="CopyButton"/>
-                    <Button Content="Delete" Click="DeleteFiles_Click" Margin="2,0,0,0" Grid.Column="2" x:Name="DeleteButton"/>
-                    <Button Content="Paste" Click="PasteFiles_Click" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PasteButton" Grid.Column="0" Grid.ColumnSpan="3"/>
+                                <Grid Grid.Row="0" Margin="0,0,0,5" x:Name="FileOperationsContainer">
+                    <Grid x:Name="FileOperationsPanel">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" x:Name="ColMove"/>
+                            <ColumnDefinition Width="*" x:Name="ColCopy"/>
+                            <ColumnDefinition Width="*" x:Name="ColDelete"/>
+                            <ColumnDefinition Width="*" x:Name="ColNewFolder"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Move" Click="MoveFiles_Click" Margin="0,0,2,0" Grid.Column="0" x:Name="MoveButton"/>
+                        <Button Content="Copy" Click="CopyFiles_Click" Margin="2,0,2,0" Grid.Column="1" x:Name="CopyButton"/>
+                        <Button Content="Delete" Click="DeleteFiles_Click" Margin="2,0,2,0" Grid.Column="2" x:Name="DeleteButton"/>
+                        <Button Content="New folder" Click="NewFolderButton_Click" Margin="2,0,0,0" Grid.Column="3" x:Name="NewFolderButton"/>
+                        <Button Content="Paste" Click="PasteFiles_Click" Margin="0,0,0,0" Visibility="Collapsed" x:Name="PasteButton" Grid.Column="0" Grid.ColumnSpan="2"/>
+                        <Button Content="Cancel" Click="CancelPaste_Click" Margin="2,0,2,0" Visibility="Collapsed" x:Name="CancelPasteButton" Grid.Column="2" Grid.ColumnSpan="2"/>
+                    </Grid>
+
+                    <Grid x:Name="ProgressPanel" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ProgressBar x:Name="OperationProgressBar" Grid.Column="0" Margin="0,0,5,0" Minimum="0" Maximum="100"/>
+                        <TextBlock x:Name="OperationStatusText" Grid.Column="1" Text="Processing..." VerticalAlignment="Center" Margin="5,0"/>
+                        <Button Content="Cancel" Click="CancelOperation_Click" Grid.Column="2" Width="80" Margin="5,0,0,0"/>
+                    </Grid>
                 </Grid>
                 <ListView Grid.Row="1"
                   x:Name="FilesListView"
+                  PreviewMouseLeftButtonDown="FilesListView_PreviewMouseLeftButtonDown"
                   Focusable="False"
                   IsTabStop="False"
                   SelectionMode="Extended"

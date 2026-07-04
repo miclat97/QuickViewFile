@@ -265,7 +265,9 @@ namespace QuickViewFile
                     MoveButton.Visibility = Visibility.Collapsed;
                     CopyButton.Visibility = Visibility.Collapsed;
                     DeleteButton.Visibility = Visibility.Collapsed;
+                    NewFolderButton.Visibility = Visibility.Collapsed;
                     PasteButton.Visibility = Visibility.Visible;
+                    CancelPasteButton.Visibility = Visibility.Visible;
 
                     // Policz pliki i foldery (bezpieczna iteracja bez wyjątków dla nieistniejących ścieżek)
                     int fileCount = 0;
@@ -345,120 +347,44 @@ namespace QuickViewFile
             }
         }
 
-        private void PasteFiles_Click(object sender, RoutedEventArgs e)
+        private async void PasteFiles_Click(object sender, RoutedEventArgs e)
         {
-            if (_clipboardFiles.Count > 0 && DataContext is FilesListViewModel vm)
+            if (_clipboardFiles.Count > 0 && DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
             {
+                var clipboardCopy = new System.Collections.Generic.List<string>(_clipboardFiles);
                 string targetDir = vm.FolderPath;
-                int successCount = 0;
-                var failedItems = new List<string>();
+                int currentOp = _currentOperation == FileOperation.Copy ? 1 : (_currentOperation == FileOperation.Move ? 2 : 0);
 
-                foreach (string itemPath in _clipboardFiles)
+                FileOperationsPanel.Visibility = Visibility.Collapsed;
+                ProgressPanel.Visibility = Visibility.Visible;
+                FilesListView.IsEnabled = false;
+                OperationProgressBar.Value = 0;
+                OperationStatusText.Text = "Preparing...";
+
+                _pasteCts = new System.Threading.CancellationTokenSource();
+
+                await PasteLogic.PerformPasteAsync(clipboardCopy, targetDir, currentOp, this, OperationProgressBar, OperationStatusText, _pasteCts, () =>
                 {
-                    try
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        // Sprawdzenie czy element istnieje
-                        if (!File.Exists(itemPath) && !Directory.Exists(itemPath))
-                        {
-                            failedItems.Add($"'{Path.GetFileName(itemPath)}' - source not found");
-                            continue;
-                        }
+                        FileOperationsPanel.Visibility = Visibility.Visible;
+                        ProgressPanel.Visibility = Visibility.Collapsed;
+                        FilesListView.IsEnabled = true;
 
-                        bool isDirectory = Directory.Exists(itemPath);
-                        string itemName = Path.GetFileName(itemPath.TrimEnd(Path.DirectorySeparatorChar));
-                        string destPath = Path.Combine(targetDir, itemName);
+                        _clipboardFiles.Clear();
+                        _currentOperation = FileOperation.None;
+                        PasteButton.Visibility = Visibility.Collapsed;
+                        CancelPasteButton.Visibility = Visibility.Collapsed;
+                        MoveButton.Visibility = Visibility.Visible;
+                        CopyButton.Visibility = Visibility.Visible;
+                        DeleteButton.Visibility = Visibility.Visible;
+                        NewFolderButton.Visibility = Visibility.Visible;
+                        vm.RefreshFiles();
 
-                        // Obsługuj konflikty - jeśli cel już istnieje
-                        if (File.Exists(destPath) || Directory.Exists(destPath))
-                        {
-                            var result = MessageBox.Show(
-                                $"'{itemName}' already exists. Overwrite?",
-                                "File Exists",
-                                MessageBoxButton.YesNo,
-                                MessageBoxImage.Question);
-
-                            if (result != MessageBoxResult.Yes)
-                                continue;
-
-                            // Usuń istniejący plik/folder
-                            try
-                            {
-                                if (File.Exists(destPath))
-                                    File.Delete(destPath);
-                                else if (Directory.Exists(destPath))
-                                    DirectoryOperationHelper.DeleteDirectoryRecursive(destPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                failedItems.Add($"'{itemName}' - failed to remove existing: {ex.Message}");
-                                continue;
-                            }
-                        }
-
-                        // Wykonaj operację Copy/Move z zachowaniem struktury
-                        if (_currentOperation == FileOperation.Copy)
-                        {
-                            if (isDirectory)
-                            {
-                                // Kopiuj folder z całą strukturą (bez ADS)
-                                // destPath zawiera już pełną ścieżkę z nazwą folderu
-                                DirectoryOperationHelper.CopyDirectoryRecursive(itemPath, destPath, excludeAds: true);
-                            }
-                            else
-                            {
-                                // Kopiuj plik bezpiecznie (bez ADS)
-                                DirectoryOperationHelper.CopyFileSafe(itemPath, destPath);
-                            }
-                        }
-                        else if (_currentOperation == FileOperation.Move)
-                        {
-                            if (isDirectory)
-                            {
-                                // Przenieś folder z całą strukturą (bez ADS)
-                                // destPath zawiera już pełną ścieżkę z nazwą folderu
-                                DirectoryOperationHelper.MoveDirectoryRecursive(itemPath, destPath, excludeAds: true);
-                            }
-                            else
-                            {
-                                // Przenieś plik bezpiecznie (bez ADS)
-                                if (itemPath != destPath)
-                                    DirectoryOperationHelper.MoveFile(itemPath, destPath);
-                            }
-                        }
-
-                        successCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        failedItems.Add($"'{Path.GetFileName(itemPath)}' - {ex.Message}");
-                    }
-                }
-
-                if (_currentOperation == FileOperation.Move || _currentOperation == FileOperation.Copy)
-                {
-                    _clipboardFiles.Clear();
-                    _currentOperation = FileOperation.None;
-                    PasteButton.Visibility = Visibility.Collapsed;
-                    MoveButton.Visibility = Visibility.Visible;
-                    CopyButton.Visibility = Visibility.Visible;
-                    DeleteButton.Visibility = Visibility.Visible;
-
-                    // Pokaż rezultat
-                    string message = $"Operation completed: {successCount} items processed";
-                    if (failedItems.Count > 0)
-                    {
-                        message += $", {failedItems.Count} failed:\n" + string.Join("\n", failedItems.Take(5));
-                        if (failedItems.Count > 5)
-                            message += $"\n... and {failedItems.Count - 5} more";
-                        MessageBox.Show(message, "Operation Result", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                    else if (successCount > 0)
-                    {
-                        MessageBox.Show(message, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                }
-
-                vm.RefreshFiles();
+                        _pasteCts?.Dispose();
+                        _pasteCts = null;
+                    });
+                });
             }
         }
 
@@ -548,11 +474,64 @@ namespace QuickViewFile
             }
         }
 
-        private void AppWindow_KeyDown(object sender, KeyEventArgs e)
+
+        private void AppWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            if (System.Windows.Input.Keyboard.FocusedElement is System.Windows.Controls.TextBox)
+            {
+                return;
+            }
+
+            if (System.Windows.Input.Keyboard.FocusedElement is System.Windows.Controls.TextBox)
+            {
+                return;
+            }
+
+            if (e.Key == System.Windows.Input.Key.F5)
+            {
+                if (DataContext is QuickViewFile.ViewModel.FilesListViewModel vm1)
+                    vm1.RefreshFiles();
+                e.Handled = true;
+                return;
+            }
+
+            if (System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Control)
+            {
+                if (DataContext is QuickViewFile.ViewModel.FilesListViewModel vm2)
+                {
+                    if (e.Key == System.Windows.Input.Key.A)
+                    {
+                        foreach (var item in vm2.ActiveListItems)
+                        {
+                            item.IsChecked = true;
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+                    else if (e.Key == System.Windows.Input.Key.C)
+                    {
+                        CopyFiles_Click(null, null);
+                        e.Handled = true;
+                        return;
+                    }
+                    else if (e.Key == System.Windows.Input.Key.X)
+                    {
+                        MoveFiles_Click(null, null);
+                        e.Handled = true;
+                        return;
+                    }
+                    else if (e.Key == System.Windows.Input.Key.V)
+                    {
+                        PasteFiles_Click(null, null);
+                        e.Handled = true;
+                        return;
+                    }
+                }
+            }
+
             try
             {
-                if (e.Key == Key.F11)
+                if (e.Key == System.Windows.Input.Key.F11)
                 {
                     if (_filesListViewVisible) HideUI();
                     else ShowUI();
@@ -560,9 +539,9 @@ namespace QuickViewFile
                     return;
                 }
 
-                if (DataContext is FilesListViewModel vm)
+                if (DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
                 {
-                    if (e.Key == Key.F4 && vm.SelectedItem?.FullPath is not null)
+                    if (e.Key == System.Windows.Input.Key.F4 && vm.SelectedItem?.FullPath is not null)
                     {
                         MainWindowNoBorder fullScreen = new MainWindowNoBorder(vm.SelectedItem.FullPath);
                         if (vm.SelectedItem.FileContentModel.VideoMedia is not null)
@@ -1141,5 +1120,99 @@ namespace QuickViewFile
                 MessageBox.Show($"Tier: {renderingTier}\r\nRenderCapabalities: {maxHardwareTextureSize}", "Current Configuration", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-    }
+
+        private void FileFullPathTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                if (DataContext is QuickViewFile.ViewModel.FilesListViewModel vm && !string.IsNullOrWhiteSpace(FileFullPathTextBox.Text))
+                {
+                    vm.RefreshFiles(FileFullPathTextBox.Text);
+                }
+                e.Handled = true;
+            }
+        }
+
+        private void NewFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
+            {
+                var dialog = new InputDialog("Enter new folder name:");
+                dialog.Owner = this;
+                if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.Answer))
+                {
+                    try
+                    {
+                        string newPath = System.IO.Path.Combine(vm.FolderPath, dialog.Answer);
+                        if (!System.IO.Directory.Exists(newPath))
+                        {
+                            System.IO.Directory.CreateDirectory(newPath);
+                            vm.RefreshFiles();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Folder already exists.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Failed to create folder: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+        }
+
+        private void CancelPaste_Click(object sender, RoutedEventArgs e)
+        {
+            _clipboardFiles.Clear();
+            _currentOperation = FileOperation.None;
+            PasteButton.Visibility = Visibility.Collapsed;
+            CancelPasteButton.Visibility = Visibility.Collapsed;
+            MoveButton.Visibility = Visibility.Visible;
+            CopyButton.Visibility = Visibility.Visible;
+            DeleteButton.Visibility = Visibility.Visible;
+            NewFolderButton.Visibility = Visibility.Visible;
+        }
+
+        private System.Threading.CancellationTokenSource? _pasteCts;
+
+        private void CancelOperation_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pasteCts != null)
+                _pasteCts.Cancel();
+        }
+
+        private int _lastCheckedIndex = -1;
+
+        private void FilesListView_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var dependencyObject = e.OriginalSource as System.Windows.DependencyObject;
+            var listViewItem = FindVisualParent<System.Windows.Controls.ListViewItem>(dependencyObject);
+
+            if (listViewItem != null && DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
+            {
+                var clickedData = listViewItem.DataContext as QuickViewFile.Models.ItemList;
+                if (clickedData == null) return;
+
+                int currentIndex = vm.ActiveListItems.IndexOf(clickedData);
+                if (currentIndex == -1) return;
+
+                if (System.Windows.Input.Keyboard.Modifiers.HasFlag(System.Windows.Input.ModifierKeys.Shift) && _lastCheckedIndex != -1)
+                {
+                    int start = Math.Min(_lastCheckedIndex, currentIndex);
+                    int end = Math.Max(_lastCheckedIndex, currentIndex);
+
+                    for (int i = start; i <= end; i++)
+                    {
+                        vm.ActiveListItems[i].IsChecked = true;
+                    }
+                    e.Handled = true;
+                }
+                else
+                {
+                    _lastCheckedIndex = currentIndex;
+                }
+            }
+        }
+}
 }

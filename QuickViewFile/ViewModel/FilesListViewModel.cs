@@ -39,6 +39,7 @@ namespace QuickViewFile.ViewModel
             }
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version!.ToString();
             StatusBarText = $"QuickViewFile v {appVersion}";
+            OnPropertyChanged(nameof(FolderPath));
         }
 
         private ItemList? _selectedItem;
@@ -98,9 +99,15 @@ namespace QuickViewFile.ViewModel
 
         public void RefreshFiles(string? fileToSelect = null)
         {
+            if (fileToSelect != null && System.IO.Directory.Exists(fileToSelect))
+            {
+                _folderPath = fileToSelect;
+                fileToSelect = null; // Don't try to select a directory like a file
+            }
+
             try
             {
-                DirectoryInfo check = new DirectoryInfo(_folderPath);
+                System.IO.DirectoryInfo check = new System.IO.DirectoryInfo(_folderPath);
             }
             catch
             {
@@ -126,6 +133,7 @@ namespace QuickViewFile.ViewModel
 
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
+                OnPropertyChanged(nameof(FolderPath));
                 foreach (var item in ActiveListItems)
                 {
                     item.ThumbnailImageSource = null;

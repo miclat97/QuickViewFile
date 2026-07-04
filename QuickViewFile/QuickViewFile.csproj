@@ -27,7 +27,7 @@
     <None Remove="Controls\Resources\play.png" />
     <None Remove="Controls\Resources\previous.png" />
     <None Remove="Controls\Resources\stop.png" />
-  </ItemGroup>
+</ItemGroup>
 
   <ItemGroup>
     <Content Include="QuickViewFile.ico" />
