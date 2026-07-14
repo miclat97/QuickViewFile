@@ -6,6 +6,8 @@
         xmlns:local="clr-namespace:QuickViewFile.Controls"
         xmlns:helpers="clr-namespace:QuickViewFile.Helpers"
         xmlns:viewmodel="clr-namespace:QuickViewFile.ViewModel"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
         d:DataContext="{d:DesignInstance Type=viewmodel:FilesListViewModel}"
         mc:Ignorable="d"
         WindowState="Maximized"
@@ -252,6 +254,20 @@
                                 />
                         </Grid>
 
+                        <wv2:WebView2 x:Name="WebViewElement"
+                                      Visibility="{Binding SelectedItem.FileContentModel.ShowWebView, Converter={StaticResource BoolToVisibilityConverter}}"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch" />
+
+                        <avalonEdit:TextEditor x:Name="CodeEditorElement"
+                                               Visibility="{Binding SelectedItem.FileContentModel.ShowCodeEditor, Converter={StaticResource BoolToVisibilityConverter}}"
+                                               FontFamily="Consolas"
+                                               FontSize="{Binding Config.FontSize}"
+                                               IsReadOnly="True"
+                                               ShowLineNumbers="True"
+                                               HorizontalScrollBarVisibility="Auto"
+                                               VerticalScrollBarVisibility="Auto"
+                                               Margin="10" />
 
                         <Grid Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="GridSearchBox">
                             <Grid.RowDefinitions>
