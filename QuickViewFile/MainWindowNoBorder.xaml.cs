@@ -868,34 +868,6 @@ namespace QuickViewFile
                             }
                         }
 
-                        // ContentControl cast check for video element handling
-                        if (!goPrevious && !goNext && VideoMediaNoBorder.Visibility == Visibility.Visible)
-                        {
-                            if (VideoMediaNoBorder.Content is Controls.VideoPlayerControl videoControl && videoControl.videoInWindowPlayer.NaturalVideoWidth > 0)
-                            {
-                                double videoWidth = videoControl.videoInWindowPlayer.NaturalVideoWidth;
-                                double videoHeight = videoControl.videoInWindowPlayer.NaturalVideoHeight;
-                                double controlWidth = videoControl.videoInWindowPlayer.ActualWidth;
-                                double controlHeight = videoControl.videoInWindowPlayer.ActualHeight;
-
-                                double scaleX = controlWidth / videoWidth;
-                                double scaleY = controlHeight / videoHeight;
-                                double scale = Math.Min(scaleX, scaleY);
-
-                                double drawnWidth = videoWidth * scale;
-                                double offsetX = (controlWidth - drawnWidth) / 2;
-
-                                Point pVid = e.GetPosition(videoControl.videoInWindowPlayer);
-
-                                if (pVid.X >= offsetX && pVid.X <= offsetX + drawnWidth)
-                                {
-                                    double relativeX = pVid.X - offsetX;
-                                    if (relativeX < drawnWidth * 0.15) goPrevious = true;
-                                    else if (relativeX > drawnWidth * 0.85) goNext = true;
-                                }
-                            }
-                        }
-
                         if (goPrevious && FilesListView.SelectedIndex > 0)
                         {
                             FilesListView.SelectedIndex--;

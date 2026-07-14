@@ -877,30 +877,6 @@ namespace QuickViewFile
                             }
                         }
 
-                        if (!goPrevious && !goNext && VideoMedia.Visibility == Visibility.Visible && VideoMedia.videoInWindowPlayer.NaturalVideoWidth > 0)
-                        {
-                            double videoWidth = VideoMedia.videoInWindowPlayer.NaturalVideoWidth;
-                            double videoHeight = VideoMedia.videoInWindowPlayer.NaturalVideoHeight;
-                            double controlWidth = VideoMedia.videoInWindowPlayer.ActualWidth;
-                            double controlHeight = VideoMedia.videoInWindowPlayer.ActualHeight;
-
-                            double scaleX = controlWidth / videoWidth;
-                            double scaleY = controlHeight / videoHeight;
-                            double scale = Math.Min(scaleX, scaleY);
-
-                            double drawnWidth = videoWidth * scale;
-                            double offsetX = (controlWidth - drawnWidth) / 2;
-
-                            Point pVid = e.GetPosition(VideoMedia.videoInWindowPlayer);
-
-                            if (pVid.X >= offsetX && pVid.X <= offsetX + drawnWidth)
-                            {
-                                double relativeX = pVid.X - offsetX;
-                                if (relativeX < drawnWidth * 0.15) goPrevious = true;
-                                else if (relativeX > drawnWidth * 0.85) goNext = true;
-                            }
-                        }
-
                         if (goPrevious && FilesListView.SelectedIndex > 0)
                         {
                             FilesListView.SelectedIndex--;
