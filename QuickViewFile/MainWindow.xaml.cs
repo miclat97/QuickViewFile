@@ -1037,6 +1037,44 @@ namespace QuickViewFile
         private readonly List<int> _searchResults = new List<int>();
         private int _currentSearchIndex = -1;
 
+        private void TextBoxTextContent_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FileContentModel?.IsLargeFileMode == true)
+            {
+                if (Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    return; // Let standard zoom logic handle it if implemented elsewhere, or do nothing here
+                }
+
+                // Determine direction
+                long offsetChange = e.Delta > 0 ? -10000 : 10000;
+                long newOffset = vm.SelectedItem.FileContentModel.StreamOffset + offsetChange;
+
+                if (newOffset < 0) newOffset = 0;
+                if (newOffset >= vm.SelectedItem.FileContentModel.FileSize) newOffset = vm.SelectedItem.FileContentModel.FileSize - 1;
+
+                LargeFileScrollBar.Value = newOffset;
+
+                Application.Current.Dispatcher.BeginInvoke(async () =>
+                {
+                    await vm.LoadLargeFileChunkAsync(newOffset);
+                });
+
+                e.Handled = true; // Prevent default scrolling
+            }
+        }
+
+        private void LargeFileScrollBar_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FileContentModel?.IsLargeFileMode == true)
+            {
+                Application.Current.Dispatcher.BeginInvoke(async () =>
+                {
+                    await vm.LoadLargeFileChunkAsync((long)e.NewValue);
+                });
+            }
+        }
+
         private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)

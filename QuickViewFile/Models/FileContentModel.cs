@@ -15,6 +15,10 @@ namespace QuickViewFile.Models
         public bool IsLoaded { get; set; } = false;
         public bool ShowTextBox { get; set; } = false;
 
+        public bool IsLargeFileMode { get; set; } = false;
+        public long FileSize { get; set; } = 0;
+        public long StreamOffset { get; set; } = 0;
+
         public void Dispose()
         {
             // Dispose of managed resources.
@@ -31,6 +35,9 @@ namespace QuickViewFile.Models
 
             IsLoaded = false;
             ShowTextBox = false;
+            IsLargeFileMode = false;
+            FileSize = 0;
+            StreamOffset = 0;
 
             // Suppress finalization to prevent GC from calling finalizer on disposed object.
             GC.SuppressFinalize(this);

@@ -420,11 +420,10 @@ namespace QuickViewFile.ViewModel
                     }
                     else
                     {
-                        SelectedItem.FileContentModel.TextContent = $"File size has more than {Config.MaxSizePreviewKB} KiB, press ENTER to force load it";
-                        SelectedItem.FileContentModel.ShowTextBox = true;
-                        SelectedItem.FileContentModel.ImageSource = null;
-                        SelectedItem.FileContentModel.VideoMedia = null;
-                        SelectedItem.FileContentModel.IsLoaded = false;
+                        SelectedItem.FileContentModel.IsLargeFileMode = true;
+                        SelectedItem.FileContentModel.FileSize = fileInfo.Length;
+                        SelectedItem.FileContentModel.StreamOffset = 0;
+                        await LoadLargeFileChunkAsync(0);
                     }
                 }
                 catch (Exception ex)
@@ -438,6 +437,131 @@ namespace QuickViewFile.ViewModel
                 }
             }
             OnPropertyChanged(nameof(SelectedItem));
+        }
+
+        private System.Threading.CancellationTokenSource? _chunkLoadCts;
+
+        public async Task LoadLargeFileChunkAsync(long offset)
+        {
+            var targetItem = SelectedItem;
+            if (targetItem == null || string.IsNullOrWhiteSpace(targetItem.FullPath) || !File.Exists(targetItem.FullPath))
+                return;
+
+            _chunkLoadCts?.Cancel();
+            _chunkLoadCts = new System.Threading.CancellationTokenSource();
+            var token = _chunkLoadCts.Token;
+
+            try
+            {
+                // Debounce
+                await Task.Delay(100, token);
+
+                string filePath = targetItem.FullPath;
+                long fileSize = targetItem.FileContentModel.FileSize;
+
+                // Ensure offset is within bounds
+                if (offset < 0) offset = 0;
+                if (offset >= fileSize) offset = fileSize - 1;
+
+                targetItem.FileContentModel.StreamOffset = offset;
+
+                int chunkSize = (int)Math.Min(Config.CharsToPreview, 1000000); // Or another reasonable default ~1MB
+
+                string loadedFileText = await _ReadTextFileChunkAsync(filePath, offset, chunkSize);
+
+                if (token.IsCancellationRequested || targetItem != SelectedItem)
+                    return;
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (targetItem != SelectedItem)
+                        return;
+
+                    targetItem.FileContentModel.TextContent = loadedFileText;
+                    targetItem.FileContentModel.ImageSource = null;
+                    targetItem.FileContentModel.VideoMedia = null;
+                    targetItem.FileContentModel.IsLoaded = true;
+                    targetItem.FileContentModel.ShowTextBox = true;
+                    OnPropertyChanged(nameof(SelectedItem));
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignored
+            }
+        }
+
+        private async Task<string> _ReadTextFileChunkAsync(string filePath, long offset, int maxChars)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                return string.Empty;
+
+            Encoding encoding;
+            if (Config.Utf8InsteadOfASCIITextPreview == 1)
+            {
+                encoding = Encoding.GetEncoding(
+                    "utf-8",
+                    new EncoderReplacementFallback(""),
+                    new DecoderReplacementFallback("")
+                );
+            }
+            else // Latin1
+            {
+                encoding = Encoding.GetEncoding(
+                    "iso-8859-1",
+                    new EncoderReplacementFallback(""),
+                    new DecoderReplacementFallback("")
+                );
+            }
+
+            using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+
+            // Seek to offset
+            if (offset > 0 && offset < fileStream.Length)
+            {
+                fileStream.Seek(offset, SeekOrigin.Begin);
+            }
+
+            using StreamReader reader = new StreamReader(fileStream, encoding);
+
+            char[] buffer = System.Buffers.ArrayPool<char>.Shared.Rent(maxChars);
+
+            try
+            {
+                int totalCharsRead = 0;
+                int charsRead;
+
+                while (totalCharsRead < maxChars &&
+                       (charsRead = await reader.ReadAsync(buffer, totalCharsRead, maxChars - totalCharsRead)) > 0)
+                {
+                    totalCharsRead += charsRead;
+                }
+
+                int validCount = 0;
+                for (int i = 0; i < totalCharsRead; i++)
+                {
+                    if (FileTextExtractor.IsPrintable(buffer[i])) validCount++;
+                }
+
+                string result = string.Create(validCount, (buffer, totalCharsRead), (span, state) =>
+                {
+                    int index = 0;
+                    for (int i = 0; i < state.totalCharsRead; i++)
+                    {
+                        char c = state.buffer[i];
+                        if (FileTextExtractor.IsPrintable(c))
+                        {
+                            span[index++] = c;
+                        }
+                    }
+                });
+
+                return result;
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<char>.Shared.Return(buffer);
+            }
         }
 
         private async Task<string> _ReadTextFileAsync(string filePath, double maxChars)
