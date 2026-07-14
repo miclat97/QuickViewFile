@@ -289,7 +289,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0"
+                                <TextBox Grid.Column="0" Background="Transparent" Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" BorderThickness="0"
                                          FontFamily="Consolas"
                                          SpellCheck.IsEnabled="False"
                                          Name="TextBoxTextContent"
@@ -302,7 +302,7 @@
                                          Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=TwoWay}"
                                          TextWrapping="{Binding Config.TextPreviewWordWrap}">
                                     <TextBox.Style>
-                                        <Style TargetType="TextBox">
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                                             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding SelectedItem.FileContentModel.IsLargeFileMode}" Value="True">
