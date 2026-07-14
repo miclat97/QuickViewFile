@@ -1046,21 +1046,48 @@ namespace QuickViewFile
                     return; // Let standard zoom logic handle it if implemented elsewhere, or do nothing here
                 }
 
-                // Determine direction
-                long offsetChange = e.Delta > 0 ? -10000 : 10000;
+                var textBox = sender as TextBox;
+                if (textBox == null) return;
+
+                bool atTop = textBox.VerticalOffset == 0;
+                bool atBottom = textBox.VerticalOffset >= textBox.ExtentHeight - textBox.ViewportHeight;
+
+                bool scrollingUp = e.Delta > 0;
+                bool scrollingDown = e.Delta < 0;
+
+                // Allow native scrolling within the current chunk if not at boundaries
+                if ((scrollingUp && !atTop) || (scrollingDown && !atBottom))
+                {
+                    return;
+                }
+
+                // If we are at the boundaries, load the next/previous chunk
+                int chunkSize = (int)Math.Min(vm.Config.CharsToPreview, 65536);
+                long offsetChange = scrollingUp ? -(chunkSize / 2) : (chunkSize / 2);
                 long newOffset = vm.SelectedItem.FileContentModel.StreamOffset + offsetChange;
 
+                long maxOffset = Math.Max(0, vm.SelectedItem.FileContentModel.FileSize - chunkSize);
                 if (newOffset < 0) newOffset = 0;
-                if (newOffset >= vm.SelectedItem.FileContentModel.FileSize) newOffset = vm.SelectedItem.FileContentModel.FileSize - 1;
+                if (newOffset > maxOffset) newOffset = maxOffset;
 
-                LargeFileScrollBar.Value = newOffset;
-
-                Application.Current.Dispatcher.BeginInvoke(async () =>
+                // Only reload if the offset actually changes
+                if (newOffset != vm.SelectedItem.FileContentModel.StreamOffset)
                 {
-                    await vm.LoadLargeFileChunkAsync(newOffset);
-                });
+                    LargeFileScrollBar.Value = newOffset;
 
-                e.Handled = true; // Prevent default scrolling
+                    Application.Current.Dispatcher.BeginInvoke(async () =>
+                    {
+                        await vm.LoadLargeFileChunkAsync(newOffset);
+
+                        // After loading, snap scrollbar to opposite side so the user can continue scrolling smoothly
+                        if (scrollingUp)
+                            textBox.ScrollToEnd();
+                        else
+                            textBox.ScrollToHome();
+                    });
+                }
+
+                e.Handled = true; // Prevent default scrolling bouncing
             }
         }
 
