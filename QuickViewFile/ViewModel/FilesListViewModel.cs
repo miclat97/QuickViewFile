@@ -466,7 +466,8 @@ namespace QuickViewFile.ViewModel
 
                 targetItem.FileContentModel.StreamOffset = offset;
 
-                int chunkSize = (int)Math.Min(Config.CharsToPreview, 1000000); // Or another reasonable default ~1MB
+                // Reduce chunk size to ~64KB. Loading 1MB of text into a WPF TextBox on the UI thread causes severe layout freezing.
+                int chunkSize = (int)Math.Min(Config.CharsToPreview, 65536);
 
                 string loadedFileText = await _ReadTextFileChunkAsync(filePath, offset, chunkSize);
 

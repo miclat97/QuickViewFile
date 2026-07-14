@@ -294,14 +294,24 @@
                                          SpellCheck.IsEnabled="False"
                                          Name="TextBoxTextContent"
                                          HorizontalScrollBarVisibility="Auto"
-                                         VerticalScrollBarVisibility="Auto"
                                          Margin="10,10,0,10"
                                          ClipToBounds="True"
                                          IsReadOnly="{Binding SelectedItem.FileContentModel.IsLargeFileMode}"
                                          PreviewMouseWheel="TextBoxTextContent_PreviewMouseWheel"
                                          FontSize="{Binding Config.FontSize}"
                                          Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=TwoWay}"
-                                         TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+                                         TextWrapping="{Binding Config.TextPreviewWordWrap}">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedItem.FileContentModel.IsLargeFileMode}" Value="True">
+                                                    <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
 
                                 <ScrollBar Grid.Column="1"
                                            Name="LargeFileScrollBar"
