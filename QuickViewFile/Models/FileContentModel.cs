@@ -16,6 +16,7 @@ namespace QuickViewFile.Models
         public bool ShowTextBox { get; set; } = false;
 
         public bool IsLargeFileMode { get; set; } = false;
+        public bool IsEditMode { get; set; } = false;
         public long FileSize { get; set; } = 0;
         public long StreamOffset { get; set; } = 0;
 
@@ -36,6 +37,7 @@ namespace QuickViewFile.Models
             IsLoaded = false;
             ShowTextBox = false;
             IsLargeFileMode = false;
+            IsEditMode = false;
             FileSize = 0;
             StreamOffset = 0;
 

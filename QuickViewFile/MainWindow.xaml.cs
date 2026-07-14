@@ -1075,6 +1075,24 @@ namespace QuickViewFile
             }
         }
 
+        private void SwitchToReadMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem != null && vm.SelectedItem.FileContentModel != null)
+            {
+                // Force load with forceLoad = false, this will use large file mode
+                _ = vm.LazyLoadFile(false);
+            }
+        }
+
+        private void SwitchToEditMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem != null && vm.SelectedItem.FileContentModel != null)
+            {
+                // Force load the entire file into memory and enable edit mode
+                _ = vm.LazyLoadFile(true);
+            }
+        }
+
         private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)

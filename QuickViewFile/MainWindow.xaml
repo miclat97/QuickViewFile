@@ -72,7 +72,7 @@
                   Margin="0,8,10,8"
                   Padding="15,0"
                   Click="SaveButton_Click"
-                  Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                  Visibility="{Binding SelectedItem.FileContentModel.IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
             </StackPanel>
         </Grid>
 
@@ -263,24 +263,51 @@
                             <StackPanel Grid.Row="0" 
                                         Orientation="Horizontal" 
                                         Margin="10,5,10,5">
-                                <TextBox x:Name="SearchTextBox"
-                                         Width="200"
-                                         Margin="5,0,5,0"
-                                         VerticalContentAlignment="Center"
-                                         KeyDown="SearchTextBox_KeyDown"/>
-                                <Button Content="Find Next"
-                                        Height="24"
-                                        Padding="10,0"
-                                        Click="FindNext_Click"
-                                        Margin="0,0,5,0"/>
-                                <Button Content="Find Previous"
-                                        Height="24"
-                                        Padding="10,0"
-                                        Click="FindPrevious_Click"
-                                        Margin="0,0,5,0"/>
-                                <TextBlock x:Name="SearchResultsCount"
-                                          VerticalAlignment="Center"
-                                          Margin="5,0"/>
+                                <!-- Find buttons: Only visible in Edit Mode -->
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding SelectedItem.FileContentModel.IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBox x:Name="SearchTextBox"
+                                             Width="200"
+                                             Margin="5,0,5,0"
+                                             VerticalContentAlignment="Center"
+                                             KeyDown="SearchTextBox_KeyDown"/>
+                                    <Button Content="Find Next"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="FindNext_Click"
+                                            Margin="0,0,5,0"/>
+                                    <Button Content="Find Previous"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="FindPrevious_Click"
+                                            Margin="0,0,5,0"/>
+                                    <TextBlock x:Name="SearchResultsCount"
+                                              VerticalAlignment="Center"
+                                              Margin="5,0"/>
+                                    <Button Content="Switch to read mode (faster)"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="SwitchToReadMode_Click"
+                                            Margin="10,0,5,0"/>
+                                </StackPanel>
+
+                                <!-- Read-only mode UI -->
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedItem.FileContentModel.IsEditMode}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <Button Content="SWITCH TO EDIT MODE"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="SwitchToEditMode_Click"
+                                            Margin="5,0,5,0"/>
+                                </StackPanel>
                             </StackPanel>
 
                             <Grid Grid.Row="1" Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -289,7 +316,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0" Background="Transparent" Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" BorderThickness="0"
+                                <TextBox Grid.Column="0" Background="Transparent" Foreground="{DynamicResource TextFillColorPrimaryBrush}" BorderThickness="0"
                                          FontFamily="Consolas"
                                          SpellCheck.IsEnabled="False"
                                          Name="TextBoxTextContent"

@@ -407,20 +407,23 @@ namespace QuickViewFile.ViewModel
             {
                 try
                 {
-                    if (fileInfo.Length < Config.MaxSizePreviewKB * 1024 || forceLoad == true)
+                    if (forceLoad == true)
                     {
-                        string loadedFileText = await _ReadTextFileAsync(filePath, Config.CharsToPreview);
+                        string loadedFileText = await _ReadTextFileAsync(filePath, fileInfo.Length);
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             SelectedItem.FileContentModel.TextContent = loadedFileText;
                             SelectedItem.FileContentModel.ImageSource = null;
                             SelectedItem.FileContentModel.IsLoaded = true;
                             SelectedItem.FileContentModel.ShowTextBox = true;
+                            SelectedItem.FileContentModel.IsEditMode = true;
+                            SelectedItem.FileContentModel.IsLargeFileMode = false;
                         });
                     }
                     else
                     {
                         SelectedItem.FileContentModel.IsLargeFileMode = true;
+                        SelectedItem.FileContentModel.IsEditMode = false;
                         SelectedItem.FileContentModel.FileSize = fileInfo.Length;
                         SelectedItem.FileContentModel.StreamOffset = 0;
                         await LoadLargeFileChunkAsync(0);
