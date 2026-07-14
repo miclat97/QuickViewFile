@@ -59,6 +59,6 @@ namespace QuickViewFile.Models
         public double ShadowOpacity { get; set; } = 0;
         public double ShadowBlur { get; set; } = 0;
         public double Volume { get; set; } = 1;
-        public int MaxThumbnailThreads { get; set; } = Math.Max(1, Environment.ProcessorCount / 2);
+        public int MaxThumbnailThreads { get; set; } = Math.Max(1, Environment.ProcessorCount);
     }
 }
