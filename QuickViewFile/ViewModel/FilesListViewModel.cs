@@ -454,7 +454,8 @@ namespace QuickViewFile.ViewModel
             try
             {
                 // Debounce
-                await Task.Delay(100, token);
+                await Task.Delay(100);
+                if (token.IsCancellationRequested) return;
 
                 string filePath = targetItem.FullPath;
                 long fileSize = targetItem.FileContentModel.FileSize;
@@ -485,9 +486,9 @@ namespace QuickViewFile.ViewModel
                     OnPropertyChanged(nameof(SelectedItem));
                 });
             }
-            catch (OperationCanceledException)
+            catch (Exception)
             {
-                // Ignored
+                // Catch any other exceptions
             }
         }
 
