@@ -1047,6 +1047,89 @@ namespace QuickViewFile
         private readonly List<int> _searchResults = new List<int>();
         private int _currentSearchIndex = -1;
 
+        private void TextBoxTextContent_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FileContentModel?.IsLargeFileMode == true)
+            {
+                if (Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    return; // Let standard zoom logic handle it if implemented elsewhere, or do nothing here
+                }
+
+                var textBox = sender as TextBox;
+                if (textBox == null) return;
+
+                bool atTop = textBox.VerticalOffset == 0;
+                bool atBottom = textBox.VerticalOffset >= textBox.ExtentHeight - textBox.ViewportHeight;
+
+                bool scrollingUp = e.Delta > 0;
+                bool scrollingDown = e.Delta < 0;
+
+                // Allow native scrolling within the current chunk if not at boundaries
+                if ((scrollingUp && !atTop) || (scrollingDown && !atBottom))
+                {
+                    return;
+                }
+
+                // If we are at the boundaries, load the next/previous chunk
+                int chunkSize = (int)Math.Min(vm.Config.CharsToPreview, 65536);
+                long offsetChange = scrollingUp ? -(chunkSize / 2) : (chunkSize / 2);
+                long newOffset = vm.SelectedItem.FileContentModel.StreamOffset + offsetChange;
+
+                long maxOffset = Math.Max(0, vm.SelectedItem.FileContentModel.FileSize - chunkSize);
+                if (newOffset < 0) newOffset = 0;
+                if (newOffset > maxOffset) newOffset = maxOffset;
+
+                // Only reload if the offset actually changes
+                if (newOffset != vm.SelectedItem.FileContentModel.StreamOffset)
+                {
+                    LargeFileScrollBar.Value = newOffset;
+
+                    Application.Current.Dispatcher.BeginInvoke(async () =>
+                    {
+                        await vm.LoadLargeFileChunkAsync(newOffset);
+
+                        // After loading, snap scrollbar to opposite side so the user can continue scrolling smoothly
+                        if (scrollingUp)
+                            textBox.ScrollToEnd();
+                        else
+                            textBox.ScrollToHome();
+                    });
+                }
+
+                e.Handled = true; // Prevent default scrolling bouncing
+            }
+        }
+
+        private void LargeFileScrollBar_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FileContentModel?.IsLargeFileMode == true)
+            {
+                Application.Current.Dispatcher.BeginInvoke(async () =>
+                {
+                    await vm.LoadLargeFileChunkAsync((long)e.NewValue);
+                });
+            }
+        }
+
+        private void SwitchToReadMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem != null && vm.SelectedItem.FileContentModel != null)
+            {
+                // Force load with forceLoad = false, this will use large file mode
+                _ = vm.LazyLoadFile(false);
+            }
+        }
+
+        private void SwitchToEditMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FilesListViewModel vm && vm.SelectedItem != null && vm.SelectedItem.FileContentModel != null)
+            {
+                // Force load the entire file into memory and enable edit mode
+                _ = vm.LazyLoadFile(true);
+            }
+        }
+
         private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)

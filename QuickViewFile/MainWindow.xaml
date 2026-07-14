@@ -72,7 +72,7 @@
                   Margin="0,8,10,8"
                   Padding="15,0"
                   Click="SaveButton_Click"
-                  Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                  Visibility="{Binding SelectedItem.FileContentModel.IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
             </StackPanel>
         </Grid>
 
@@ -263,38 +263,96 @@
                             <StackPanel Grid.Row="0" 
                                         Orientation="Horizontal" 
                                         Margin="10,5,10,5">
-                                <TextBox x:Name="SearchTextBox"
-                                         Width="200"
-                                         Margin="5,0,5,0"
-                                         VerticalContentAlignment="Center"
-                                         KeyDown="SearchTextBox_KeyDown"/>
-                                <Button Content="Find Next"
-                                        Height="24"
-                                        Padding="10,0"
-                                        Click="FindNext_Click"
-                                        Margin="0,0,5,0"/>
-                                <Button Content="Find Previous"
-                                        Height="24"
-                                        Padding="10,0"
-                                        Click="FindPrevious_Click"
-                                        Margin="0,0,5,0"/>
-                                <TextBlock x:Name="SearchResultsCount"
-                                          VerticalAlignment="Center"
-                                          Margin="5,0"/>
+                                <!-- Find buttons: Only visible in Edit Mode -->
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding SelectedItem.FileContentModel.IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBox x:Name="SearchTextBox"
+                                             Width="200"
+                                             Margin="5,0,5,0"
+                                             VerticalContentAlignment="Center"
+                                             KeyDown="SearchTextBox_KeyDown"/>
+                                    <Button Content="Find Next"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="FindNext_Click"
+                                            Margin="0,0,5,0"/>
+                                    <Button Content="Find Previous"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="FindPrevious_Click"
+                                            Margin="0,0,5,0"/>
+                                    <TextBlock x:Name="SearchResultsCount"
+                                              VerticalAlignment="Center"
+                                              Margin="5,0"/>
+                                    <Button Content="Switch to read mode (faster)"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="SwitchToReadMode_Click"
+                                            Margin="10,0,5,0"/>
+                                </StackPanel>
+
+                                <!-- Read-only mode UI -->
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedItem.FileContentModel.IsEditMode}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <Button Content="SWITCH TO EDIT MODE"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="SwitchToEditMode_Click"
+                                            Margin="5,0,5,0"/>
+                                </StackPanel>
                             </StackPanel>
 
-                            <TextBox Grid.Row="1"
-                                     FontFamily="Consolas"
-                                     SpellCheck.IsEnabled="False"
-                                     Name="TextBoxTextContent"
-                                     HorizontalScrollBarVisibility="Auto"
-                                     VerticalScrollBarVisibility="Auto"
-                                     Margin="10"
-                                     ClipToBounds="True"
-                                     Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
-                                     FontSize="{Binding Config.FontSize}"
-                                     Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=TwoWay}"
-                                     TextWrapping="{Binding Config.TextPreviewWordWrap}"/>
+                            <Grid Grid.Row="1" Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Grid.Column="0" Background="Transparent" Foreground="{DynamicResource TextFillColorPrimaryBrush}" BorderThickness="0"
+                                         FontFamily="Consolas"
+                                         SpellCheck.IsEnabled="False"
+                                         Name="TextBoxTextContent"
+                                         HorizontalScrollBarVisibility="Auto"
+                                         Margin="10,10,0,10"
+                                         ClipToBounds="True"
+                                         IsReadOnly="{Binding SelectedItem.FileContentModel.IsLargeFileMode}"
+                                         PreviewMouseWheel="TextBoxTextContent_PreviewMouseWheel"
+                                         FontSize="{Binding Config.FontSize}"
+                                         Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=TwoWay}"
+                                         TextWrapping="{Binding Config.TextPreviewWordWrap}">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedItem.FileContentModel.IsLargeFileMode}" Value="True">
+                                                    <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+
+                                <ScrollBar Grid.Column="1"
+                                           Name="LargeFileScrollBar"
+                                           Margin="0,10,10,10"
+                                           Orientation="Vertical"
+                                           Visibility="{Binding SelectedItem.FileContentModel.IsLargeFileMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                                           Minimum="0"
+                                           Maximum="{Binding SelectedItem.FileContentModel.FileSize}"
+                                           Value="{Binding SelectedItem.FileContentModel.StreamOffset, Mode=TwoWay}"
+                                           ViewportSize="100000"
+                                           LargeChange="100000"
+                                           SmallChange="1000"
+                                           Scroll="LargeFileScrollBar_Scroll"/>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
