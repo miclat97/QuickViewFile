@@ -21,6 +21,25 @@ namespace QuickViewFile
         private int degreesRotation = 0;
         public FilesListViewModel vm;
 
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            if (_slideshowHelper != null)
+            {
+                _slideshowHelper.Stop();
+                _slideshowHelper = null;
+            }
+
+            if (DataContext is QuickViewFile.ViewModel.FilesListViewModel vm)
+            {
+                if (vm.SelectedItem?.FileContentModel?.VideoMedia != null)
+                {
+                    vm.SelectedItem.FileContentModel.VideoMedia.Dispose();
+                }
+            }
+        }
+
         public MainWindowNoBorder()
         {
             try
@@ -805,8 +824,23 @@ namespace QuickViewFile
 
                         if (wApp > 0 && pApp.X >= 0 && pApp.X <= wApp && pApp.Y >= 0 && pApp.Y <= GridFileContent.ActualHeight)
                         {
-                            if (pApp.X < wApp * 0.15) goPrevious = true;
-                            else if (pApp.X > wApp * 0.85) goNext = true;
+                            bool isVideoControlClick = false;
+
+                            // Check if the click is in the bottom area where the video timeline is located
+                            if (vm.SelectedItem?.FileContentModel?.VideoMedia != null)
+                            {
+                                if (GridFileContent.ActualHeight - pApp.Y <= 60)
+                                {
+                                    isVideoControlClick = true;
+                                    vm.SelectedItem.FileContentModel.VideoMedia.SeekFromClick(pApp.X, wApp);
+                                }
+                            }
+
+                            if (!isVideoControlClick)
+                            {
+                                if (pApp.X < wApp * 0.15) goPrevious = true;
+                                else if (pApp.X > wApp * 0.85) goNext = true;
+                            }
                         }
 
                         if (!goPrevious && !goNext && ZoomableImageElementNoBorder.Visibility == Visibility.Visible && ZoomableImageElementNoBorder.Source != null)
@@ -831,34 +865,6 @@ namespace QuickViewFile
                                 double relativeX = pImg.X - offsetX;
                                 if (relativeX < drawnWidth * 0.15) goPrevious = true;
                                 else if (relativeX > drawnWidth * 0.85) goNext = true;
-                            }
-                        }
-
-                        // ContentControl cast check for video element handling
-                        if (!goPrevious && !goNext && VideoMediaNoBorder.Visibility == Visibility.Visible)
-                        {
-                            if (VideoMediaNoBorder.Content is Controls.VideoPlayerControl videoControl && videoControl.videoInWindowPlayer.NaturalVideoWidth > 0)
-                            {
-                                double videoWidth = videoControl.videoInWindowPlayer.NaturalVideoWidth;
-                                double videoHeight = videoControl.videoInWindowPlayer.NaturalVideoHeight;
-                                double controlWidth = videoControl.videoInWindowPlayer.ActualWidth;
-                                double controlHeight = videoControl.videoInWindowPlayer.ActualHeight;
-
-                                double scaleX = controlWidth / videoWidth;
-                                double scaleY = controlHeight / videoHeight;
-                                double scale = Math.Min(scaleX, scaleY);
-
-                                double drawnWidth = videoWidth * scale;
-                                double offsetX = (controlWidth - drawnWidth) / 2;
-
-                                Point pVid = e.GetPosition(videoControl.videoInWindowPlayer);
-
-                                if (pVid.X >= offsetX && pVid.X <= offsetX + drawnWidth)
-                                {
-                                    double relativeX = pVid.X - offsetX;
-                                    if (relativeX < drawnWidth * 0.15) goPrevious = true;
-                                    else if (relativeX > drawnWidth * 0.85) goNext = true;
-                                }
                             }
                         }
 

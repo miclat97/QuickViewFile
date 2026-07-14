@@ -79,6 +79,8 @@ namespace QuickViewFile.Controls
         }
 
 
+        private bool _isUpdatingSlider = false;
+
         private void timer_Tick(object sender, EventArgs e)
         {
             // Check if the media source is set and has a known duration or it's live stream
@@ -86,11 +88,19 @@ namespace QuickViewFile.Controls
                 (videoInWindowPlayer.NaturalDuration.HasTimeSpan) &&
                 (!userIsDraggingSlider))
             {
-                sliProgress.Visibility = Visibility.Visible;
-                StatusBarMediaElement.Visibility = Visibility.Visible;
-                sliProgress.Minimum = 0;
-                sliProgress.Maximum = videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                sliProgress.Value = videoInWindowPlayer.Position.TotalSeconds;
+                _isUpdatingSlider = true;
+                try
+                {
+                    sliProgress.Visibility = Visibility.Visible;
+                    StatusBarMediaElement.Visibility = Visibility.Visible;
+                    sliProgress.Minimum = 0;
+                    sliProgress.Maximum = videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                    sliProgress.Value = videoInWindowPlayer.Position.TotalSeconds;
+                }
+                finally
+                {
+                    _isUpdatingSlider = false;
+                }
 
                 fullTime.Text = videoInWindowPlayer.NaturalDuration.TimeSpan.ToString(@"hh\:mm\:ss");
             }
@@ -174,7 +184,10 @@ namespace QuickViewFile.Controls
 
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            videoInWindowPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
+            if (!_isUpdatingSlider)
+            {
+                videoInWindowPlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
+            }
             lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss");
             fullTime.Text = TimeSpan.FromSeconds(sliProgress.Maximum).ToString(@"hh\:mm\:ss");
         }
@@ -289,6 +302,27 @@ namespace QuickViewFile.Controls
             videoInWindowPlayer.Source = null;
             videoInWindowPlayer.Source = currentTempSource;
             videoInWindowPlayer.Play();
+        }
+
+        public void SeekFromClick(double x, double totalWidth)
+        {
+            if (videoInWindowPlayer.Source != null && videoInWindowPlayer.NaturalDuration.HasTimeSpan && totalWidth > 0)
+            {
+                double percentage = Math.Max(0, Math.Min(1, x / totalWidth));
+                double targetSeconds = percentage * videoInWindowPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+
+                _isUpdatingSlider = true;
+                try
+                {
+                    sliProgress.Value = targetSeconds;
+                }
+                finally
+                {
+                    _isUpdatingSlider = false;
+                }
+
+                videoInWindowPlayer.Position = TimeSpan.FromSeconds(targetSeconds);
+            }
         }
 
         public TimeSpan GetCurrentVideoPosition()
