@@ -45,7 +45,9 @@ namespace QuickViewFile.Helpers
         private long _afterLast;
         private long _lastLineStart;
         private readonly List<long> _renderedStarts = new();
+        private readonly List<int> _renderedCharStarts = new();
         private bool _active;
+        private bool _wordWrap;
 
         private long _lastMatchOffset = -1;
         private string? _lastQuery;
@@ -76,6 +78,8 @@ namespace QuickViewFile.Helpers
             _filePath = filePath;
             _fileSize = System.Math.Max(0, fileSize);
             _encoding = BuildEncoding(config);
+            _wordWrap = config.LargeFileWordWrap == 1;
+            ApplyWrapMode();
             _offsetHexDigits = System.Math.Max(6, _fileSize <= 1 ? 1 : ((int)System.Math.Floor(System.Math.Log(_fileSize, 16)) + 1));
             _topOffset = 0;
             _afterLast = 0;
@@ -107,10 +111,28 @@ namespace QuickViewFile.Helpers
             _stream = null;
             _forwardBuf = System.Array.Empty<byte>();
             _renderedStarts.Clear();
+            _renderedCharStarts.Clear();
             _filePath = null;
+
+            // Hand wrapping back to the XAML style so edit mode keeps its configured behaviour.
+            _content.ClearValue(TextBox.TextWrappingProperty);
+            _content.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
         }
 
-        // ---------------------------------------------------------------- reading
+        private void ApplyWrapMode()
+        {
+            if (_wordWrap)
+            {
+                _content.TextWrapping = TextWrapping.Wrap;
+                _content.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            }
+            else
+            {
+                _content.TextWrapping = TextWrapping.NoWrap;
+                _content.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+            }
+        }
+
 
         private int ReadAt(long offset, byte[] dest, int count)
         {
@@ -137,7 +159,6 @@ namespace QuickViewFile.Helpers
             }
         }
 
-        // ---------------------------------------------------------------- line model
 
         /// <summary>Start offset of the visual line that contains byte <paramref name="x"/>.</summary>
         private long ComputeLineStart(long x)
@@ -211,7 +232,6 @@ namespace QuickViewFile.Helpers
             return UpKLines(_fileSize, System.Math.Max(1, visibleLines));
         }
 
-        // ---------------------------------------------------------------- metrics
 
         private double LineHeight()
         {
@@ -229,7 +249,6 @@ namespace QuickViewFile.Helpers
             return System.Math.Max(1, (int)(vh / LineHeight()));
         }
 
-        // ---------------------------------------------------------------- rendering
 
         private string FormatOffset(long off) => off.ToString("X" + _offsetHexDigits.ToString());
 
@@ -266,7 +285,9 @@ namespace QuickViewFile.Helpers
 
             int visible = VisibleLineCount();
             int toRender = visible + RenderBufferLines;
-            long maxTop = ComputeMaxTop(visible);
+            // When wrapping, one logical line spans several display rows, so a logical-line count can't bound
+            // the scroll; anchoring the bottom at the last logical line guarantees the end stays reachable.
+            long maxTop = _wordWrap ? _lastLineStart : ComputeMaxTop(visible);
             if (top > maxTop) top = maxTop;
             if (top < 0) top = 0;
             _topOffset = top;
@@ -274,8 +295,8 @@ namespace QuickViewFile.Helpers
             int windowLen = ReadAt(top, _forwardBuf, _forwardBuf.Length);
 
             _renderedStarts.Clear();
+            _renderedCharStarts.Clear();
             var sbContent = new StringBuilder();
-            var sbGutter = new StringBuilder();
 
             long pos = top;
             int produced = 0;
@@ -298,9 +319,9 @@ namespace QuickViewFile.Helpers
                 int segLen = (int)(end - pos);
                 if (bufIdx + segLen > windowLen) segLen = windowLen - bufIdx;
 
-                if (produced > 0) { sbContent.Append('\n'); sbGutter.Append('\n'); }
+                if (produced > 0) sbContent.Append('\n');
+                _renderedCharStarts.Add(sbContent.Length);
                 sbContent.Append(DecodeLine(_forwardBuf, bufIdx, segLen));
-                sbGutter.Append(FormatOffset(pos));
 
                 _renderedStarts.Add(pos);
                 produced++;
@@ -309,10 +330,11 @@ namespace QuickViewFile.Helpers
 
             _afterLast = pos;
 
-            _gutter.Text = sbGutter.ToString();
             _content.Text = sbContent.ToString();
             _content.CaretIndex = 0;
             _content.ScrollToHome();
+
+            UpdateGutter();
 
             long pageBytes = System.Math.Max(MaxLineBytes, _afterLast - _topOffset);
             _scrollBar.Maximum = System.Math.Max(0, maxTop);
@@ -322,13 +344,64 @@ namespace QuickViewFile.Helpers
             _scrollBar.IsEnabled = maxTop > 0;
         }
 
+        /// <summary>
+        /// Fills the gutter with hex offsets. Without wrapping, one offset per logical line. With wrapping,
+        /// one row per visual (wrapped) display row, and the offset is shown only on the first display row of
+        /// each logical line; continuation rows are left blank so the numbers stay aligned with the text.
+        /// </summary>
+        private void UpdateGutter()
+        {
+            if (!_wordWrap)
+            {
+                var sb = new StringBuilder();
+                for (int i = 0; i < _renderedStarts.Count; i++)
+                {
+                    if (i > 0) sb.Append('\n');
+                    sb.Append(FormatOffset(_renderedStarts[i]));
+                }
+                _gutter.Text = sb.ToString();
+                return;
+            }
+
+            _content.UpdateLayout();
+            int total;
+            try { total = _content.LineCount; } catch { total = -1; }
+
+            if (total <= 0)
+            {
+                // Layout not ready yet - fall back to one offset per logical line.
+                var sb = new StringBuilder();
+                for (int i = 0; i < _renderedStarts.Count; i++)
+                {
+                    if (i > 0) sb.Append('\n');
+                    sb.Append(FormatOffset(_renderedStarts[i]));
+                }
+                _gutter.Text = sb.ToString();
+                return;
+            }
+
+            string[] rows = new string[total];
+            for (int i = 0; i < total; i++) rows[i] = string.Empty;
+
+            int textLen = _content.Text.Length;
+            for (int i = 0; i < _renderedStarts.Count; i++)
+            {
+                int cs = _renderedCharStarts[i];
+                if (cs > textLen) cs = textLen;
+                int row;
+                try { row = _content.GetLineIndexFromCharacterIndex(cs); }
+                catch { row = -1; }
+                if (row >= 0 && row < total) rows[row] = FormatOffset(_renderedStarts[i]);
+            }
+            _gutter.Text = string.Join("\n", rows);
+        }
+
         /// <summary>Re-renders at the current position (e.g. after the viewport is resized).</summary>
         public void Refresh()
         {
             if (_active) Render(_topOffset, aligned: true);
         }
 
-        // ---------------------------------------------------------------- navigation
 
         public void OnMouseWheel(int delta)
         {
@@ -379,7 +452,6 @@ namespace QuickViewFile.Helpers
             }
         }
 
-        // ---------------------------------------------------------------- search
 
         private byte[]? EncodePattern(string query)
         {

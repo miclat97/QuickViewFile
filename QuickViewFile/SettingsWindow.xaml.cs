@@ -63,11 +63,12 @@ namespace QuickViewFile
                     panel.Children.Add(comboBox);
                 }
                 else if (prop.Name == "ShadowEffect" || prop.Name == "ShadowQuality" || prop.Name == "RenderMode" ||
-                         prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation")
+                         prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" ||
+                         prop.Name == "LargeFileWordWrap")
                 {
                     var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
 
-                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShadowEffect" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation")
+                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShadowEffect" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" || prop.Name == "LargeFileWordWrap")
                     {
                         comboBox.Items.Add(new ComboBoxItem { Content = "Disabled", Tag = 0 });
                         comboBox.Items.Add(new ComboBoxItem { Content = "Enabled", Tag = 1 });
@@ -128,6 +129,7 @@ namespace QuickViewFile
             ConfigHelper.loadedConfig.VideoWidth = _config.VideoWidth;
             ConfigHelper.loadedConfig.KeyboardZoomStep = _config.KeyboardZoomStep;
             ConfigHelper.loadedConfig.TextPreviewWordWrap = _config.TextPreviewWordWrap;
+            ConfigHelper.loadedConfig.LargeFileWordWrap = _config.LargeFileWordWrap;
             ConfigHelper.loadedConfig.MaxScale = _config.MaxScale;
             ConfigHelper.loadedConfig.MinScale = _config.MinScale;
             ConfigHelper.loadedConfig.MouseWheelZoomStepFactor = _config.MouseWheelZoomStepFactor;

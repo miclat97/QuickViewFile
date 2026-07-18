@@ -21,6 +21,8 @@ namespace QuickViewFile.Models
         public double VideoWidth { get; set; } = 1920;
         public double KeyboardZoomStep { get; set; } = 50;
         public string TextPreviewWordWrap { get; set; } = "Wrap";
+        [AllowedValues(new object[] { 0, 1 })]
+        public int LargeFileWordWrap { get; set; } = 1; // 0 - Disabled (NoWrap), 1 - Enabled (Wrap) in read/large-file mode
         public double MaxScale { get; set; } = 100.0;
         public double MinScale { get; set; } = 1;
         public double MouseWheelZoomStepFactor { get; set; } = 1.2;
@@ -41,7 +43,7 @@ namespace QuickViewFile.Models
 
         public double FontSize { get; set; } = 13;
         public double CharsToPreview { get; set; } = 100000000;
-        public string ImageExtensions { get; set; } = ".jpg,.jpeg,.png,.bmp,.gif,.tiff,.ico,.webp,.avif,.heic,.jif";
+        public string ImageExtensions { get; set; } = ".jpg,.jpeg,.png,.bmp,.gif,.tiff,.ico,.webp,.avif,.heic,.jif,.dng";
         public string VideoExtensions { get; set; } = ".mp4,.avi,.mov,.wmv,.flv,.mkv,.webm,.mpg,.mpeg";
         public string MusicExtensions { get; set; } = ".mp3,.wav,.aac,.flac,.ogg,.wma,.m4a";
         public string LiveStreamExtensions { get; set; } = ".m3u8,.m3u";
@@ -59,6 +61,6 @@ namespace QuickViewFile.Models
         public double ShadowOpacity { get; set; } = 0;
         public double ShadowBlur { get; set; } = 0;
         public double Volume { get; set; } = 1;
-        public int MaxThumbnailThreads { get; set; } = Math.Max(1, Environment.ProcessorCount);
+        public int MaxThumbnailThreads { get; set; } = Math.Max(1, (Environment.ProcessorCount * 2));
     }
 }

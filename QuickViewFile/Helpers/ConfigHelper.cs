@@ -5,7 +5,7 @@ namespace QuickViewFile.Helpers
 {
     public static class ConfigHelper
     {
-        private const string RegistryKeyPath = @"Software\QuickViewFile"; // Œcie¿ka do klucza rejestru HKCU
+        private const string RegistryKeyPath = @"Software\QuickViewFile";
         public static readonly ConfigModel loadedConfig;
 
         static ConfigHelper()
@@ -31,6 +31,7 @@ namespace QuickViewFile.Helpers
                 key.SetValue(nameof(ConfigModel.VideoWidth), config.VideoWidth);
                 key.SetValue(nameof(ConfigModel.KeyboardZoomStep), config.KeyboardZoomStep);
                 key.SetValue(nameof(ConfigModel.TextPreviewWordWrap), config.TextPreviewWordWrap);
+                key.SetValue(nameof(ConfigModel.LargeFileWordWrap), config.LargeFileWordWrap);
                 key.SetValue(nameof(ConfigModel.MaxScale), config.MaxScale);
                 key.SetValue(nameof(ConfigModel.MinScale), config.MinScale);
                 key.SetValue(nameof(ConfigModel.MouseWheelZoomStepFactor), config.MouseWheelZoomStepFactor);
@@ -75,7 +76,7 @@ namespace QuickViewFile.Helpers
             {
                 try
                 {
-                    // Wczytaj wartoœci z rejestru, jeœli istniej¹, w przeciwnym razie u¿yj wartoœci domyœlnych
+                    // read values from registry, if not exists, use the default ones
                     config.MaxSizePreviewKB = (int)key.GetValue(nameof(ConfigModel.MaxSizePreviewKB), config.MaxSizePreviewKB);
                     config.ImageStretch = (string)key.GetValue(nameof(ConfigModel.ImageStretch).ToString(), config.ImageStretch);
                     config.PreviewHeight = double.Parse((string)key.GetValue(nameof(ConfigModel.PreviewHeight).ToString(), config.PreviewHeight));
@@ -84,6 +85,7 @@ namespace QuickViewFile.Helpers
                     config.VideoWidth = double.Parse((string)key.GetValue(nameof(ConfigModel.VideoWidth).ToString(), config.VideoWidth));
                     config.KeyboardZoomStep = double.Parse((string)key.GetValue(nameof(ConfigModel.KeyboardZoomStep), config.KeyboardZoomStep));
                     config.TextPreviewWordWrap = (string)key.GetValue(nameof(ConfigModel.TextPreviewWordWrap).ToString(), config.TextPreviewWordWrap);
+                    config.LargeFileWordWrap = (int)key.GetValue(nameof(ConfigModel.LargeFileWordWrap), config.LargeFileWordWrap);
                     config.MaxScale = double.Parse((string)key.GetValue(nameof(ConfigModel.MaxScale).ToString(), config.MaxScale));
                     config.MinScale = double.Parse((string)key.GetValue(nameof(ConfigModel.MinScale).ToString(), config.MinScale));
                     config.MouseWheelZoomStepFactor = double.Parse((string)key.GetValue(nameof(ConfigModel.MouseWheelZoomStepFactor), config.MouseWheelZoomStepFactor));
