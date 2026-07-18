@@ -302,55 +302,90 @@
                                             </Style.Triggers>
                                         </Style>
                                     </StackPanel.Style>
+                                    <TextBox x:Name="LargeSearchTextBox"
+                                             Width="200"
+                                             Margin="5,0,5,0"
+                                             VerticalContentAlignment="Center"
+                                             KeyDown="LargeSearchTextBox_KeyDown"/>
+                                    <Button Content="Find Next"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="FindNextLarge_Click"
+                                            Margin="0,0,5,0"/>
+                                    <Button Content="Find Previous"
+                                            Height="24"
+                                            Padding="10,0"
+                                            Click="FindPreviousLarge_Click"
+                                            Margin="0,0,5,0"/>
+                                    <TextBlock x:Name="LargeSearchResults"
+                                              VerticalAlignment="Center"
+                                              Margin="5,0"/>
                                     <Button Content="SWITCH TO EDIT MODE"
                                             Height="24"
                                             Padding="10,0"
                                             Click="SwitchToEditMode_Click"
-                                            Margin="5,0,5,0"/>
+                                            Margin="10,0,5,0"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <Grid Grid.Row="1" Visibility="{Binding SelectedItem.FileContentModel.ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0" Background="Transparent" Foreground="{DynamicResource TextFillColorPrimaryBrush}" BorderThickness="0"
+                                <!-- Hex offset gutter (read/large-file mode only) -->
+                                <TextBox Grid.Column="0"
+                                         x:Name="LargeFileOffsetGutter"
+                                         Background="Transparent"
+                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                         BorderThickness="0" Padding="0"
+                                         FontFamily="Consolas"
+                                         FontSize="{Binding Config.FontSize}"
+                                         IsReadOnly="True" IsTabStop="False" Focusable="False" IsHitTestVisible="False"
+                                         TextWrapping="NoWrap"
+                                         TextAlignment="Right"
+                                         HorizontalScrollBarVisibility="Hidden"
+                                         VerticalScrollBarVisibility="Hidden"
+                                         ClipToBounds="True"
+                                         Margin="10,10,6,10"
+                                         Visibility="{Binding SelectedItem.FileContentModel.IsLargeFileMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <TextBox Grid.Column="1" Background="Transparent" Foreground="{DynamicResource TextFillColorPrimaryBrush}" BorderThickness="0" Padding="0"
                                          FontFamily="Consolas"
                                          SpellCheck.IsEnabled="False"
                                          Name="TextBoxTextContent"
                                          HorizontalScrollBarVisibility="Auto"
-                                         Margin="10,10,0,10"
+                                         Margin="0,10,0,10"
                                          ClipToBounds="True"
                                          IsReadOnly="{Binding SelectedItem.FileContentModel.IsLargeFileMode}"
                                          PreviewMouseWheel="TextBoxTextContent_PreviewMouseWheel"
+                                         PreviewKeyDown="TextBoxTextContent_PreviewKeyDown"
                                          FontSize="{Binding Config.FontSize}"
-                                         Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=TwoWay}"
-                                         TextWrapping="{Binding Config.TextPreviewWordWrap}">
+                                         Text="{Binding SelectedItem.FileContentModel.TextContent, Mode=TwoWay}">
                                     <TextBox.Style>
                                         <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                                             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                                            <Setter Property="TextWrapping" Value="{Binding Config.TextPreviewWordWrap}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding SelectedItem.FileContentModel.IsLargeFileMode}" Value="True">
                                                     <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
+                                                    <Setter Property="TextWrapping" Value="NoWrap"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </TextBox.Style>
                                 </TextBox>
 
-                                <ScrollBar Grid.Column="1"
+                                <ScrollBar Grid.Column="2"
                                            Name="LargeFileScrollBar"
                                            Margin="0,10,10,10"
                                            Orientation="Vertical"
                                            Visibility="{Binding SelectedItem.FileContentModel.IsLargeFileMode, Converter={StaticResource BoolToVisibilityConverter}}"
                                            Minimum="0"
                                            Maximum="{Binding SelectedItem.FileContentModel.FileSize}"
-                                           Value="{Binding SelectedItem.FileContentModel.StreamOffset, Mode=TwoWay}"
-                                           ViewportSize="100000"
-                                           LargeChange="100000"
-                                           SmallChange="1000"
+                                           SmallChange="1024"
                                            Scroll="LargeFileScrollBar_Scroll"/>
                             </Grid>
                         </Grid>

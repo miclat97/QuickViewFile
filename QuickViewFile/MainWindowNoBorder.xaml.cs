@@ -99,71 +99,101 @@ namespace QuickViewFile
                 FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                 DataContext = vm;
             }
+
+            InitLargeFileView();
+        }
+
+        private LargeFileView? _largeFileView;
+
+        private void InitLargeFileView()
+        {
+            _largeFileView = new LargeFileView(TextBoxTextContent, LargeFileOffsetGutter, LargeFileScrollBar);
+            _largeFileView.SearchStatusChanged += status =>
+            {
+                if (LargeSearchResults != null) LargeSearchResults.Text = status;
+            };
+
+            if (DataContext is FilesListViewModel vmLocal)
+            {
+                vmLocal.LargeFileReady += OnLargeFileReady;
+                vmLocal.LargeFileClosed += OnLargeFileClosed;
+            }
+
+            // Keep the number of visible lines correct when the preview area is resized.
+            TextBoxTextContent.SizeChanged += (s, e) =>
+            {
+                if (_largeFileView != null && _largeFileView.IsActive && e.HeightChanged)
+                    _largeFileView.Refresh();
+            };
+        }
+
+        private void OnLargeFileReady(string filePath, long fileSize)
+        {
+            if (_largeFileView == null) return;
+            ConfigModel cfg = (DataContext as FilesListViewModel)?.Config ?? ConfigHelper.loadedConfig;
+            if (LargeSearchResults != null) LargeSearchResults.Text = string.Empty;
+
+            // Defer to Loaded priority so the TextBox has a valid viewport height on the first paint.
+            Dispatcher.BeginInvoke(new Action(() => _largeFileView.Activate(filePath, fileSize, cfg)),
+                System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void OnLargeFileClosed()
+        {
+            _largeFileView?.Deactivate();
+            if (LargeSearchResults != null) LargeSearchResults.Text = string.Empty;
         }
 
         private void TextBoxTextContent_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FileContentModel?.IsLargeFileMode == true)
+            if (_largeFileView != null && _largeFileView.IsActive)
             {
                 if (Keyboard.Modifiers == ModifierKeys.Control)
-                {
-                    return; // Let standard zoom logic handle it if implemented elsewhere, or do nothing here
-                }
+                    return; // leave Ctrl+wheel for zoom handling elsewhere
 
-                var textBox = sender as TextBox;
-                if (textBox == null) return;
-
-                bool atTop = textBox.VerticalOffset == 0;
-                bool atBottom = textBox.VerticalOffset >= textBox.ExtentHeight - textBox.ViewportHeight;
-
-                bool scrollingUp = e.Delta > 0;
-                bool scrollingDown = e.Delta < 0;
-
-                // Allow native scrolling within the current chunk if not at boundaries
-                if ((scrollingUp && !atTop) || (scrollingDown && !atBottom))
-                {
-                    return;
-                }
-
-                // If we are at the boundaries, load the next/previous chunk
-                int chunkSize = (int)Math.Min(vm.Config.CharsToPreview, 65536);
-                long offsetChange = scrollingUp ? -(chunkSize / 2) : (chunkSize / 2);
-                long newOffset = vm.SelectedItem.FileContentModel.StreamOffset + offsetChange;
-
-                long maxOffset = Math.Max(0, vm.SelectedItem.FileContentModel.FileSize - chunkSize);
-                if (newOffset < 0) newOffset = 0;
-                if (newOffset > maxOffset) newOffset = maxOffset;
-
-                // Only reload if the offset actually changes
-                if (newOffset != vm.SelectedItem.FileContentModel.StreamOffset)
-                {
-                    LargeFileScrollBar.Value = newOffset;
-
-                    Application.Current.Dispatcher.BeginInvoke(async () =>
-                    {
-                        await vm.LoadLargeFileChunkAsync(newOffset);
-
-                        // After loading, snap scrollbar to opposite side so the user can continue scrolling smoothly
-                        if (scrollingUp)
-                            textBox.ScrollToEnd();
-                        else
-                            textBox.ScrollToHome();
-                    });
-                }
-
+                _largeFileView.OnMouseWheel(e.Delta);
                 e.Handled = true;
             }
         }
 
+        private void TextBoxTextContent_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (_largeFileView != null && _largeFileView.IsActive && _largeFileView.OnKeyDown(e))
+                e.Handled = true;
+        }
+
         private void LargeFileScrollBar_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
         {
-            if (DataContext is FilesListViewModel vm && vm.SelectedItem?.FileContentModel?.IsLargeFileMode == true)
+            if (_largeFileView != null && _largeFileView.IsActive)
+                _largeFileView.OnScrollBar(e.NewValue);
+        }
+
+        private async void LargeSearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
             {
-                Application.Current.Dispatcher.BeginInvoke(async () =>
-                {
-                    await vm.LoadLargeFileChunkAsync((long)e.NewValue);
-                });
+                e.Handled = true;
+                await DoLargeFind(true);
             }
+            else if (e.Key == Key.Escape)
+            {
+                LargeSearchTextBox.Text = string.Empty;
+                _largeFileView?.ResetSearch();
+            }
+        }
+
+        private async void FindNextLarge_Click(object sender, RoutedEventArgs e) => await DoLargeFind(true);
+
+        private async void FindPreviousLarge_Click(object sender, RoutedEventArgs e) => await DoLargeFind(false);
+
+        private async Task DoLargeFind(bool forward)
+        {
+            if (_largeFileView == null || !_largeFileView.IsActive) return;
+            string query = LargeSearchTextBox.Text;
+            if (string.IsNullOrEmpty(query)) return;
+
+            if (forward) await _largeFileView.FindNextAsync(query);
+            else await _largeFileView.FindPreviousAsync(query);
         }
 
         public MainWindowNoBorder(string pathNoBorder)
@@ -211,6 +241,8 @@ namespace QuickViewFile
                 FilesListViewModel vm = new FilesListViewModel(Directory.GetCurrentDirectory());
                 DataContext = vm;
             }
+
+            InitLargeFileView();
         }
         private void FilesListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) //Change directory or force load file (using double click)
         {
