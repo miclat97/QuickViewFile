@@ -48,6 +48,8 @@ namespace QuickViewFile.Helpers
         private readonly List<int> _renderedCharStarts = new();
         private bool _active;
         private bool _wordWrap;
+        private bool _rendering;
+        private bool _gutterRefinePending;
 
         private long _lastMatchOffset = -1;
         private string? _lastQuery;
@@ -268,8 +270,26 @@ namespace QuickViewFile.Helpers
         /// <summary>Renders the file starting at (or line-aligned to) <paramref name="requested"/> byte offset.</summary>
         public void Render(long requested, bool aligned)
         {
-            if (!_active) return;
+            // Guard against re-entrancy and swallow the rare native failure in the WPF text/layout
+            // layer (surfaces as a Windows "hard error") so a single hiccup never tears down the window.
+            if (!_active || _rendering) return;
+            _rendering = true;
+            try
+            {
+                RenderCore(requested, aligned);
+            }
+            catch
+            {
+                // Intentionally ignored: keep the viewer alive; the next scroll/refresh re-renders.
+            }
+            finally
+            {
+                _rendering = false;
+            }
+        }
 
+        private void RenderCore(long requested, bool aligned)
+        {
             if (_fileSize <= 0)
             {
                 _content.Text = string.Empty;
@@ -334,7 +354,11 @@ namespace QuickViewFile.Helpers
             _content.CaretIndex = 0;
             _content.ScrollToHome();
 
-            UpdateGutter();
+            // Cheap, layout-free numbering is set immediately so the gutter never lags the text. In wrap
+            // mode the precise per-visual-row numbering (which needs a synchronous UpdateLayout) is deferred
+            // and coalesced, keeping the forced layout off the hot scroll path.
+            UpdateGutterFast();
+            if (_wordWrap) ScheduleGutterRefine();
 
             long pageBytes = System.Math.Max(MaxLineBytes, _afterLast - _topOffset);
             _scrollBar.Maximum = System.Math.Max(0, maxTop);
@@ -345,40 +369,49 @@ namespace QuickViewFile.Helpers
         }
 
         /// <summary>
-        /// Fills the gutter with hex offsets. Without wrapping, one offset per logical line. With wrapping,
-        /// one row per visual (wrapped) display row, and the offset is shown only on the first display row of
-        /// each logical line; continuation rows are left blank so the numbers stay aligned with the text.
+        /// Layout-free numbering: one hex offset per logical line. Used as the immediate baseline in both
+        /// modes (so the gutter never lags the text) and as the wrap-mode fallback when the layout has not
+        /// been computed yet.
         /// </summary>
-        private void UpdateGutter()
+        private void UpdateGutterFast()
         {
-            if (!_wordWrap)
+            var sb = new StringBuilder();
+            for (int i = 0; i < _renderedStarts.Count; i++)
             {
-                var sb = new StringBuilder();
-                for (int i = 0; i < _renderedStarts.Count; i++)
-                {
-                    if (i > 0) sb.Append('\n');
-                    sb.Append(FormatOffset(_renderedStarts[i]));
-                }
-                _gutter.Text = sb.ToString();
-                return;
+                if (i > 0) sb.Append('\n');
+                sb.Append(FormatOffset(_renderedStarts[i]));
             }
+            _gutter.Text = sb.ToString();
+        }
 
+        /// <summary>
+        /// Coalesces the expensive wrap-mode gutter refinement into a single run once scrolling settles, so a
+        /// burst of renders forces at most one synchronous layout pass instead of one per event.
+        /// </summary>
+        private void ScheduleGutterRefine()
+        {
+            if (_gutterRefinePending) return;
+            _gutterRefinePending = true;
+            _content.Dispatcher.BeginInvoke(new System.Action(() =>
+            {
+                _gutterRefinePending = false;
+                if (_active && _wordWrap) RefineGutterForWrap();
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        /// <summary>
+        /// Fills the gutter with one row per visual (wrapped) display row, showing the offset only on the
+        /// first display row of each logical line; continuation rows are left blank so the numbers stay
+        /// aligned with the text. Needs an up-to-date layout, so it is only ever called from the coalesced
+        /// deferred pass - never on the synchronous scroll path.
+        /// </summary>
+        private void RefineGutterForWrap()
+        {
             _content.UpdateLayout();
             int total;
             try { total = _content.LineCount; } catch { total = -1; }
 
-            if (total <= 0)
-            {
-                // Layout not ready yet - fall back to one offset per logical line.
-                var sb = new StringBuilder();
-                for (int i = 0; i < _renderedStarts.Count; i++)
-                {
-                    if (i > 0) sb.Append('\n');
-                    sb.Append(FormatOffset(_renderedStarts[i]));
-                }
-                _gutter.Text = sb.ToString();
-                return;
-            }
+            if (total <= 0) return; // Layout not ready - the UpdateGutterFast baseline stays in place.
 
             string[] rows = new string[total];
             for (int i = 0; i < total; i++) rows[i] = string.Empty;
