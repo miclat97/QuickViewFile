@@ -49,7 +49,15 @@ namespace QuickViewFile.Helpers
         private bool _active;
         private bool _wordWrap;
         private bool _rendering;
-        private bool _gutterRefinePending;
+        private double _charWidthCache;
+        private double _charWidthFontSize = -1;
+        private bool _fromScrollBar;
+        private long _maxTopCache;
+        private long _maxTopFileSize = -1;
+        private int _maxTopVisible = -1;
+        private int _maxTopPerRow = -1;
+        private bool _maxTopWrap;
+        private bool _maxTopValid;
 
         private long _lastMatchOffset = -1;
         private string? _lastQuery;
@@ -99,6 +107,7 @@ namespace QuickViewFile.Helpers
 
             _forwardBuf = new byte[ReadWindowBytes];
             _lastLineStart = _fileSize > 0 ? ComputeLineStart(_fileSize - 1) : 0;
+            _maxTopValid = false;
             _active = true;
 
             Render(0, aligned: true);
@@ -234,6 +243,73 @@ namespace QuickViewFile.Helpers
             return UpKLines(_fileSize, System.Math.Max(1, visibleLines));
         }
 
+        /// <summary>
+        /// Start of the last page - the offset that, rendered downwards, exactly fills the viewport and ends at
+        /// EOF. In wrap mode a logical line can occupy several display rows, so the walk back from EOF counts
+        /// display rows rather than lines; otherwise the bottom of the file would sit a screen out of reach.
+        /// Depends only on the file and the viewport geometry, so it is cached and recomputed on resize/zoom.
+        /// </summary>
+        private long MaxTop(int visible)
+        {
+            if (_fileSize <= 0) return 0;
+
+            int perRow = _wordWrap ? CharsPerRow() : 0;
+            if (_maxTopValid && _maxTopFileSize == _fileSize && _maxTopVisible == visible
+                && _maxTopPerRow == perRow && _maxTopWrap == _wordWrap)
+                return _maxTopCache;
+
+            long result;
+            if (!_wordWrap)
+            {
+                result = ComputeMaxTop(visible);
+            }
+            else
+            {
+                long readStart = System.Math.Max(0, _fileSize - BackWindowBytes);
+                int len = (int)(_fileSize - readStart);
+                byte[] back = ArrayPool<byte>.Shared.Rent(len);
+                try
+                {
+                    int n = ReadAt(readStart, back, len);
+                    long cur = _fileSize;
+                    int rows = 0;
+                    while (cur > 0 && rows < visible)
+                    {
+                        long x = cur - 1;
+                        long gridFloor = (x / MaxLineBytes) * MaxLineBytes;
+                        long lo = System.Math.Max(gridFloor, readStart);
+                        int fromIdx = (int)(lo - readStart);
+                        int toIdx = (int)(x - readStart) - 1;
+                        if (toIdx > n - 1) toIdx = n - 1;
+
+                        long start = gridFloor;
+                        for (int j = toIdx; j >= fromIdx; j--)
+                        {
+                            if (back[j] == LF) { start = readStart + j + 1; break; }
+                        }
+                        if (start >= cur) start = System.Math.Max(0, cur - 1); // guarantee progress
+                        if (start < readStart) { cur = start; break; }         // ran past the tail window
+
+                        rows += System.Math.Max(1, (int)((cur - start + perRow - 1) / perRow));
+                        cur = start;
+                    }
+                    result = cur;
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(back);
+                }
+            }
+
+            _maxTopCache = result;
+            _maxTopFileSize = _fileSize;
+            _maxTopVisible = visible;
+            _maxTopPerRow = perRow;
+            _maxTopWrap = _wordWrap;
+            _maxTopValid = true;
+            return result;
+        }
+
 
         private double LineHeight()
         {
@@ -249,6 +325,55 @@ namespace QuickViewFile.Helpers
             if (double.IsNaN(vh) || vh <= 1) vh = _content.ActualHeight;
             if (double.IsNaN(vh) || vh <= 1) vh = 400;
             return System.Math.Max(1, (int)(vh / LineHeight()));
+        }
+
+        /// <summary>Width of one character of the (monospace) content font, measured once per font size.</summary>
+        private double CharWidth()
+        {
+            double fs = _content.FontSize > 0 ? _content.FontSize : 13;
+            if (_charWidthFontSize != fs || _charWidthCache <= 0)
+            {
+                double dpi = 1.0;
+                try { dpi = System.Windows.Media.VisualTreeHelper.GetDpi(_content).PixelsPerDip; } catch { }
+                double w = 0;
+                try
+                {
+                    var ft = new System.Windows.Media.FormattedText("0",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        FlowDirection.LeftToRight,
+                        new System.Windows.Media.Typeface(_content.FontFamily, _content.FontStyle, _content.FontWeight, _content.FontStretch),
+                        fs, System.Windows.Media.Brushes.Black, dpi);
+                    w = ft.Width;
+                }
+                catch { }
+                _charWidthCache = w > 0 ? w : System.Math.Max(1, fs * 0.55);
+                _charWidthFontSize = fs;
+            }
+            return _charWidthCache;
+        }
+
+        /// <summary>
+        /// Upper bound on the number of characters worth rendering. In wrap mode a single logical line
+        /// occupies several display rows, so a logical-line count alone would emit several screenfuls per
+        /// scroll tick - which is what makes both the layout cost and the peak memory grow with how narrow
+        /// the pane is. Bounding the payload by what can actually be displayed (with slack) keeps them flat.
+        /// </summary>
+        private int CharBudget(int visible)
+        {
+            if (!_wordWrap) return int.MaxValue;
+
+            long budget = (long)MaxLineBytes + (long)visible * CharsPerRow() * 2; // one line + twice a screenful
+            return (int)System.Math.Min(int.MaxValue, budget);
+        }
+
+        /// <summary>How many characters of the content font fit on one display row.</summary>
+        private int CharsPerRow()
+        {
+            double usable = _content.ViewportWidth;
+            if (double.IsNaN(usable) || usable <= 1) usable = _content.ActualWidth;
+            if (double.IsNaN(usable) || usable <= 1) usable = 600;
+
+            return System.Math.Max(1, (int)(usable / CharWidth()));
         }
 
 
@@ -305,14 +430,23 @@ namespace QuickViewFile.Helpers
 
             int visible = VisibleLineCount();
             int toRender = visible + RenderBufferLines;
-            // When wrapping, one logical line spans several display rows, so a logical-line count can't bound
-            // the scroll; anchoring the bottom at the last logical line guarantees the end stays reachable.
-            long maxTop = _wordWrap ? _lastLineStart : ComputeMaxTop(visible);
+            int charBudget = CharBudget(visible);
+
+            long maxTop = MaxTop(visible);
             if (top > maxTop) top = maxTop;
             if (top < 0) top = 0;
             _topOffset = top;
 
-            int windowLen = ReadAt(top, _forwardBuf, _forwardBuf.Length);
+            // On the last page the budget must not apply: it would stop the render short of EOF, leaving the
+            // end of the file unreachable from the scroll bar (only draggable into view by selecting text).
+            bool lastPage = top >= maxTop;
+
+            // Read only what the loop below can consume instead of the whole 256 KB window: at most one
+            // line per rendered row, and in wrap mode no more than the character budget allows.
+            long needBytes = (long)toRender * MaxLineBytes;
+            if (_wordWrap) needBytes = System.Math.Min(needBytes, (long)charBudget + MaxLineBytes);
+            if (lastPage) needBytes = _fileSize - top;
+            int windowLen = ReadAt(top, _forwardBuf, (int)System.Math.Min(_forwardBuf.Length, needBytes));
 
             _renderedStarts.Clear();
             _renderedCharStarts.Clear();
@@ -322,6 +456,8 @@ namespace QuickViewFile.Helpers
             int produced = 0;
             while (produced < toRender && pos < _fileSize)
             {
+                if (!lastPage && produced > 0 && sbContent.Length >= charBudget) break;
+
                 int bufIdx = (int)(pos - top);
                 if (bufIdx < 0 || bufIdx >= windowLen) break;
 
@@ -354,18 +490,30 @@ namespace QuickViewFile.Helpers
             _content.CaretIndex = 0;
             _content.ScrollToHome();
 
-            // Cheap, layout-free numbering is set immediately so the gutter never lags the text. In wrap
-            // mode the precise per-visual-row numbering (which needs a synchronous UpdateLayout) is deferred
-            // and coalesced, keeping the forced layout off the hot scroll path.
-            UpdateGutterFast();
-            if (_wordWrap) ScheduleGutterRefine();
+            // One layout-free gutter write per render, so the numbering can never lag or flicker.
+            if (_wordWrap) UpdateGutterWrapped(sbContent.Length);
+            else UpdateGutterFast();
 
-            long pageBytes = System.Math.Max(MaxLineBytes, _afterLast - _topOffset);
+            // Maximum is the real start of the last page, so dragging the thumb to the bottom lands exactly on
+            // the screen that ends at EOF. ViewportSize, on the other hand, must depend only on the viewport
+            // and the font - never on how many bytes this screen happened to consume. Deriving it from actual
+            // content made the thumb resize on every scroll (binary data breaks lines on stray 0x0A bytes, so
+            // bytes-per-screen swings wildly): visible as a rubber-banding thumb, and destabilising, because a
+            // thumb that changes size mid-drag moves under the cursor and feeds a Scroll event back into here.
+            long page = _wordWrap
+                ? System.Math.Max(MaxLineBytes, (long)charBudget)
+                : (long)toRender * MaxLineBytes;
+
+            _scrollBar.ViewportSize = page;
             _scrollBar.Maximum = System.Math.Max(0, maxTop);
-            _scrollBar.ViewportSize = pageBytes;
-            _scrollBar.LargeChange = pageBytes;               // clicking the track pages by ~one screen
-            _scrollBar.Value = System.Math.Min(_topOffset, _scrollBar.Maximum);
+            _scrollBar.LargeChange = page;                    // clicking the track pages by ~one screen
+            _scrollBar.SmallChange = MaxLineBytes;
             _scrollBar.IsEnabled = maxTop > 0;
+
+            // Value is the one thing the drag itself owns: writing it back mid-drag would yank the thumb out
+            // from under the cursor. Render() still clamps top to maxTop, so the last page stays reachable.
+            if (!_fromScrollBar)
+                _scrollBar.Value = System.Math.Min(_topOffset, _scrollBar.Maximum);
         }
 
         /// <summary>
@@ -385,48 +533,32 @@ namespace QuickViewFile.Helpers
         }
 
         /// <summary>
-        /// Coalesces the expensive wrap-mode gutter refinement into a single run once scrolling settles, so a
-        /// burst of renders forces at most one synchronous layout pass instead of one per event.
+        /// Wrap-mode numbering: one gutter row per display row, with the offset on the first row of each
+        /// logical line and continuation rows left blank so the numbers stay aligned with the text.
+        ///
+        /// The row count is derived arithmetically from the character width rather than measured via
+        /// <c>UpdateLayout</c>/<c>LineCount</c>. Measuring meant writing the gutter a second time, after the
+        /// layout pass: the two writes had different row counts, so the numbers visibly jumped on every
+        /// render, and the forced layout could itself trigger the next render and keep the cycle going while
+        /// the view was otherwise idle.
         /// </summary>
-        private void ScheduleGutterRefine()
+        private void UpdateGutterWrapped(int totalChars)
         {
-            if (_gutterRefinePending) return;
-            _gutterRefinePending = true;
-            _content.Dispatcher.BeginInvoke(new System.Action(() =>
-            {
-                _gutterRefinePending = false;
-                if (_active && _wordWrap) RefineGutterForWrap();
-            }), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        /// <summary>
-        /// Fills the gutter with one row per visual (wrapped) display row, showing the offset only on the
-        /// first display row of each logical line; continuation rows are left blank so the numbers stay
-        /// aligned with the text. Needs an up-to-date layout, so it is only ever called from the coalesced
-        /// deferred pass - never on the synchronous scroll path.
-        /// </summary>
-        private void RefineGutterForWrap()
-        {
-            _content.UpdateLayout();
-            int total;
-            try { total = _content.LineCount; } catch { total = -1; }
-
-            if (total <= 0) return; // Layout not ready - the UpdateGutterFast baseline stays in place.
-
-            string[] rows = new string[total];
-            for (int i = 0; i < total; i++) rows[i] = string.Empty;
-
-            int textLen = _content.Text.Length;
+            int perRow = CharsPerRow();
+            var sb = new StringBuilder();
             for (int i = 0; i < _renderedStarts.Count; i++)
             {
-                int cs = _renderedCharStarts[i];
-                if (cs > textLen) cs = textLen;
-                int row;
-                try { row = _content.GetLineIndexFromCharacterIndex(cs); }
-                catch { row = -1; }
-                if (row >= 0 && row < total) rows[row] = FormatOffset(_renderedStarts[i]);
+                int start = _renderedCharStarts[i];
+                // Lines are joined with '\n', so the next line's start is one past this line's terminator.
+                int endExclusive = (i + 1 < _renderedCharStarts.Count) ? _renderedCharStarts[i + 1] - 1 : totalChars;
+                int len = System.Math.Max(0, endExclusive - start);
+                int rows = System.Math.Max(1, (len + perRow - 1) / perRow);
+
+                if (i > 0) sb.Append('\n');
+                sb.Append(FormatOffset(_renderedStarts[i]));
+                for (int r = 1; r < rows; r++) sb.Append('\n');
             }
-            _gutter.Text = string.Join("\n", rows);
+            _gutter.Text = sb.ToString();
         }
 
         /// <summary>Re-renders at the current position (e.g. after the viewport is resized).</summary>
@@ -465,7 +597,17 @@ namespace QuickViewFile.Helpers
         public void OnScrollBar(double value)
         {
             if (!_active) return;
-            Render((long)value, aligned: false);
+            if (double.IsNaN(value) || double.IsInfinity(value)) return;
+
+            _fromScrollBar = true;
+            try
+            {
+                Render((long)value, aligned: false);
+            }
+            finally
+            {
+                _fromScrollBar = false;
+            }
         }
 
         public bool OnKeyDown(KeyEventArgs e)

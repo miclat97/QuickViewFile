@@ -62,5 +62,7 @@ namespace QuickViewFile.Models
         public double ShadowBlur { get; set; } = 0;
         public double Volume { get; set; } = 1;
         public int MaxThumbnailThreads { get; set; } = Math.Max(1, (Environment.ProcessorCount * 2));
+        [AllowedValues(new object[] { 0, 1 })]
+        public int DebugLogging { get; set; } = 0; // 0 - Disabled, 1 - Enabled (writes qvf-debug.log next to the exe)
     }
 }

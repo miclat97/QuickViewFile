@@ -64,11 +64,11 @@ namespace QuickViewFile
                 }
                 else if (prop.Name == "ShadowEffect" || prop.Name == "ShadowQuality" || prop.Name == "RenderMode" ||
                          prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" ||
-                         prop.Name == "LargeFileWordWrap")
+                         prop.Name == "LargeFileWordWrap" || prop.Name == "DebugLogging")
                 {
                     var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
 
-                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShadowEffect" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" || prop.Name == "LargeFileWordWrap")
+                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShadowEffect" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" || prop.Name == "LargeFileWordWrap" || prop.Name == "DebugLogging")
                     {
                         comboBox.Items.Add(new ComboBoxItem { Content = "Disabled", Tag = 0 });
                         comboBox.Items.Add(new ComboBoxItem { Content = "Enabled", Tag = 1 });
@@ -153,6 +153,8 @@ namespace QuickViewFile
             ConfigHelper.loadedConfig.ShadowBlur = _config.ShadowBlur;
             ConfigHelper.loadedConfig.Volume = _config.Volume;
             ConfigHelper.loadedConfig.MaxThumbnailThreads = _config.MaxThumbnailThreads;
+            ConfigHelper.loadedConfig.DebugLogging = _config.DebugLogging;
+            DebugLog.SetEnabled(_config.DebugLogging == 1);
 
             DialogResult = true;
             Close();
