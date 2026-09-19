@@ -78,7 +78,8 @@ namespace QuickViewFile.Helpers
         private static Encoding BuildEncoding(ConfigModel config)
         {
             string name = config.Utf8InsteadOfASCIITextPreview == 1 ? "utf-8" : "iso-8859-1";
-            return Encoding.GetEncoding(name, new EncoderReplacementFallback("\uFFFD"), new DecoderReplacementFallback("\uFFFD"));
+            // Zmieniamy "\uFFFD" na " "
+            return Encoding.GetEncoding(name, new EncoderReplacementFallback(" "), new DecoderReplacementFallback(" "));
         }
 
         public void Activate(string filePath, long fileSize, ConfigModel config)
@@ -403,8 +404,8 @@ namespace QuickViewFile.Helpers
 
                     if (c < 32 && c != '\t')
                     {
-                        sb.Append('\uFFFD');
-                        sinceSpace++;
+                        sb.Append(' ');
+                        sinceSpace = 0;
                     }
                     else
                     {
