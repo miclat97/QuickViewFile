@@ -62,6 +62,7 @@ namespace QuickViewFile.Helpers
         private long _lastMatchOffset = -1;
         private string? _lastQuery;
         private System.Threading.CancellationTokenSource? _searchCts;
+        private bool _isBinaryMode;
 
         /// <summary>Raised with a short human readable status about the current search (shown next to the search box).</summary>
         public event System.Action<string>? SearchStatusChanged;
@@ -97,9 +98,26 @@ namespace QuickViewFile.Helpers
             _lastMatchOffset = -1;
             _lastQuery = null;
 
+            _isBinaryMode = false;
+
             try
             {
                 _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, ReadWindowBytes, FileOptions.RandomAccess);
+
+                if (_fileSize > 0)
+                {
+                    byte[] headerBuf = new byte[System.Math.Min(8192, _fileSize)];
+                    int headerRead = _stream.Read(headerBuf, 0, headerBuf.Length);
+                    for (int i = 0; i < headerRead; i++)
+                    {
+                        if (headerBuf[i] == 0)
+                        {
+                            _isBinaryMode = true;
+                            break;
+                        }
+                    }
+                    _stream.Position = 0;
+                }
             }
             catch
             {
@@ -384,6 +402,22 @@ namespace QuickViewFile.Helpers
         {
             if (len <= 0) return string.Empty;
 
+            if (_isBinaryMode)
+            {
+                var sbBin = new StringBuilder(len * 3);
+                for (int i = 0; i < len; i++)
+                {
+                    sbBin.Append(buf[start + i].ToString("X2"));
+                    sbBin.Append(' ');
+
+                    if ((i + 1) % 16 == 0) // Break into 16-byte chunks (standard hex view)
+                    {
+                        sbBin.Append(System.Environment.NewLine);
+                    }
+                }
+                return sbBin.ToString();
+            }
+
             int charCount = _encoding.GetCharCount(buf, start, len);
             char[] chars = ArrayPool<char>.Shared.Rent(charCount);
 
@@ -393,12 +427,14 @@ namespace QuickViewFile.Helpers
 
                 var sb = new StringBuilder(charCount);
                 int sinceSpace = 0;
+                int currentLineLength = 0;
 
                 for (int i = 0; i < charCount; i++)
                 {
                     char c = chars[i];
                     if (c == '\n' || c == '\r')
                     {
+                        currentLineLength = 0;
                         continue; // line breaks are structural, handled externally
                     }
 
@@ -406,6 +442,7 @@ namespace QuickViewFile.Helpers
                     {
                         sb.Append(' ');
                         sinceSpace = 0;
+                        currentLineLength++;
                     }
                     else
                     {
@@ -418,11 +455,20 @@ namespace QuickViewFile.Helpers
                         {
                             sinceSpace++;
                         }
+                        currentLineLength++;
                     }
 
                     if (sinceSpace >= 500)
                     {
                         sb.Append('\n');
+                        sinceSpace = 0;
+                        currentLineLength = 0;
+                    }
+
+                    if (currentLineLength >= 5000)
+                    {
+                        sb.Append(System.Environment.NewLine);
+                        currentLineLength = 0;
                         sinceSpace = 0;
                     }
                 }
@@ -531,7 +577,7 @@ namespace QuickViewFile.Helpers
 
             _content.Text = sbContent.ToString();
             _content.CaretIndex = 0;
-            _content.ScrollToHome();
+            _content.Dispatcher.BeginInvoke(new System.Action(() => _content.ScrollToHome()), System.Windows.Threading.DispatcherPriority.Loaded);
 
             // One layout-free gutter write per render, so the numbering can never lag or flicker.
             if (_wordWrap) UpdateGutterWrapped(sbContent.Length);
