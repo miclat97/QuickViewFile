@@ -1,0 +1,26 @@
+--- QuickViewFile/Helpers/LargeFileView.cs
++++ QuickViewFile/Helpers/LargeFileView.cs
+@@ -75,9 +75,8 @@
+         private static Encoding BuildEncoding(ConfigModel config)
+         {
+             string name = config.Utf8InsteadOfASCIITextPreview == 1 ? "utf-8" : "iso-8859-1";
+-            // Zmieniamy "\uFFFD" na " "
+-            return Encoding.GetEncoding(name, new EncoderReplacementFallback(" "), new DecoderReplacementFallback(" "));
++            return Encoding.GetEncoding(name, new EncoderReplacementFallback("\uFFFD"), new DecoderReplacementFallback("\uFFFD"));
+         }
+
+         public void Activate(string filePath, long fileSize, ConfigModel config)
+@@ -321,10 +320,10 @@
+                         continue; // line breaks are structural, handled externally
+                     }
+
+-                    if (c < 32 && c != '\t')
++                    if ((char.IsControl(c) || c == '\u2028' || c == '\u2029') && c != '\t')
+                     {
+-                        sb.Append(' ');
+-                        sinceSpace = 0;
++                        sb.Append('\uFFFD');
++                        sinceSpace++;
+                     }
+                     else
+                     {
