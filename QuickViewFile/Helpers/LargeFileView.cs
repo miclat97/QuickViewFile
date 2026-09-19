@@ -78,7 +78,8 @@ namespace QuickViewFile.Helpers
         private static Encoding BuildEncoding(ConfigModel config)
         {
             string name = config.Utf8InsteadOfASCIITextPreview == 1 ? "utf-8" : "iso-8859-1";
-            return Encoding.GetEncoding(name, new EncoderReplacementFallback(""), new DecoderReplacementFallback(""));
+            // Zmieniamy "\uFFFD" na " "
+            return Encoding.GetEncoding(name, new EncoderReplacementFallback(" "), new DecoderReplacementFallback(" "));
         }
 
         public void Activate(string filePath, long fileSize, ConfigModel config)
@@ -382,14 +383,56 @@ namespace QuickViewFile.Helpers
         private string DecodeLine(byte[] buf, int start, int len)
         {
             if (len <= 0) return string.Empty;
-            string raw = _encoding.GetString(buf, start, len);
-            var sb = new StringBuilder(raw.Length);
-            foreach (char c in raw)
+
+            int charCount = _encoding.GetCharCount(buf, start, len);
+            char[] chars = ArrayPool<char>.Shared.Rent(charCount);
+
+            try
             {
-                if (c == '\n' || c == '\r') continue; // line breaks are structural
-                if (c >= 32 || c == '\t') sb.Append(c);
+                _encoding.GetChars(buf, start, len, chars, 0);
+
+                var sb = new StringBuilder(charCount);
+                int sinceSpace = 0;
+
+                for (int i = 0; i < charCount; i++)
+                {
+                    char c = chars[i];
+                    if (c == '\n' || c == '\r')
+                    {
+                        continue; // line breaks are structural, handled externally
+                    }
+
+                    if (c < 32 && c != '\t')
+                    {
+                        sb.Append(' ');
+                        sinceSpace = 0;
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                        if (c == ' ' || c == '\t')
+                        {
+                            sinceSpace = 0;
+                        }
+                        else
+                        {
+                            sinceSpace++;
+                        }
+                    }
+
+                    if (sinceSpace >= 500)
+                    {
+                        sb.Append('\n');
+                        sinceSpace = 0;
+                    }
+                }
+
+                return sb.ToString();
             }
-            return sb.ToString();
+            finally
+            {
+                ArrayPool<char>.Shared.Return(chars);
+            }
         }
 
         /// <summary>Renders the file starting at (or line-aligned to) <paramref name="requested"/> byte offset.</summary>
