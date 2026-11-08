@@ -1067,10 +1067,10 @@ namespace QuickViewFile
                 vmLocal.LargeFileClosed += OnLargeFileClosed;
             }
 
-            // Keep the number of visible lines correct when the preview area is resized.
+            // Keep the number of visible lines and wrapped columns correct when the preview area is resized.
             TextBoxTextContent.SizeChanged += (s, e) =>
             {
-                if (_largeFileView != null && _largeFileView.IsActive && e.HeightChanged)
+                if (_largeFileView != null && _largeFileView.IsActive && (e.HeightChanged || e.WidthChanged))
                     _largeFileView.Refresh();
             };
         }

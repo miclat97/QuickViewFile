@@ -45,10 +45,10 @@ namespace QuickViewFile.Helpers
         private long _afterLast;
         private long _lastLineStart;
         private readonly List<long> _renderedStarts = new();
-        private readonly List<int> _renderedCharStarts = new();
         private bool _active;
         private bool _wordWrap;
         private bool _rendering;
+        private bool _refreshQueued;
         private double _charWidthCache;
         private double _charWidthFontSize = -1;
         private bool _fromScrollBar;
@@ -90,6 +90,8 @@ namespace QuickViewFile.Helpers
             _fileSize = System.Math.Max(0, fileSize);
             _encoding = BuildEncoding(config);
             _wordWrap = config.LargeFileWordWrap == 1;
+            _content.IsUndoEnabled = false;
+            _gutter.IsUndoEnabled = false;
             ApplyWrapMode();
             _offsetHexDigits = System.Math.Max(6, _fileSize <= 1 ? 1 : ((int)System.Math.Floor(System.Math.Log(_fileSize, 16)) + 1));
             _topOffset = 0;
@@ -117,32 +119,30 @@ namespace QuickViewFile.Helpers
         public void Deactivate()
         {
             _active = false;
+            _refreshQueued = false;
             _searchCts?.Cancel();
             _searchCts = null;
             _stream?.Dispose();
             _stream = null;
             _forwardBuf = System.Array.Empty<byte>();
             _renderedStarts.Clear();
-            _renderedCharStarts.Clear();
             _filePath = null;
 
-            // Hand wrapping back to the XAML style so edit mode keeps its configured behaviour.
+            // Hand wrapping and undo back to the XAML style so edit mode keeps its configured behaviour.
+            _content.IsUndoEnabled = true;
             _content.ClearValue(TextBox.TextWrappingProperty);
             _content.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
         }
 
         private void ApplyWrapMode()
         {
-            if (_wordWrap)
-            {
-                _content.TextWrapping = TextWrapping.Wrap;
-                _content.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
-            }
-            else
-            {
-                _content.TextWrapping = TextWrapping.NoWrap;
-                _content.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-            }
+            // Keep WPF's internal TextWrapping disabled in large-file mode.
+            // When _wordWrap is enabled, RenderCore breaks lines deterministically into fixed-width rows
+            // separated by '\n'. This prevents WPF's TextBoxView.ArrangeVisuals from running mid-paragraph
+            // line-wrapping (which can trigger MS.Internal.Invariant.FailFast on binary files) and keeps
+            // the hex offset gutter 100% aligned row-for-row with the text content.
+            _content.TextWrapping = TextWrapping.NoWrap;
+            _content.HorizontalScrollBarVisibility = _wordWrap ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto;
         }
 
 
@@ -238,6 +238,71 @@ namespace QuickViewFile.Helpers
             }
         }
 
+        /// <summary>
+        /// Walks <paramref name="kRows"/> wrapped display rows up from <paramref name="s"/>, stepping by
+        /// <paramref name="perRow"/> characters inside long lines so that scrolling and the last-page
+        /// anchor (<see cref="MaxTop"/>) align to exact display rows.
+        /// </summary>
+        private long UpKRows(long s, int kRows, int perRow)
+        {
+            if (s <= 0 || kRows <= 0) return 0;
+            if (perRow <= 0) perRow = CharsPerRow();
+
+            long readStart = System.Math.Max(0, s - BackWindowBytes);
+            int len = (int)(s - readStart);
+            byte[] back = ArrayPool<byte>.Shared.Rent(len);
+            try
+            {
+                int n = ReadAt(readStart, back, len);
+                long cur = s;
+                int rows = 0;
+                while (cur > 0 && rows < kRows)
+                {
+                    long x = cur - 1;
+                    long gridFloor = (x / MaxLineBytes) * MaxLineBytes;
+                    long lo = System.Math.Max(gridFloor, readStart);
+                    int fromIdx = (int)(lo - readStart);
+                    int toIdx = (int)(x - readStart) - 1;
+                    if (toIdx > n - 1) toIdx = n - 1;
+
+                    long start = gridFloor;
+                    for (int j = toIdx; j >= fromIdx; j--)
+                    {
+                        if (back[j] == LF) { start = readStart + j + 1; break; }
+                    }
+                    if (start >= cur) start = System.Math.Max(0, cur - 1); // guarantee progress
+                    if (start < readStart) { cur = start; break; }         // ran past the tail window
+
+                    long contentLen = cur - start;
+                    int endBufIdx = (int)(cur - 1 - readStart);
+                    if (contentLen > 0 && endBufIdx >= 0 && endBufIdx < n && back[endBufIdx] == LF)
+                    {
+                        contentLen--;
+                        if (contentLen > 0 && endBufIdx - 1 >= 0 && back[endBufIdx - 1] == 0x0D)
+                            contentLen--;
+                    }
+
+                    int lineRows = System.Math.Max(1, (int)((contentLen + perRow - 1) / perRow));
+                    if (rows + lineRows > kRows)
+                    {
+                        int neededRows = kRows - rows;
+                        long subStart = start + (long)(lineRows - neededRows) * perRow;
+                        cur = (subStart > start && subStart < cur) ? subStart : start;
+                        rows = kRows;
+                        break;
+                    }
+
+                    rows += lineRows;
+                    cur = start;
+                }
+                return cur;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(back);
+            }
+        }
+
         private long ComputeMaxTop(int visibleLines)
         {
             if (_fileSize <= 0) return 0;
@@ -259,48 +324,9 @@ namespace QuickViewFile.Helpers
                 && _maxTopPerRow == perRow && _maxTopWrap == _wordWrap)
                 return _maxTopCache;
 
-            long result;
-            if (!_wordWrap)
-            {
-                result = ComputeMaxTop(visible);
-            }
-            else
-            {
-                long readStart = System.Math.Max(0, _fileSize - BackWindowBytes);
-                int len = (int)(_fileSize - readStart);
-                byte[] back = ArrayPool<byte>.Shared.Rent(len);
-                try
-                {
-                    int n = ReadAt(readStart, back, len);
-                    long cur = _fileSize;
-                    int rows = 0;
-                    while (cur > 0 && rows < visible)
-                    {
-                        long x = cur - 1;
-                        long gridFloor = (x / MaxLineBytes) * MaxLineBytes;
-                        long lo = System.Math.Max(gridFloor, readStart);
-                        int fromIdx = (int)(lo - readStart);
-                        int toIdx = (int)(x - readStart) - 1;
-                        if (toIdx > n - 1) toIdx = n - 1;
-
-                        long start = gridFloor;
-                        for (int j = toIdx; j >= fromIdx; j--)
-                        {
-                            if (back[j] == LF) { start = readStart + j + 1; break; }
-                        }
-                        if (start >= cur) start = System.Math.Max(0, cur - 1); // guarantee progress
-                        if (start < readStart) { cur = start; break; }         // ran past the tail window
-
-                        rows += System.Math.Max(1, (int)((cur - start + perRow - 1) / perRow));
-                        cur = start;
-                    }
-                    result = cur;
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(back);
-                }
-            }
+            long result = _wordWrap
+                ? UpKRows(_fileSize, System.Math.Max(1, visible), perRow)
+                : ComputeMaxTop(visible);
 
             _maxTopCache = result;
             _maxTopFileSize = _fileSize;
@@ -354,10 +380,7 @@ namespace QuickViewFile.Helpers
         }
 
         /// <summary>
-        /// Upper bound on the number of characters worth rendering. In wrap mode a single logical line
-        /// occupies several display rows, so a logical-line count alone would emit several screenfuls per
-        /// scroll tick - which is what makes both the layout cost and the peak memory grow with how narrow
-        /// the pane is. Bounding the payload by what can actually be displayed (with slack) keeps them flat.
+        /// Upper bound on the number of characters worth rendering per screenful in wrap mode.
         /// </summary>
         private int CharBudget(int visible)
         {
@@ -374,7 +397,8 @@ namespace QuickViewFile.Helpers
             if (double.IsNaN(usable) || usable <= 1) usable = _content.ActualWidth;
             if (double.IsNaN(usable) || usable <= 1) usable = 600;
 
-            return System.Math.Max(1, (int)(usable / CharWidth()));
+            double avail = System.Math.Max(1, usable - 6.0);
+            return System.Math.Max(1, (int)(avail / CharWidth()));
         }
 
 
@@ -385,16 +409,16 @@ namespace QuickViewFile.Helpers
             if (len <= 0) return string.Empty;
 
             int charCount = _encoding.GetCharCount(buf, start, len);
+            if (charCount <= 0) return string.Empty;
+
             char[] chars = ArrayPool<char>.Shared.Rent(charCount);
 
             try
             {
-                _encoding.GetChars(buf, start, len, chars, 0);
+                int actualChars = _encoding.GetChars(buf, start, len, chars, 0);
+                var sb = new StringBuilder(actualChars);
 
-                var sb = new StringBuilder(charCount);
-                int sinceSpace = 0;
-
-                for (int i = 0; i < charCount; i++)
+                for (int i = 0; i < actualChars; i++)
                 {
                     char c = chars[i];
                     if (c == '\n' || c == '\r')
@@ -402,29 +426,13 @@ namespace QuickViewFile.Helpers
                         continue; // line breaks are structural, handled externally
                     }
 
-                    if (c < 32 && c != '\t')
+                    if (c == '\t')
                     {
                         sb.Append(' ');
-                        sinceSpace = 0;
-                    }
-                    else
-                    {
-                        sb.Append(c);
-                        if (c == ' ' || c == '\t')
-                        {
-                            sinceSpace = 0;
-                        }
-                        else
-                        {
-                            sinceSpace++;
-                        }
+                        continue;
                     }
 
-                    if (sinceSpace >= 500)
-                    {
-                        sb.Append('\n');
-                        sinceSpace = 0;
-                    }
+                    sb.Append(FileTextExtractor.SanitizeForDisplay(c));
                 }
 
                 return sb.ToString();
@@ -466,41 +474,41 @@ namespace QuickViewFile.Helpers
                 return;
             }
 
-            long top;
-            if (requested <= 0) top = 0;
-            else if (requested >= _fileSize) top = _lastLineStart;
-            else top = aligned ? requested : ComputeLineStart(requested);
-
             int visible = VisibleLineCount();
             int toRender = visible + RenderBufferLines;
+            int perRow = _wordWrap ? CharsPerRow() : 0;
             int charBudget = CharBudget(visible);
 
             long maxTop = MaxTop(visible);
+
+            long top;
+            if (requested <= 0) top = 0;
+            else if (requested >= maxTop) top = maxTop;
+            else top = aligned ? requested : ComputeLineStart(requested);
+
             if (top > maxTop) top = maxTop;
             if (top < 0) top = 0;
             _topOffset = top;
 
-            // On the last page the budget must not apply: it would stop the render short of EOF, leaving the
-            // end of the file unreachable from the scroll bar (only draggable into view by selecting text).
-            bool lastPage = top >= maxTop;
-
             // Read only what the loop below can consume instead of the whole 256 KB window: at most one
-            // line per rendered row, and in wrap mode no more than the character budget allows.
+            // line per rendered row in NoWrap mode, and in wrap mode bounded by the screen row count.
             long needBytes = (long)toRender * MaxLineBytes;
-            if (_wordWrap) needBytes = System.Math.Min(needBytes, (long)charBudget + MaxLineBytes);
-            if (lastPage) needBytes = _fileSize - top;
+            if (_wordWrap)
+            {
+                long wrapBytes = (long)toRender * System.Math.Max(1, perRow) * 4 + MaxLineBytes;
+                needBytes = System.Math.Min(needBytes, wrapBytes);
+            }
+            needBytes = System.Math.Min(needBytes, _fileSize - top);
             int windowLen = ReadAt(top, _forwardBuf, (int)System.Math.Min(_forwardBuf.Length, needBytes));
 
             _renderedStarts.Clear();
-            _renderedCharStarts.Clear();
             var sbContent = new StringBuilder();
+            var sbGutter = new StringBuilder();
 
             long pos = top;
-            int produced = 0;
-            while (produced < toRender && pos < _fileSize)
+            int visualRows = 0;
+            while (visualRows < toRender && pos < _fileSize)
             {
-                if (!lastPage && produced > 0 && sbContent.Length >= charBudget) break;
-
                 int bufIdx = (int)(pos - top);
                 if (bufIdx < 0 || bufIdx >= windowLen) break;
 
@@ -518,24 +526,82 @@ namespace QuickViewFile.Helpers
                 int segLen = (int)(end - pos);
                 if (bufIdx + segLen > windowLen) segLen = windowLen - bufIdx;
 
-                if (produced > 0) sbContent.Append('\n');
-                _renderedCharStarts.Add(sbContent.Length);
-                sbContent.Append(DecodeLine(_forwardBuf, bufIdx, segLen));
+                string decoded = DecodeLine(_forwardBuf, bufIdx, segLen);
+                string offsetStr = FormatOffset(pos);
 
-                _renderedStarts.Add(pos);
-                produced++;
-                pos = end;
+                if (!_wordWrap || decoded.Length == 0)
+                {
+                    if (visualRows > 0)
+                    {
+                        sbContent.Append('\n');
+                        sbGutter.Append('\n');
+                    }
+                    sbContent.Append(decoded);
+                    sbGutter.Append(offsetStr);
+                    _renderedStarts.Add(pos);
+                    visualRows++;
+                    pos = end;
+                }
+                else
+                {
+                    int charIdx = 0;
+                    bool firstSlice = true;
+                    long lastRowEndByte = end;
+
+                    while (charIdx < decoded.Length && visualRows < toRender)
+                    {
+                        int sliceStart = charIdx;
+                        int cols = 0;
+                        while (charIdx < decoded.Length)
+                        {
+                            int w = FileTextExtractor.IsWideChar(decoded[charIdx]) ? 2 : 1;
+                            if (cols + w > perRow && charIdx > sliceStart)
+                                break;
+                            cols += w;
+                            charIdx++;
+                        }
+
+                        int sliceLen = charIdx - sliceStart;
+                        if (visualRows > 0)
+                        {
+                            sbContent.Append('\n');
+                            sbGutter.Append('\n');
+                        }
+                        sbContent.Append(decoded, sliceStart, sliceLen);
+                        if (firstSlice)
+                        {
+                            sbGutter.Append(offsetStr);
+                            firstSlice = false;
+                        }
+
+                        long rowStartByte = pos + (long)sliceStart * segLen / decoded.Length;
+                        if (sliceStart > 0 && rowStartByte <= _renderedStarts[^1])
+                            rowStartByte = System.Math.Min(end, _renderedStarts[^1] + 1);
+                        _renderedStarts.Add(rowStartByte);
+
+                        visualRows++;
+                        lastRowEndByte = (charIdx < decoded.Length)
+                            ? pos + (long)charIdx * segLen / decoded.Length
+                            : end;
+                    }
+
+                    pos = lastRowEndByte > pos ? lastRowEndByte : end;
+                }
             }
 
             _afterLast = pos;
 
+            // Avoid calling _content.ScrollToHome(), which internally calls UpdateLayout() synchronously
+            // inside ScrollBar.Scroll / Thumb.OnMouseMove before _gutter and _scrollBar are updated.
             _content.Text = sbContent.ToString();
-            _content.CaretIndex = 0;
-            _content.ScrollToHome();
+            if (_content.VerticalOffset != 0)
+                _content.ScrollToVerticalOffset(0);
+            if (_wordWrap && _content.HorizontalOffset != 0)
+                _content.ScrollToHorizontalOffset(0);
 
-            // One layout-free gutter write per render, so the numbering can never lag or flicker.
-            if (_wordWrap) UpdateGutterWrapped(sbContent.Length);
-            else UpdateGutterFast();
+            _gutter.Text = sbGutter.ToString();
+            if (_gutter.VerticalOffset != 0)
+                _gutter.ScrollToVerticalOffset(0);
 
             // Maximum is the real start of the last page, so dragging the thumb to the bottom lands exactly on
             // the screen that ends at EOF. ViewportSize, on the other hand, must depend only on the viewport
@@ -559,55 +625,16 @@ namespace QuickViewFile.Helpers
                 _scrollBar.Value = System.Math.Min(_topOffset, _scrollBar.Maximum);
         }
 
-        /// <summary>
-        /// Layout-free numbering: one hex offset per logical line. Used as the immediate baseline in both
-        /// modes (so the gutter never lags the text) and as the wrap-mode fallback when the layout has not
-        /// been computed yet.
-        /// </summary>
-        private void UpdateGutterFast()
-        {
-            var sb = new StringBuilder();
-            for (int i = 0; i < _renderedStarts.Count; i++)
-            {
-                if (i > 0) sb.Append('\n');
-                sb.Append(FormatOffset(_renderedStarts[i]));
-            }
-            _gutter.Text = sb.ToString();
-        }
-
-        /// <summary>
-        /// Wrap-mode numbering: one gutter row per display row, with the offset on the first row of each
-        /// logical line and continuation rows left blank so the numbers stay aligned with the text.
-        ///
-        /// The row count is derived arithmetically from the character width rather than measured via
-        /// <c>UpdateLayout</c>/<c>LineCount</c>. Measuring meant writing the gutter a second time, after the
-        /// layout pass: the two writes had different row counts, so the numbers visibly jumped on every
-        /// render, and the forced layout could itself trigger the next render and keep the cycle going while
-        /// the view was otherwise idle.
-        /// </summary>
-        private void UpdateGutterWrapped(int totalChars)
-        {
-            int perRow = CharsPerRow();
-            var sb = new StringBuilder();
-            for (int i = 0; i < _renderedStarts.Count; i++)
-            {
-                int start = _renderedCharStarts[i];
-                // Lines are joined with '\n', so the next line's start is one past this line's terminator.
-                int endExclusive = (i + 1 < _renderedCharStarts.Count) ? _renderedCharStarts[i + 1] - 1 : totalChars;
-                int len = System.Math.Max(0, endExclusive - start);
-                int rows = System.Math.Max(1, (len + perRow - 1) / perRow);
-
-                if (i > 0) sb.Append('\n');
-                sb.Append(FormatOffset(_renderedStarts[i]));
-                for (int r = 1; r < rows; r++) sb.Append('\n');
-            }
-            _gutter.Text = sb.ToString();
-        }
-
         /// <summary>Re-renders at the current position (e.g. after the viewport is resized).</summary>
         public void Refresh()
         {
-            if (_active) Render(_topOffset, aligned: true);
+            if (!_active || _refreshQueued) return;
+            _refreshQueued = true;
+            _content.Dispatcher.BeginInvoke(new System.Action(() =>
+            {
+                _refreshQueued = false;
+                if (_active) Render(_topOffset, aligned: true);
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
 
@@ -632,7 +659,9 @@ namespace QuickViewFile.Helpers
         private void ScrollUpLines(int k)
         {
             if (!_active || _topOffset <= 0) return;
-            long newTop = UpKLines(_topOffset, k);
+            long newTop = _wordWrap
+                ? UpKRows(_topOffset, k, CharsPerRow())
+                : UpKLines(_topOffset, k);
             if (newTop >= _topOffset) newTop = System.Math.Max(0, _topOffset - 1);
             Render(newTop, aligned: true);
         }
@@ -793,8 +822,16 @@ namespace QuickViewFile.Helpers
         private void JumpToMatch(long matchOffset, string query)
         {
             if (!_active) return;
-            long lineStart = ComputeLineStart(matchOffset);
-            long top = UpKLines(lineStart, 2); // keep a little context above the hit
+            long top;
+            if (_wordWrap)
+            {
+                top = UpKRows(matchOffset, 2, CharsPerRow());
+            }
+            else
+            {
+                long lineStart = ComputeLineStart(matchOffset);
+                top = UpKLines(lineStart, 2); // keep a little context above the hit
+            }
             Render(top, aligned: true);
 
             int idx = _content.Text.IndexOf(query, System.StringComparison.OrdinalIgnoreCase);
