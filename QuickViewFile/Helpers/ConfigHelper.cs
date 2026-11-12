@@ -43,6 +43,7 @@ namespace QuickViewFile.Helpers
                 key.SetValue(nameof(ConfigModel.MusicExtensions), config.MusicExtensions);
                 key.SetValue(nameof(ConfigModel.LiveStreamExtensions), config.LiveStreamExtensions);
                 key.SetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
+                key.SetValue(nameof(ConfigModel.HumanFriendlyBinaryTextReading), config.HumanFriendlyBinaryTextReading);
                 key.SetValue(nameof(ConfigModel.AlwaysSwipeAnimation), config.AlwaysSwipeAnimation);
                 key.SetValue(nameof(ConfigModel.EdgeMode), config.EdgeMode);
                 key.SetValue(nameof(ConfigModel.RenderMode), config.RenderMode);
@@ -104,6 +105,7 @@ namespace QuickViewFile.Helpers
                     config.ThemeMode = (int)key.GetValue(nameof(ConfigModel.ThemeMode), config.ThemeMode);
                     config.ShowAlternateDataStreams = (int)key.GetValue(nameof(ConfigModel.ShowAlternateDataStreams), config.ShowAlternateDataStreams);
                     config.Utf8InsteadOfASCIITextPreview = (int)key.GetValue(nameof(ConfigModel.Utf8InsteadOfASCIITextPreview), config.Utf8InsteadOfASCIITextPreview);
+                    config.HumanFriendlyBinaryTextReading = (int)key.GetValue(nameof(ConfigModel.HumanFriendlyBinaryTextReading), config.HumanFriendlyBinaryTextReading);
                     config.AlwaysSwipeAnimation = (int)key.GetValue(nameof(ConfigModel.AlwaysSwipeAnimation), config.AlwaysSwipeAnimation);
                     config.ShadowDepth = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowDepth).ToString(), config.ShadowDepth));
                     config.ShadowOpacity = double.Parse((string)key.GetValue(nameof(ConfigModel.ShadowOpacity).ToString(), config.ShadowOpacity));

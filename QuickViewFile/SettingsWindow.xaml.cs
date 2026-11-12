@@ -63,12 +63,12 @@ namespace QuickViewFile
                     panel.Children.Add(comboBox);
                 }
                 else if (prop.Name == "ShadowEffect" || prop.Name == "ShadowQuality" || prop.Name == "RenderMode" ||
-                         prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" ||
+                         prop.Name == "EdgeMode" || prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "HumanFriendlyBinaryTextReading" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" ||
                          prop.Name == "LargeFileWordWrap" || prop.Name == "DebugLogging")
                 {
                     var comboBox = new ComboBox { Width = 400, VerticalAlignment = VerticalAlignment.Center };
 
-                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "ShadowEffect" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" || prop.Name == "LargeFileWordWrap" || prop.Name == "DebugLogging")
+                    if (prop.Name == "Utf8InsteadOfASCIITextPreview" || prop.Name == "HumanFriendlyBinaryTextReading" || prop.Name == "ShadowEffect" || prop.Name == "ShowAlternateDataStreams" || prop.Name == "AlwaysSwipeAnimation" || prop.Name == "LargeFileWordWrap" || prop.Name == "DebugLogging")
                     {
                         comboBox.Items.Add(new ComboBoxItem { Content = "Disabled", Tag = 0 });
                         comboBox.Items.Add(new ComboBoxItem { Content = "Enabled", Tag = 1 });
@@ -141,6 +141,7 @@ namespace QuickViewFile
             ConfigHelper.loadedConfig.MusicExtensions = _config.MusicExtensions;
             ConfigHelper.loadedConfig.LiveStreamExtensions = _config.LiveStreamExtensions;
             ConfigHelper.loadedConfig.Utf8InsteadOfASCIITextPreview = _config.Utf8InsteadOfASCIITextPreview;
+            ConfigHelper.loadedConfig.HumanFriendlyBinaryTextReading = _config.HumanFriendlyBinaryTextReading;
             ConfigHelper.loadedConfig.AlwaysSwipeAnimation = _config.AlwaysSwipeAnimation;
             ConfigHelper.loadedConfig.ShadowEffect = _config.ShadowEffect;
             ConfigHelper.loadedConfig.ShadowQuality = _config.ShadowQuality;

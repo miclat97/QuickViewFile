@@ -304,6 +304,7 @@ namespace QuickViewFile
                 if (DataContext is FilesListViewModel vm)
                 {
                     vm.Config = ConfigHelper.LoadConfig();
+                    _largeFileView?.ApplyConfig(vm.Config);
                 }
             }
         }

@@ -47,6 +47,7 @@ namespace QuickViewFile.Helpers
         private readonly List<long> _renderedStarts = new();
         private bool _active;
         private bool _wordWrap;
+        private bool _humanFriendlyBinaryTextReading = true;
         private bool _rendering;
         private bool _refreshQueued;
         private double _charWidthCache;
@@ -78,8 +79,8 @@ namespace QuickViewFile.Helpers
         private static Encoding BuildEncoding(ConfigModel config)
         {
             string name = config.Utf8InsteadOfASCIITextPreview == 1 ? "utf-8" : "iso-8859-1";
-            // Zmieniamy "\uFFFD" na " "
-            return Encoding.GetEncoding(name, new EncoderReplacementFallback(" "), new DecoderReplacementFallback(" "));
+            string fallback = config.HumanFriendlyBinaryTextReading == 1 ? string.Empty : " ";
+            return Encoding.GetEncoding(name, new EncoderReplacementFallback(fallback), new DecoderReplacementFallback(fallback));
         }
 
         public void Activate(string filePath, long fileSize, ConfigModel config)
@@ -89,6 +90,7 @@ namespace QuickViewFile.Helpers
             _filePath = filePath;
             _fileSize = System.Math.Max(0, fileSize);
             _encoding = BuildEncoding(config);
+            _humanFriendlyBinaryTextReading = config.HumanFriendlyBinaryTextReading == 1;
             _wordWrap = config.LargeFileWordWrap == 1;
             _content.IsUndoEnabled = false;
             _gutter.IsUndoEnabled = false;
@@ -114,6 +116,17 @@ namespace QuickViewFile.Helpers
             _active = true;
 
             Render(0, aligned: true);
+        }
+
+        public void ApplyConfig(ConfigModel config)
+        {
+            if (!_active) return;
+            _encoding = BuildEncoding(config);
+            _humanFriendlyBinaryTextReading = config.HumanFriendlyBinaryTextReading == 1;
+            _wordWrap = config.LargeFileWordWrap == 1;
+            ApplyWrapMode();
+            _maxTopValid = false;
+            Render(_topOffset, aligned: true);
         }
 
         public void Deactivate()
@@ -273,20 +286,40 @@ namespace QuickViewFile.Helpers
                     if (start >= cur) start = System.Math.Max(0, cur - 1); // guarantee progress
                     if (start < readStart) { cur = start; break; }         // ran past the tail window
 
-                    long contentLen = cur - start;
-                    int endBufIdx = (int)(cur - 1 - readStart);
-                    if (contentLen > 0 && endBufIdx >= 0 && endBufIdx < n && back[endBufIdx] == LF)
+                    int segIdx = (int)(start - readStart);
+                    int segLen = (int)System.Math.Min(cur - start, n - segIdx);
+                    string decoded = segLen > 0 ? DecodeLine(back, segIdx, segLen) : string.Empty;
+
+                    if (decoded.Length == 0)
                     {
-                        contentLen--;
-                        if (contentLen > 0 && endBufIdx - 1 >= 0 && back[endBufIdx - 1] == 0x0D)
-                            contentLen--;
+                        rows += 1;
+                        cur = start;
+                        continue;
                     }
 
-                    int lineRows = System.Math.Max(1, (int)((contentLen + perRow - 1) / perRow));
+                    var sliceStarts = new List<int>(decoded.Length / perRow + 2);
+                    int charIdx = 0;
+                    while (charIdx < decoded.Length)
+                    {
+                        int sliceStart = charIdx;
+                        sliceStarts.Add(sliceStart);
+                        int cols = 0;
+                        while (charIdx < decoded.Length)
+                        {
+                            int w = FileTextExtractor.IsWideChar(decoded[charIdx]) ? 2 : 1;
+                            if (cols + w > perRow && charIdx > sliceStart)
+                                break;
+                            cols += w;
+                            charIdx++;
+                        }
+                    }
+
+                    int lineRows = System.Math.Max(1, sliceStarts.Count);
                     if (rows + lineRows > kRows)
                     {
                         int neededRows = kRows - rows;
-                        long subStart = start + (long)(lineRows - neededRows) * perRow;
+                        int targetSlice = lineRows - neededRows;
+                        long subStart = start + (long)sliceStarts[targetSlice] * segLen / decoded.Length;
                         cur = (subStart > start && subStart < cur) ? subStart : start;
                         rows = kRows;
                         break;
@@ -432,7 +465,17 @@ namespace QuickViewFile.Helpers
                         continue;
                     }
 
-                    sb.Append(FileTextExtractor.SanitizeForDisplay(c));
+                    if (_humanFriendlyBinaryTextReading)
+                    {
+                        if (FileTextExtractor.IsSafePrintableChar(c))
+                        {
+                            sb.Append(c);
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(FileTextExtractor.SanitizeForDisplay(c));
+                    }
                 }
 
                 return sb.ToString();
@@ -493,7 +536,7 @@ namespace QuickViewFile.Helpers
             // Read only what the loop below can consume instead of the whole 256 KB window: at most one
             // line per rendered row in NoWrap mode, and in wrap mode bounded by the screen row count.
             long needBytes = (long)toRender * MaxLineBytes;
-            if (_wordWrap)
+            if (_wordWrap && !_humanFriendlyBinaryTextReading)
             {
                 long wrapBytes = (long)toRender * System.Math.Max(1, perRow) * 4 + MaxLineBytes;
                 needBytes = System.Math.Min(needBytes, wrapBytes);
@@ -715,11 +758,25 @@ namespace QuickViewFile.Helpers
 
         private static byte ToLowerAscii(byte b) => (b >= (byte)'A' && b <= (byte)'Z') ? (byte)(b + 32) : b;
 
-        private static bool MatchAt(byte[] hay, int idx, byte[] patLower)
+        private static bool MatchAt(byte[] hay, int idx, int hayLen, byte[] patLower)
         {
+            if (idx + patLower.Length > hayLen) return false;
             for (int i = 0; i < patLower.Length; i++)
             {
                 if (ToLowerAscii(hay[idx + i]) != patLower[i]) return false;
+            }
+            return true;
+        }
+
+        private static bool MatchAtUtf16Le(byte[] hay, int idx, int hayLen, byte[] patLower)
+        {
+            if (patLower.Length <= 1) return false;
+            int span = patLower.Length * 2 - 1;
+            if (idx + span > hayLen) return false;
+            for (int i = 0; i < patLower.Length; i++)
+            {
+                if (ToLowerAscii(hay[idx + i * 2]) != patLower[i]) return false;
+                if (i + 1 < patLower.Length && hay[idx + i * 2 + 1] != 0) return false;
             }
             return true;
         }
@@ -742,11 +799,13 @@ namespace QuickViewFile.Helpers
             using FileStream? fs = OpenSearchStream();
             if (fs == null) return -1;
 
-            int overlap = patLower.Length - 1;
+            bool checkUtf16 = _humanFriendlyBinaryTextReading && patLower.Length > 1;
+            int overlap = (checkUtf16 ? patLower.Length * 2 : patLower.Length) - 1;
             const int block = 1 << 20;
             byte[] buf = ArrayPool<byte>.Shared.Rent(block + overlap);
             try
             {
+                byte first = patLower[0];
                 long pos = System.Math.Max(0, from);
                 while (pos < _fileSize && !ct.IsCancellationRequested)
                 {
@@ -763,7 +822,9 @@ namespace QuickViewFile.Helpers
                     int limit = n - patLower.Length + 1;
                     for (int i = 0; i < limit; i++)
                     {
-                        if (MatchAt(buf, i, patLower)) return pos + i;
+                        if (ToLowerAscii(buf[i]) != first) continue;
+                        if (MatchAt(buf, i, n, patLower) || (checkUtf16 && MatchAtUtf16Le(buf, i, n, patLower)))
+                            return pos + i;
                     }
 
                     if (n < want || n <= overlap) break;
@@ -782,11 +843,13 @@ namespace QuickViewFile.Helpers
             using FileStream? fs = OpenSearchStream();
             if (fs == null) return -1;
 
-            int overlap = patLower.Length - 1;
+            bool checkUtf16 = _humanFriendlyBinaryTextReading && patLower.Length > 1;
+            int overlap = (checkUtf16 ? patLower.Length * 2 : patLower.Length) - 1;
             const int block = 1 << 20;
             byte[] buf = ArrayPool<byte>.Shared.Rent(block + overlap);
             try
             {
+                byte first = patLower[0];
                 long pos = System.Math.Min(before, _fileSize);
                 while (pos > 0 && !ct.IsCancellationRequested)
                 {
@@ -806,8 +869,11 @@ namespace QuickViewFile.Helpers
                     {
                         long abs = start + i;
                         if (abs >= pos) continue;              // handled by a later (further) block
-                        if (abs + patLower.Length > before) continue;
-                        if (MatchAt(buf, i, patLower)) return abs;
+                        if (ToLowerAscii(buf[i]) != first) continue;
+                        if (abs + patLower.Length <= before && MatchAt(buf, i, n, patLower))
+                            return abs;
+                        if (checkUtf16 && abs + (patLower.Length * 2 - 1) <= before && MatchAtUtf16Le(buf, i, n, patLower))
+                            return abs;
                     }
                     pos = start;
                 }

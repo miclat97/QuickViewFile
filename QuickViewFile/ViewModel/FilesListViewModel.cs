@@ -1,4 +1,4 @@
-﻿using QuickViewFile.Helpers;
+using QuickViewFile.Helpers;
 using QuickViewFile.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -464,21 +464,23 @@ namespace QuickViewFile.ViewModel
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 return string.Empty;
 
+            bool humanFriendly = Config.HumanFriendlyBinaryTextReading == 1;
+            string fallback = humanFriendly ? "" : " ";
             Encoding encoding;
             if (Config.Utf8InsteadOfASCIITextPreview == 1)
             {
                 encoding = Encoding.GetEncoding(
                     "utf-8",
-                    new EncoderReplacementFallback(""),
-                    new DecoderReplacementFallback("")
+                    new EncoderReplacementFallback(fallback),
+                    new DecoderReplacementFallback(fallback)
                 );
             }
             else // Latin1
             {
                 encoding = Encoding.GetEncoding(
                     "iso-8859-1",
-                    new EncoderReplacementFallback(""),
-                    new DecoderReplacementFallback("")
+                    new EncoderReplacementFallback(fallback),
+                    new DecoderReplacementFallback(fallback)
                 );
             }
 
@@ -502,26 +504,41 @@ namespace QuickViewFile.ViewModel
 
                 bool isTruncated = (totalCharsRead == maxChars);
 
-                // count how mant valid chars is to read (to alocate memory efficienty)
-                int validCount = 0;
-                for (int i = 0; i < totalCharsRead; i++)
+                string result;
+                if (humanFriendly)
                 {
-                    if (FileTextExtractor.IsPrintable(buffer[i])) validCount++;
-                }
-
-                // build text from buffer with only valid chars
-                string result = string.Create(validCount, (buffer, totalCharsRead), (span, state) =>
-                {
-                    int index = 0;
-                    for (int i = 0; i < state.totalCharsRead; i++)
+                    // count how mant valid chars is to read (to alocate memory efficienty)
+                    int validCount = 0;
+                    for (int i = 0; i < totalCharsRead; i++)
                     {
-                        char c = state.buffer[i];
-                        if (FileTextExtractor.IsPrintable(c))
-                        {
-                            span[index++] = c;
-                        }
+                        if (FileTextExtractor.IsPrintable(buffer[i])) validCount++;
                     }
-                });
+
+                    // build text from buffer with only valid chars
+                    result = string.Create(validCount, (buffer, totalCharsRead), (span, state) =>
+                    {
+                        int index = 0;
+                        for (int i = 0; i < state.totalCharsRead; i++)
+                        {
+                            char c = state.buffer[i];
+                            if (FileTextExtractor.IsPrintable(c))
+                            {
+                                span[index++] = c;
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    result = string.Create(totalCharsRead, (buffer, totalCharsRead), (span, state) =>
+                    {
+                        for (int i = 0; i < state.totalCharsRead; i++)
+                        {
+                            char c = state.buffer[i];
+                            span[i] = FileTextExtractor.IsPrintable(c) ? c : ' ';
+                        }
+                    });
+                }
 
                 if (isTruncated)
                 {
